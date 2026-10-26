@@ -1,0 +1,47 @@
+# RegLens configuration. Model IDs and prices live here only — never hard-code them.
+
+models:
+  tiers:
+    bulk: claude-haiku-5-5       # cheap bulk tasks (classification, short summaries)
+    dev: claude-sonnet-5-5       # development, agent iteration, smoke evals
+    milestone: claude-opus-5-5   # milestone evals, one-off extraction — state a reason
+  default_tier: dev
+
+# USD per million tokens, Anthropic list prices as of 2026-10-26.
+pricing:
+  claude-haiku-5-5:
+    input: 0.10
+    output: 0.50
+    cache_read: 0.01             # ASSUMED 10% of input — verify on the pricing page
+    long_context:                # prompts above the threshold are billed at higher rates
+      threshold_tokens: 100000
+      input: 0.50
+      output: 2.50
+  claude-sonnet-5-5:
+    input: 2.00
+    output: 10.00
+    cache_read: 0.20
+  claude-opus-5-5:
+    input: 4.00
+    output: 20.00
+    cache_read: 0.20
+
+pricing_rules:
+  cache_write_multiplier: 1.25   # cache writes vs. base input price — verify
+  batch_discount: 0.5            # Message Batches API
+
+budget:
+  usd_to_eur: 0.90               # update manually now and then
+  target_eur: 150
+  ceiling_eur: 250
+  approval_threshold_eur: 2      # ask before any single run above this
+  current_phase: 0
+  phases_eur:                    # allocations from docs/ROADMAP.md
+    0: 5
+    1: 10
+    2: 40
+    3: 45
+    4: 40
+    5: 10
+
+ledger_path: data/ledger.jsonl

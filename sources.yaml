@@ -1,0 +1,207 @@
+# RegLens source registry — every ingested document must be listed here (CLAUDE.md, hard rule 1).
+#
+# Fields
+#   id            stable key used in chunk metadata and citations
+#   legal_level   L1 (regulation/directive) | L2 (RTS/ITS) | L3 (EBA guidelines)
+#                 | qa (EBA Q&A) | supervisory (ECB guides/instructions)
+#   applies_to    SI | LSI | all
+#   scope         what part of the document is in the MVP
+#   url           null = still to resolve; resolve and verify in Phase 0 before download
+#   retrieved     date downloaded (filled by the downloader)
+#   verify        true = identifier, URL or reuse note not yet checked against the official source
+#
+# Reuse notes are summaries for orientation only — check each site's legal notice before publishing.
+
+eurlex_reuse: &eurlex_reuse >-
+  EUR-Lex content may be reused with acknowledgement of the source (Commission Decision 2011/833/EU).
+  Only the Official Journal version is authentic; consolidated texts are documentation.
+eba_reuse: &eba_reuse >-
+  EBA publications: reproduction generally authorised with the source acknowledged — check the EBA legal notice.
+ecb_reuse: &ecb_reuse >-
+  ECB publications: reproduction generally permitted with the source acknowledged — check the ECB copyright notice.
+
+sources:
+  # ---------------------------------------------------------------- Level 1
+  - id: crr3-consolidated
+    title: Regulation (EU) No 575/2013 (CRR), consolidated version including CRR3 amendments
+    issuer: EU (EP & Council)
+    legal_level: L1
+    reference: CELEX 32013R0575 (base act); use the latest consolidated CELEX 02013R0575-YYYYMMDD
+    url: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32013R0575
+    format: html
+    applies_to: all
+    scope:
+      - Art. 4 (definitions)
+      - Art. 92 (own funds requirements, output floor)
+      - Part Three, Title II, Ch. 2 (Standardised Approach)
+      - Part Three, Title II, Ch. 3 (IRB, Art. 142-191)
+      - Part Three, Title II, Ch. 4 (Credit risk mitigation)
+      - Transitional provisions for the output floor and IRB (Part Ten)
+    reuse: *eurlex_reuse
+    retrieved: null
+    verify: true   # pick the latest consolidated version at download time
+
+  - id: crr3-amending-act
+    title: Regulation (EU) 2024/1623 amending Regulation (EU) No 575/2013 (CRR3)
+    issuer: EU (EP & Council)
+    legal_level: L1
+    reference: CELEX 32024R1623
+    url: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1623
+    format: html
+    applies_to: all
+    scope:
+      - Recitals and application dates (used for "what changed" and as-of reasoning)
+    reuse: *eurlex_reuse
+    retrieved: null
+    verify: false
+
+  # ---------------------------------------------------------------- Level 2
+  - id: rts-irb-assessment
+    title: Delegated Regulation (EU) 2022/439 — RTS on the IRB assessment methodology
+    issuer: European Commission (EBA draft)
+    legal_level: L2
+    reference: CELEX 32022R0439
+    url: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022R0439
+    format: html
+    applies_to: all
+    scope: [full]
+    reuse: *eurlex_reuse
+    retrieved: null
+    verify: false
+
+  - id: rts-default-materiality
+    title: Delegated Regulation (EU) 2018/171 — RTS on the materiality threshold for credit obligations past due
+    issuer: European Commission (EBA draft)
+    legal_level: L2
+    reference: CELEX 32018R0171
+    url: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32018R0171
+    format: html
+    applies_to: all
+    scope: [full]
+    reuse: *eurlex_reuse
+    retrieved: null
+    verify: false
+
+  - id: rts-economic-downturn
+    title: Delegated Regulation (EU) 2021/930 — RTS on the nature, severity and duration of an economic downturn
+    issuer: European Commission (EBA draft)
+    legal_level: L2
+    reference: CELEX 32021R0930
+    url: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32021R0930
+    format: html
+    applies_to: all
+    scope: [full]
+    reuse: *eurlex_reuse
+    retrieved: null
+    verify: false
+
+  # ---------------------------------------------------------------- Level 3 (EBA)
+  - id: eba-gl-dod
+    title: EBA Guidelines on the application of the definition of default
+    issuer: EBA
+    legal_level: L3
+    reference: EBA/GL/2016/07
+    url: null
+    format: pdf
+    applies_to: all
+    scope: [full]
+    reuse: *eba_reuse
+    retrieved: null
+    verify: true
+
+  - id: eba-gl-pd-lgd
+    title: EBA Guidelines on PD estimation, LGD estimation and the treatment of defaulted exposures
+    issuer: EBA
+    legal_level: L3
+    reference: EBA/GL/2017/16
+    url: null
+    format: pdf
+    applies_to: all
+    scope: [full]
+    reuse: *eba_reuse
+    retrieved: null
+    verify: true
+
+  - id: eba-gl-downturn-lgd
+    title: EBA Guidelines for the estimation of LGD appropriate for an economic downturn
+    issuer: EBA
+    legal_level: L3
+    reference: EBA/GL/2019/03
+    url: null
+    format: pdf
+    applies_to: all
+    scope: [full]
+    reuse: *eba_reuse
+    retrieved: null
+    verify: true
+
+  - id: eba-gl-crm-airb
+    title: EBA Guidelines on credit risk mitigation for institutions applying the IRB approach with own estimates of LGD
+    issuer: EBA
+    legal_level: L3
+    reference: EBA/GL/2020/05
+    url: null
+    format: pdf
+    applies_to: all
+    scope: [full]
+    reuse: *eba_reuse
+    retrieved: null
+    verify: true
+
+  - id: eba-gl-lom
+    title: EBA Guidelines on loan origination and monitoring
+    issuer: EBA
+    legal_level: L3
+    reference: EBA/GL/2020/06
+    url: null
+    format: pdf
+    applies_to: all
+    scope:
+      - Credit-risk-relevant sections (governance, creditworthiness assessment, monitoring)
+    reuse: *eba_reuse
+    retrieved: null
+    verify: true
+
+  # ---------------------------------------------------------------- EBA Q&A
+  - id: eba-qa-credit-risk
+    title: EBA Single Rulebook Q&A — credit risk topics
+    issuer: EBA
+    legal_level: qa
+    reference: Single Rulebook Q&A tool, filtered to CRR credit risk articles
+    url: null
+    format: html
+    applies_to: all
+    scope:
+      - Final answers on CRR Part Three Title II and Art. 178 (default)
+    reuse: *eba_reuse
+    retrieved: null
+    verify: true
+
+  # ---------------------------------------------------------------- ECB / SSM
+  - id: ecb-guide-internal-models
+    title: ECB Guide to internal models (latest revision)
+    issuer: ECB Banking Supervision
+    legal_level: supervisory
+    reference: ECB Guide to internal models — use the most recent revision
+    url: null
+    format: pdf
+    applies_to: SI
+    scope:
+      - General topics chapter
+      - Credit risk chapter
+    reuse: *ecb_reuse
+    retrieved: null
+    verify: true
+
+  - id: ecb-validation-reporting
+    title: ECB instructions for reporting the validation results of internal models (credit risk)
+    issuer: ECB Banking Supervision
+    legal_level: supervisory
+    reference: Instructions for reporting validation results — latest version
+    url: null
+    format: pdf
+    applies_to: SI
+    scope: [full]
+    reuse: *ecb_reuse
+    retrieved: null
+    verify: true

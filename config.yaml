@@ -1,5 +1,10 @@
 # RegLens configuration. Model IDs and prices live here only — never hard-code them.
 
+# subscription: local development runs on a Claude subscription (Claude Code / `claude -p`);
+#               tokens are the real measure, EUR is an API-equivalent yardstick only.
+# api:          calls billed per token (e.g. the bring-your-own-key public demo).
+billing: subscription
+
 models:
   tiers:
     bulk: claude-haiku-5-5       # cheap bulk tasks (classification, short summaries)
@@ -30,11 +35,13 @@ pricing_rules:
   cache_write_multiplier: 1.25   # cache writes vs. base input price — verify
   batch_discount: 0.5            # Message Batches API
 
+# EUR figures are API-equivalent under `billing: subscription`.
 budget:
   usd_to_eur: 0.90               # update manually now and then
   target_eur: 150
   ceiling_eur: 250
-  approval_threshold_eur: 2      # ask before any single run above this
+  approval_threshold_eur: 2      # ask before any single run above this (billing: api)
+  approval_threshold_tokens: 1000000  # ask before any single run above this (billing: subscription)
   current_phase: 0
   phases_eur:                    # allocations from docs/ROADMAP.md
     0: 5

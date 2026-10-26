@@ -1,4 +1,8 @@
-"""Cost ledger: every paid LLM call is appended to data/ledger.jsonl."""
+"""Usage ledger: every LLM call is appended to data/ledger.jsonl.
+
+Tokens are the primary measure. With `billing: subscription` the EUR figure is an
+API-equivalent estimate for comparison only; with `billing: api` it is the real cost.
+"""
 
 from __future__ import annotations
 
@@ -18,9 +22,19 @@ class Usage:
     cache_read_input_tokens: int = 0
     cache_creation_input_tokens: int = 0
 
+    @property
+    def total_tokens(self) -> int:
+        return (
+            self.input_tokens
+            + self.output_tokens
+            + self.cache_read_input_tokens
+            + self.cache_creation_input_tokens
+        )
+
     @classmethod
     def from_response(cls, usage: Any) -> Usage:
-        """Build from an Anthropic `response.usage` object or a plain dict."""
+        """Build from an Anthropic `response.usage` object or a plain dict
+        (e.g. the `usage` field of `claude -p --output-format json`)."""
 
         def get(name: str) -> int:
             value = usage.get(name) if isinstance(usage, dict) else getattr(usage, name, None)
@@ -64,7 +78,10 @@ class Ledger:
         self.config = config
         self.path = config.ledger_path
 
-    def estimate_eur(self, model: str, usage: Usage, *, batch: bool = False) -> float:
+    def estimate_eur(self, model: str, usage: Usage, *, batch: bool = False) -> float | None:
+        """EUR at API list prices (API-equivalent under a subscription); None if unpriced."""
+        if model not in self.config.prices:
+            return None
         usd = cost_usd(
             self.config.price(model),
             usage,
@@ -85,21 +102,17 @@ class Ledger:
         """Append one call to the ledger and return the stored entry."""
         if not isinstance(usage, Usage):
             usage = Usage.from_response(usage)
-        usd = cost_usd(
-            self.config.price(model),
-            usage,
-            cache_write_multiplier=self.config.cache_write_multiplier,
-            batch_discount=self.config.batch_discount if batch else 1.0,
-        )
+        eur = self.estimate_eur(model, usage, batch=batch)
         entry = {
             "ts": datetime.now(UTC).isoformat(timespec="seconds"),
             "phase": self.config.budget.current_phase if phase is None else phase,
             "purpose": purpose,
             "model": model,
+            "billing": self.config.billing,
             "batch": batch,
             **asdict(usage),
-            "cost_usd": round(usd, 6),
-            "cost_eur": round(usd * self.config.budget.usd_to_eur, 6),
+            "total_tokens": usage.total_tokens,
+            "cost_eur": None if eur is None else round(eur, 6),
         }
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self.path.open("a", encoding="utf-8") as f:
@@ -113,9 +126,19 @@ class Ledger:
             return [json.loads(line) for line in f if line.strip()]
 
     def summary(self, by: str = "phase") -> dict[Any, dict[str, float]]:
-        """Calls, tokens and EUR spent, grouped by 'phase', 'model' or 'purpose'."""
+        """Calls, tokens and EUR, grouped by 'phase', 'model' or 'purpose'.
+
+        `input_tokens` includes cache reads and writes; `cached_tokens` is cache reads only.
+        """
         groups: dict[Any, dict[str, float]] = defaultdict(
-            lambda: {"calls": 0, "input_tokens": 0, "output_tokens": 0, "cost_eur": 0.0}
+            lambda: {
+                "calls": 0,
+                "input_tokens": 0,
+                "cached_tokens": 0,
+                "output_tokens": 0,
+                "total_tokens": 0,
+                "cost_eur": 0.0,
+            }
         )
         for e in self.entries():
             g = groups[e[by]]
@@ -123,9 +146,14 @@ class Ledger:
             g["input_tokens"] += (
                 e["input_tokens"] + e["cache_read_input_tokens"] + e["cache_creation_input_tokens"]
             )
+            g["cached_tokens"] += e["cache_read_input_tokens"]
             g["output_tokens"] += e["output_tokens"]
-            g["cost_eur"] += e["cost_eur"]
+            g["total_tokens"] += e["total_tokens"]
+            g["cost_eur"] += e["cost_eur"] or 0.0
         return dict(groups)
 
+    def total_tokens(self) -> int:
+        return sum(e["total_tokens"] for e in self.entries())
+
     def total_eur(self) -> float:
-        return sum(e["cost_eur"] for e in self.entries())
+        return sum(e["cost_eur"] or 0.0 for e in self.entries())

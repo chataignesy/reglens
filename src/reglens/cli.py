@@ -1,4 +1,4 @@
-"""Command line: `reglens cost` and `reglens estimate`."""
+"""Command line: `reglens usage` (alias `cost`) and `reglens estimate`."""
 
 from __future__ import annotations
 
@@ -8,45 +8,67 @@ from reglens.config import load_config
 from reglens.llm.ledger import Ledger, Usage
 
 
-def _cmd_cost(args: argparse.Namespace) -> None:
+def _eur_label(billing: str) -> str:
+    return "API-eq EUR" if billing == "subscription" else "EUR"
+
+
+def _cmd_usage(args: argparse.Namespace) -> None:
     cfg = load_config(args.config)
     ledger = Ledger(cfg)
     rows = ledger.summary(by=args.by)
     budget = cfg.budget
+    eur = _eur_label(cfg.billing)
 
-    print(f"{args.by:<24}{'calls':>8}{'in tok':>12}{'out tok':>12}{'EUR':>10}")
+    print(
+        f"{args.by:<24}{'calls':>7}{'input':>13}{'cached':>13}"
+        f"{'output':>11}{'total':>13}{eur:>12}"
+    )
     for key in sorted(rows, key=str):
         r = rows[key]
         print(
-            f"{str(key):<24}{r['calls']:>8}{r['input_tokens']:>12,}"
-            f"{r['output_tokens']:>12,}{r['cost_eur']:>10.2f}"
+            f"{str(key):<24}{r['calls']:>7}{r['input_tokens']:>13,}{r['cached_tokens']:>13,}"
+            f"{r['output_tokens']:>11,}{r['total_tokens']:>13,}{r['cost_eur']:>12.2f}"
         )
 
     total = ledger.total_eur()
     phase = budget.current_phase
-    phase_spent = ledger.summary(by="phase").get(phase, {}).get("cost_eur", 0.0)
+    phase_row = ledger.summary(by="phase").get(phase, {})
+    phase_spent = phase_row.get("cost_eur", 0.0)
     phase_budget = budget.phases_eur.get(phase, 0.0)
     print()
+    print(f"Total tokens: {ledger.total_tokens():,}  (phase {phase}: "
+          f"{int(phase_row.get('total_tokens', 0)):,})")
     print(
-        f"Total: EUR {total:.2f} of target {budget.target_eur:.0f}"
-        f" (ceiling {budget.ceiling_eur:.0f})"
+        f"{eur}: {total:.2f} of target {budget.target_eur:.0f}"
+        f" (ceiling {budget.ceiling_eur:.0f}); phase {phase}: {phase_spent:.2f}"
+        f" of {phase_budget:.0f}"
     )
-    print(f"Phase {phase}: EUR {phase_spent:.2f} of EUR {phase_budget:.0f}")
+    if cfg.billing == "subscription":
+        print("Billing: subscription — EUR is API-equivalent, for comparison only.")
     if total > budget.ceiling_eur:
-        print("!! Over the hard ceiling — stop paid runs.")
+        print("!! Over the ceiling — stop and review before more runs.")
     elif total > budget.target_eur or phase_spent > phase_budget:
-        print("! Over budget target — review before more paid runs.")
+        print("! Over budget target — review before more runs.")
 
 
 def _cmd_estimate(args: argparse.Namespace) -> None:
     cfg = load_config(args.config)
     model = args.model or cfg.model(args.tier)
     usage = Usage(input_tokens=args.input, output_tokens=args.output)
+    tokens = usage.total_tokens * args.calls
     per_call = Ledger(cfg).estimate_eur(model, usage, batch=args.batch)
-    total = per_call * args.calls
-    print(f"{model}: EUR {per_call:.4f} per call x {args.calls} = EUR {total:.2f}")
-    if total > cfg.budget.approval_threshold_eur:
-        print(f"Above EUR {cfg.budget.approval_threshold_eur:.0f} — needs approval before running.")
+    print(f"{model}: {usage.total_tokens:,} tokens per call x {args.calls} = {tokens:,} tokens")
+    if per_call is not None:
+        print(f"{_eur_label(cfg.billing)}: {per_call * args.calls:.2f}")
+
+    if cfg.billing == "subscription":
+        over = tokens > cfg.budget.approval_threshold_tokens
+        limit = f"{cfg.budget.approval_threshold_tokens:,} tokens"
+    else:
+        over = per_call is not None and per_call * args.calls > cfg.budget.approval_threshold_eur
+        limit = f"EUR {cfg.budget.approval_threshold_eur:.0f}"
+    if over:
+        print(f"Above {limit} — needs approval before running.")
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -54,11 +76,11 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--config", help="path to config.yaml")
     sub = parser.add_subparsers(dest="command", required=True)
 
-    cost = sub.add_parser("cost", help="summarise API spend from the ledger")
-    cost.add_argument("--by", choices=["phase", "model", "purpose"], default="phase")
-    cost.set_defaults(func=_cmd_cost)
+    usage = sub.add_parser("usage", aliases=["cost"], help="summarise token usage from the ledger")
+    usage.add_argument("--by", choices=["phase", "model", "purpose"], default="phase")
+    usage.set_defaults(func=_cmd_usage)
 
-    est = sub.add_parser("estimate", help="estimate the cost of a planned run")
+    est = sub.add_parser("estimate", help="estimate tokens (and API-eq cost) of a planned run")
     est.add_argument("--tier", choices=["bulk", "dev", "milestone"])
     est.add_argument("--model", help="explicit model ID (overrides --tier)")
     est.add_argument("--input", type=int, required=True, help="input tokens per call")

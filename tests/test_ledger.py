@@ -71,5 +71,31 @@ def test_record_and_summary(cfg):
     by_purpose = ledger.summary(by="purpose")
     assert by_purpose["smoke-eval"]["calls"] == 1
     assert by_purpose["enrich"]["input_tokens"] == 500
+    assert ledger.total_tokens() == 1100 + 550
     assert ledger.total_eur() > 0
     assert set(ledger.summary(by="phase")) == {cfg.budget.current_phase}
+    assert all(e["billing"] == cfg.billing for e in ledger.entries())
+
+
+def test_unpriced_model_logs_tokens_without_cost(cfg):
+    # e.g. a subscription run reporting a model alias with no configured price
+    ledger = Ledger(cfg)
+    entry = ledger.record("sonnet", Usage(200, 20, cache_read_input_tokens=1000), purpose="dev")
+    assert entry["cost_eur"] is None
+    assert entry["total_tokens"] == 1220
+    summary = ledger.summary(by="model")["sonnet"]
+    assert summary["cached_tokens"] == 1000
+    assert summary["cost_eur"] == 0.0
+    assert ledger.total_tokens() == 1220
+
+
+def test_usage_from_claude_cli_json():
+    # shape of the `usage` field in `claude -p --output-format json`
+    raw = {
+        "input_tokens": 12,
+        "cache_creation_input_tokens": 3000,
+        "cache_read_input_tokens": 15000,
+        "output_tokens": 400,
+        "service_tier": "standard",
+    }
+    assert Usage.from_response(raw).total_tokens == 18412

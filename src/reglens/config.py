@@ -30,12 +30,17 @@ class Budget:
     target_eur: float
     ceiling_eur: float
     approval_threshold_eur: float
+    approval_threshold_tokens: int
     current_phase: int
     phases_eur: dict[int, float]
 
 
+BILLING_MODES = {"subscription", "api"}
+
+
 @dataclass(frozen=True)
 class Config:
+    billing: str
     tiers: dict[str, str]
     default_tier: str
     prices: dict[str, ModelPrice]
@@ -81,7 +86,12 @@ def load_config(path: str | Path | None = None) -> Config:
     if not ledger_path.is_absolute():
         ledger_path = path.parent / ledger_path
 
+    billing = raw.get("billing", "api")
+    if billing not in BILLING_MODES:
+        raise ValueError(f"billing must be one of {sorted(BILLING_MODES)}, got {billing!r}")
+
     cfg = Config(
+        billing=billing,
         tiers=dict(models["tiers"]),
         default_tier=models["default_tier"],
         prices={name: _parse_price(p) for name, p in raw["pricing"].items()},
@@ -92,6 +102,7 @@ def load_config(path: str | Path | None = None) -> Config:
             target_eur=float(b["target_eur"]),
             ceiling_eur=float(b["ceiling_eur"]),
             approval_threshold_eur=float(b["approval_threshold_eur"]),
+            approval_threshold_tokens=int(b["approval_threshold_tokens"]),
             current_phase=int(b["current_phase"]),
             phases_eur={int(k): float(v) for k, v in b["phases_eur"].items()},
         ),

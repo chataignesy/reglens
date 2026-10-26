@@ -16,11 +16,12 @@ Status: Phase 0 (foundations). See [docs/ROADMAP.md](docs/ROADMAP.md).
 ```bash
 uv sync
 uv run pytest
-uv run reglens cost
+uv run reglens usage
 uv run reglens estimate --tier dev --input 50000 --output 3000 --calls 150
 ```
 
-Every paid API call is logged to `data/ledger.jsonl`; `reglens cost` shows spend against the budget.
+Every LLM call is logged to `data/ledger.jsonl`; `reglens usage` shows tokens (and API-equivalent
+EUR) against the budget.
 
 ## Licence
 

@@ -33,8 +33,11 @@ portfolio project (GitHub + LinkedIn). Plan and milestones: [docs/ROADMAP.md](do
 
 ## Token & cost budget (applies to the app AND to Claude Code sessions)
 
-The MVP is built on a deliberately small budget. **Target ≤ €150 total API spend for the MVP, hard
-ceiling €250.** Per-phase allocations are in the roadmap.
+The MVP is built on a deliberately small budget. Local development runs on the user's **Claude
+subscription** (`billing: subscription` in `config.yaml`), so **tokens are the primary measure**;
+EUR figures are API-equivalent yardsticks (target ≤ €150, ceiling €250, per-phase allocations in the
+roadmap). Real per-token billing only applies to the bring-your-own-key demo. Subscription usage
+limits are the practical constraint — large runs can exhaust them.
 
 **App / pipeline rules**
 - **Model tiers** (configured in one place, never hard-coded):
@@ -48,14 +51,15 @@ ceiling €250.** Per-phase allocations are in the roadmap.
   IDs before the cache breakpoint. Verify with `cache_read_input_tokens`.
 - **Batch API** (50% off) for offline jobs: obligation extraction, LLM-judge grading.
 - **Bounded agents:** cap tool-call steps and tokens per query; log usage of every call.
-- **Cost ledger:** every paid API call appends model, input/output/cache tokens and estimated cost to
-  `data/ledger.jsonl`; a CLI command summarises spend per phase.
+- **Usage ledger:** every LLM call appends model, input/output/cache tokens and API-equivalent EUR
+  to `data/ledger.jsonl`; `reglens usage` summarises per phase, model or purpose.
 - **Eval tiers:** retrieval-only metrics (no LLM cost) on every change → 30-question smoke set on Sonnet
   for daily work → full golden set (Opus) only at phase milestones.
 
 **Claude Code session rules**
-- Before running anything that calls a paid API, **state the estimated cost**; if it exceeds **€2**,
-  ask first. Prefer a dry run or a 5-item sample before a full run.
+- Before running anything that calls an LLM, **state the estimated tokens** (`reglens estimate`);
+  if a run exceeds **1M tokens** (or €2 under API billing), ask first. Prefer a dry run or a
+  5-item sample before a full run.
 - Never load raw regulation files or the full corpus into context — inspect with scripts (counts,
   `head`, targeted grep). Read only the lines needed.
 - No subagents or broad codebase sweeps unless the user asks. Keep this file short; put detail in `docs/`.
@@ -92,3 +96,4 @@ gitignored), `evals/golden/*.jsonl`, `docs/`.
 | 2026-10-26 | Public demo is bring-your-own-key; recorded video for LinkedIn |
 | 2026-10-26 | Public sources only; EU + ECB first, national regulators later |
 | 2026-10-26 | MVP API budget: target €150, ceiling €250 |
+| 2026-10-26 | Dev runs on Claude subscription: ledger tracks tokens; EUR is API-equivalent only |

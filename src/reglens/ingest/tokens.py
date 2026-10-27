@@ -47,7 +47,18 @@ def html_to_text(html: str) -> str:
     return re.sub(r"\s*\n\s*", "\n", text).strip()
 
 
+def pdf_to_text(path: Path) -> str:
+    """Quick text layer for counting only; layout-aware parsing (Docling) comes in Phase 1."""
+    from pypdf import PdfReader
+
+    text = "\n".join(page.extract_text() or "" for page in PdfReader(path).pages)
+    text = re.sub(r"[ \t\xa0]+", " ", text)
+    return re.sub(r"\s*\n\s*", "\n", text).strip()
+
+
 def file_text(path: Path) -> str:
+    if path.suffix.lower() == ".pdf":
+        return pdf_to_text(path)
     return html_to_text(path.read_text(encoding="utf-8", errors="replace"))
 
 

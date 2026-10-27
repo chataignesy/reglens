@@ -74,16 +74,19 @@ def _cmd_estimate(args: argparse.Namespace) -> None:
 
 
 def _cmd_download(args: argparse.Namespace) -> None:
-    from reglens.ingest.download import download
+    from reglens.ingest.download import download, downloadable
 
     as_of = date.fromisoformat(args.as_of) if args.as_of else date.today()
-    sources = [s for s in load_sources() if s.celex and (not args.source or s.id in args.source)]
+    all_sources = load_sources()
+    wanted = set(args.source or [s.id for s in all_sources])
+    sources = [s for s in all_sources if downloadable(s) and s.id in wanted]
     for s in sources:
         r = download(s, as_of=as_of, force=args.force)
-        print(f"{s.id:<26}{r['celex']:<22}{r['bytes']:>12,} bytes  {r['retrieved']}")
-    skipped = [s.id for s in load_sources() if not s.celex]
+        version = r["celex"] or s.format
+        print(f"{s.id:<26}{version:<22}{r['bytes']:>12,} bytes  {r['retrieved']}")
+    skipped = [s.id for s in all_sources if not downloadable(s)]
     if skipped and not args.source:
-        print(f"\nNot on EUR-Lex (manual download, Phase 0): {', '.join(skipped)}")
+        print(f"\nNo URL yet (not downloaded): {', '.join(skipped)}")
 
 
 def _cmd_tokens(args: argparse.Namespace) -> None:
@@ -98,7 +101,7 @@ def _cmd_tokens(args: argparse.Namespace) -> None:
         text = file_text(PROJECT_ROOT / rec["file"])
         n = estimate_tokens(text, cfg.chars_per_token)
         total += n
-        print(f"{sid:<26}{rec['celex']:<22}{len(text):>12,}{n:>11,}")
+        print(f"{sid:<26}{rec['celex'] or '-':<22}{len(text):>12,}{n:>11,}")
     print(f"\nTotal ~{total:,} tokens (full documents; MVP scope is a subset) "
           f"at {cfg.chars_per_token:.2f} chars/token")
 
@@ -121,6 +124,18 @@ def _cmd_calibrate(args: argparse.Namespace) -> None:
     print("Set tokens.chars_per_token in config.yaml to this value.")
 
 
+def _cmd_golden(args: argparse.Namespace) -> None:
+    from collections import Counter
+
+    from reglens.eval.golden import load_golden
+
+    items = load_golden()
+    print(f"{len(items)} items valid")
+    for name, key in [("type", "type"), ("status", "status"), ("topic", "topic")]:
+        counts = Counter(getattr(i, key) for i in items)
+        print(f"  {name:<8}" + ", ".join(f"{k}: {v}" for k, v in sorted(counts.items())))
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="reglens")
     parser.add_argument("--config", help="path to config.yaml")
@@ -139,7 +154,7 @@ def main(argv: list[str] | None = None) -> None:
     est.add_argument("--batch", action="store_true", help="apply Batch API discount")
     est.set_defaults(func=_cmd_estimate)
 
-    dl = sub.add_parser("download", help="download EUR-Lex sources via CELLAR")
+    dl = sub.add_parser("download", help="download sources (EUR-Lex via CELLAR, others by URL)")
     dl.add_argument("--source", nargs="*", help="source ids (default: all with a CELEX number)")
     dl.add_argument("--as-of", help="YYYY-MM-DD; consolidated version in force on this date")
     dl.add_argument("--force", action="store_true", help="re-download even if present")
@@ -153,6 +168,9 @@ def main(argv: list[str] | None = None) -> None:
     cal.add_argument("--chars", type=int, default=8000, help="sample size in characters")
     cal.add_argument("--tier", choices=["bulk", "dev", "milestone"], default="bulk")
     cal.set_defaults(func=_cmd_calibrate)
+
+    gold = sub.add_parser("golden", help="validate the golden eval set and show its mix")
+    gold.set_defaults(func=_cmd_golden)
 
     args = parser.parse_args(argv)
     args.func(args)

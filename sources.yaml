@@ -104,7 +104,7 @@ sources:
     issuer: EBA
     legal_level: L3
     reference: EBA/GL/2016/07
-    url: null
+    url: https://www.eba.europa.eu/documents/10180/1721448/Guidelines+on+default+definition+%28EBA-GL-2016-07%29_EN.pdf/052c260f-da9a-4c86-8f0a-09a1d8ae56e7
     format: pdf
     applies_to: all
     scope: [full]
@@ -116,7 +116,7 @@ sources:
     issuer: EBA
     legal_level: L3
     reference: EBA/GL/2017/16
-    url: null
+    url: https://www.eba.europa.eu/documents/10180/2033363/6b062012-45d6-4655-af04-801d26493ed0/Guidelines%20on%20PD%20and%20LGD%20estimation%20%28EBA-GL-2017-16%29.pdf
     format: pdf
     applies_to: all
     scope: [full]
@@ -128,7 +128,7 @@ sources:
     issuer: EBA
     legal_level: L3
     reference: EBA/GL/2019/03
-    url: null
+    url: https://www.eba.europa.eu/sites/default/documents/files/documents/10180/2551996/f892da33-5cb2-44f8-ae5d-68251b9bab8f/Final%20Report%20on%20Guidelines%20on%20LGD%20estimates%20under%20downturn%20conditions.pdf
     format: pdf
     applies_to: all
     scope: [full]
@@ -140,7 +140,7 @@ sources:
     issuer: EBA
     legal_level: L3
     reference: EBA/GL/2020/05
-    url: null
+    url: https://www.eba.europa.eu/sites/default/files/document_library/Publications/Guidelines/2020/Guidelines%20on%20Credit%20Risk%20Mitigation%20for%20institutions%20applying%20the%20IRB%20approach%20with%20own%20estimates%20of%20LGDs/883366/Guidelines%20on%20CRM%20for%20A-IRB%20institutions.pdf
     format: pdf
     applies_to: all
     scope: [full]
@@ -152,7 +152,7 @@ sources:
     issuer: EBA
     legal_level: L3
     reference: EBA/GL/2020/06
-    url: null
+    url: https://www.eba.europa.eu/sites/default/files/document_library/Publications/Guidelines/2020/Guidelines%20on%20loan%20origination%20and%20monitoring/884283/EBA%20GL%202020%2006%20Final%20Report%20on%20GL%20on%20loan%20origination%20and%20monitoring.pdf
     format: pdf
     applies_to: all
     scope:
@@ -179,8 +179,8 @@ sources:
     title: ECB Guide to internal models (latest revision)
     issuer: ECB Banking Supervision
     legal_level: supervisory
-    reference: ECB Guide to internal models — use the most recent revision
-    url: null
+    reference: ECB guide to internal models, June 2026 release (checked 2026-10-27)
+    url: https://www.bankingsupervision.europa.eu/ecb/pub/pdf/ssm.supervisory_guide_egim_202606.en.pdf
     format: pdf
     applies_to: SI
     scope:
@@ -193,8 +193,8 @@ sources:
     title: ECB instructions for reporting the validation results of internal models (credit risk)
     issuer: ECB Banking Supervision
     legal_level: supervisory
-    reference: Instructions for reporting validation results — latest version
-    url: null
+    reference: Instructions for reporting validation results, February 2019 (pre-CRR3; check for updates)
+    url: https://www.bankingsupervision.europa.eu/activities/internal_models/shared/pdf/instructions_validation_reporting_credit_risk.en.pdf
     format: pdf
     applies_to: SI
     scope: [full]

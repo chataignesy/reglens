@@ -17,6 +17,69 @@
     "sha256": "2d041b5b32d4020fa1decb3bb64e835d6fcb747c5274a61f785b195a9dc9e6ad",
     "url": "http://publications.europa.eu/resource/celex/02013R0575-20260626"
   },
+  "eba-gl-crm-airb": {
+    "as_of": "2026-10-27",
+    "bytes": 1772408,
+    "celex": null,
+    "file": "data/raw/eba-gl-crm-airb/eba-gl-crm-airb.pdf",
+    "retrieved": "2026-10-27",
+    "sha256": "d384a61f344a63556b73e3309caffa3a0c14006b85fe6d08259c1384db5eb596",
+    "url": "https://www.eba.europa.eu/sites/default/files/document_library/Publications/Guidelines/2020/Guidelines%20on%20Credit%20Risk%20Mitigation%20for%20institutions%20applying%20the%20IRB%20approach%20with%20own%20estimates%20of%20LGDs/883366/Guidelines%20on%20CRM%20for%20A-IRB%20institutions.pdf"
+  },
+  "eba-gl-dod": {
+    "as_of": "2026-10-27",
+    "bytes": 285525,
+    "celex": null,
+    "file": "data/raw/eba-gl-dod/eba-gl-dod.pdf",
+    "retrieved": "2026-10-27",
+    "sha256": "8840d45b9867b731a8399ab1fbe3aa51aa2817962d034c6edfde71f5c2e5af93",
+    "url": "https://www.eba.europa.eu/documents/10180/1721448/Guidelines+on+default+definition+%28EBA-GL-2016-07%29_EN.pdf/052c260f-da9a-4c86-8f0a-09a1d8ae56e7"
+  },
+  "eba-gl-downturn-lgd": {
+    "as_of": "2026-10-27",
+    "bytes": 1495051,
+    "celex": null,
+    "file": "data/raw/eba-gl-downturn-lgd/eba-gl-downturn-lgd.pdf",
+    "retrieved": "2026-10-27",
+    "sha256": "2cb600d1ddfa4ad1cb6819b49a8bf16905c1d4faceb0bf8058fed59dc58444fd",
+    "url": "https://www.eba.europa.eu/sites/default/documents/files/documents/10180/2551996/f892da33-5cb2-44f8-ae5d-68251b9bab8f/Final%20Report%20on%20Guidelines%20on%20LGD%20estimates%20under%20downturn%20conditions.pdf"
+  },
+  "eba-gl-lom": {
+    "as_of": "2026-10-27",
+    "bytes": 799594,
+    "celex": null,
+    "file": "data/raw/eba-gl-lom/eba-gl-lom.pdf",
+    "retrieved": "2026-10-27",
+    "sha256": "1a61938f0fccf8bff502c90cdf182d784aab058c50c9e5d0df4b932d0d19fa3e",
+    "url": "https://www.eba.europa.eu/sites/default/files/document_library/Publications/Guidelines/2020/Guidelines%20on%20loan%20origination%20and%20monitoring/884283/EBA%20GL%202020%2006%20Final%20Report%20on%20GL%20on%20loan%20origination%20and%20monitoring.pdf"
+  },
+  "eba-gl-pd-lgd": {
+    "as_of": "2026-10-27",
+    "bytes": 1621682,
+    "celex": null,
+    "file": "data/raw/eba-gl-pd-lgd/eba-gl-pd-lgd.pdf",
+    "retrieved": "2026-10-27",
+    "sha256": "f306218f0eb94d0d3a9e452d156b5ea7b8500b0807f303a2e5a606536a3dda01",
+    "url": "https://www.eba.europa.eu/documents/10180/2033363/6b062012-45d6-4655-af04-801d26493ed0/Guidelines%20on%20PD%20and%20LGD%20estimation%20%28EBA-GL-2017-16%29.pdf"
+  },
+  "ecb-guide-internal-models": {
+    "as_of": "2026-10-27",
+    "bytes": 5817214,
+    "celex": null,
+    "file": "data/raw/ecb-guide-internal-models/ecb-guide-internal-models.pdf",
+    "retrieved": "2026-10-27",
+    "sha256": "e2df64d9ceac698131e9c77f8914217b2b6853bb73c8a9f60695ae0a5fc5a3b5",
+    "url": "https://www.bankingsupervision.europa.eu/ecb/pub/pdf/ssm.supervisory_guide_egim_202606.en.pdf"
+  },
+  "ecb-validation-reporting": {
+    "as_of": "2026-10-27",
+    "bytes": 1452271,
+    "celex": null,
+    "file": "data/raw/ecb-validation-reporting/ecb-validation-reporting.pdf",
+    "retrieved": "2026-10-27",
+    "sha256": "f0bef87b1c636b8dc493e0d8e8b0690a5660a0663086ea6f676ccae2a7685d01",
+    "url": "https://www.bankingsupervision.europa.eu/activities/internal_models/shared/pdf/instructions_validation_reporting_credit_risk.en.pdf"
+  },
   "rts-default-materiality": {
     "as_of": "2026-10-27",
     "bytes": 28943,

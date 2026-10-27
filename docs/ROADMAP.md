@@ -19,7 +19,7 @@ Dates are targets; phase exit criteria matter more than dates.
 
 | Phase | Dates | Status |
 |---|---|---|
-| 0 — Foundations | 26 Oct – 8 Nov 2026 | **In progress** — tooling and corpus done; golden set and policy outline open |
+| 0 — Foundations | 26 Oct – 8 Nov 2026 | **In progress** — tooling, corpus, 30 golden questions and policy outline done; employer check open |
 | 1 — Ingestion & retrieval | 9 – 29 Nov 2026 | Not started |
 | 2 — Grounded Q&A | 30 Nov – 20 Dec 2026 | Not started |
 | 3 — Agentic retrieval & MCP | 4 – 24 Jan 2027 | Not started |
@@ -74,11 +74,11 @@ version in force on the as-of date; `reglens download --as-of 2027-01-01` fetche
 | `sources.yaml` registry; downloader (EUR-Lex via CELLAR API, EBA/ECB by URL) + lock file | Claude | ✅ |
 | Measure token counts; calibrate chars/token | Claude | ✅ |
 | Golden-set schema, validator (`reglens golden`), field guide, 3 draft examples | Claude | ✅ |
-| **First 30 golden questions** (incl. ≥ 5 out-of-scope); check/replace the examples | **You** | ⏳ |
-| Outline of the synthetic Model Validation Policy (sections only) | You + Claude | ⏳ |
+| **First 30 golden questions** (incl. ≥ 5 out-of-scope), all verified | **You** + Claude | ✅ |
+| Outline of the synthetic Model Validation Policy ([outline](synthetic-policy/outline.md)) — your review pending | You + Claude | ✅ |
 | Check employment contract / inform employer about the side project | **You** | ⏳ |
 
-**Exit:** corpus downloaded and counted ✅; 30 golden questions ⏳; ledger records a test call ✅.
+**Exit:** corpus downloaded and counted ✅; 30 golden questions ✅; ledger records a test call ✅.
 
 ## Phase 1 — Ingestion & retrieval · 9 – 29 Nov 2026 · €10
 

@@ -98,8 +98,13 @@ class Ledger:
         purpose: str,
         batch: bool = False,
         phase: int | None = None,
+        reported_cost_usd: float | None = None,
     ) -> dict:
-        """Append one call to the ledger and return the stored entry."""
+        """Append one call to the ledger and return the stored entry.
+
+        `reported_cost_usd` is the provider's own figure (e.g. `claude -p`'s costUSD), kept
+        next to our list-price estimate for comparison.
+        """
         if not isinstance(usage, Usage):
             usage = Usage.from_response(usage)
         eur = self.estimate_eur(model, usage, batch=batch)
@@ -113,6 +118,7 @@ class Ledger:
             **asdict(usage),
             "total_tokens": usage.total_tokens,
             "cost_eur": None if eur is None else round(eur, 6),
+            "reported_cost_usd": reported_cost_usd,
         }
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self.path.open("a", encoding="utf-8") as f:

@@ -8,6 +8,10 @@
 #   scope         what part of the document is in the MVP
 #   url           null = still to resolve; resolve and verify in Phase 0 before download
 #   celex         EUR-Lex CELEX number, fetched via the official CELLAR API
+#   short_name    label used in chunk prefixes and citations
+#   parts/blocks  PDF part headings, and which parts are in MVP scope
+#   search_default false = excluded from default retrieval (still searchable explicitly)
+#   articles      optional article filter for the MVP scope (numbers or ranges)
 #   consolidated  true = resolve the consolidated version in force on the as-of date
 #   Download records (version, date, sha256) live in sources.lock.json.
 #   verify        true = identifier, URL or reuse note not yet checked against the official source
@@ -25,12 +29,14 @@ ecb_reuse: &ecb_reuse >-
 sources:
   # ---------------------------------------------------------------- Level 1
   - id: crr3-consolidated
+    short_name: CRR
     title: Regulation (EU) No 575/2013 (CRR), consolidated version including CRR3 amendments
     issuer: EU (EP & Council)
     legal_level: L1
     reference: CELEX 32013R0575 (base act); consolidated versions CELEX 02013R0575-YYYYMMDD
     celex: 02013R0575
     consolidated: true
+    articles: ['4', '92', '107-241', '465', '501']  # MVP scope filter
     url: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32013R0575
     format: html
     applies_to: all
@@ -45,6 +51,7 @@ sources:
     verify: false  # version resolved at download for the as-of date
 
   - id: crr3-amending-act
+    short_name: CRR3 amending act (Reg. 2024/1623)
     title: Regulation (EU) 2024/1623 amending Regulation (EU) No 575/2013 (CRR3)
     issuer: EU (EP & Council)
     legal_level: L1
@@ -55,11 +62,13 @@ sources:
     applies_to: all
     scope:
       - Recitals and application dates (used for "what changed" and as-of reasoning)
+    search_default: false  # change tracking: searched only on request (CRR3 changes)
     reuse: *eurlex_reuse
     verify: false
 
   # ---------------------------------------------------------------- Level 2
   - id: rts-irb-assessment
+    short_name: RTS IRB assessment (Reg. 2022/439)
     title: Delegated Regulation (EU) 2022/439 — RTS on the IRB assessment methodology
     issuer: European Commission (EBA draft)
     legal_level: L2
@@ -73,6 +82,7 @@ sources:
     verify: false
 
   - id: rts-default-materiality
+    short_name: RTS materiality threshold (Reg. 2018/171)
     title: Delegated Regulation (EU) 2018/171 — RTS on the materiality threshold for credit obligations past due
     issuer: European Commission (EBA draft)
     legal_level: L2
@@ -86,6 +96,7 @@ sources:
     verify: false
 
   - id: rts-economic-downturn
+    short_name: RTS economic downturn (Reg. 2021/930)
     title: Delegated Regulation (EU) 2021/930 — RTS on the nature, severity and duration of an economic downturn
     issuer: European Commission (EBA draft)
     legal_level: L2
@@ -100,6 +111,7 @@ sources:
 
   # ---------------------------------------------------------------- Level 3 (EBA)
   - id: eba-gl-dod
+    short_name: EBA GL definition of default (GL/2016/07)
     title: EBA Guidelines on the application of the definition of default
     issuer: EBA
     legal_level: L3
@@ -112,6 +124,7 @@ sources:
     verify: true
 
   - id: eba-gl-pd-lgd
+    short_name: EBA GL PD/LGD estimation (GL/2017/16)
     title: EBA Guidelines on PD estimation, LGD estimation and the treatment of defaulted exposures
     issuer: EBA
     legal_level: L3
@@ -124,6 +137,7 @@ sources:
     verify: true
 
   - id: eba-gl-downturn-lgd
+    short_name: EBA GL downturn LGD (GL/2019/03)
     title: EBA Guidelines for the estimation of LGD appropriate for an economic downturn
     issuer: EBA
     legal_level: L3
@@ -136,6 +150,7 @@ sources:
     verify: true
 
   - id: eba-gl-crm-airb
+    short_name: EBA GL CRM for A-IRB (GL/2020/05)
     title: EBA Guidelines on credit risk mitigation for institutions applying the IRB approach with own estimates of LGD
     issuer: EBA
     legal_level: L3
@@ -148,6 +163,7 @@ sources:
     verify: true
 
   - id: eba-gl-lom
+    short_name: EBA GL loan origination (GL/2020/06)
     title: EBA Guidelines on loan origination and monitoring
     issuer: EBA
     legal_level: L3
@@ -162,6 +178,7 @@ sources:
 
   # ---------------------------------------------------------------- EBA Q&A
   - id: eba-qa-credit-risk
+    short_name: EBA Q&A
     title: EBA Single Rulebook Q&A — credit risk topics
     issuer: EBA
     legal_level: qa
@@ -176,6 +193,7 @@ sources:
 
   # ---------------------------------------------------------------- ECB / SSM
   - id: ecb-guide-internal-models
+    short_name: ECB guide to internal models
     title: ECB Guide to internal models (latest revision)
     issuer: ECB Banking Supervision
     legal_level: supervisory
@@ -186,10 +204,13 @@ sources:
     scope:
       - General topics chapter
       - Credit risk chapter
+    parts: ['Foreword', 'Overarching principles for internal models', 'Credit risk', 'Market risk.*', 'Counterparty credit risk']
+    blocks: ['Foreword', 'Overarching principles', 'Credit risk']  # MVP scope filter
     reuse: *ecb_reuse
     verify: true
 
   - id: ecb-validation-reporting
+    short_name: ECB validation reporting instructions
     title: ECB instructions for reporting the validation results of internal models (credit risk)
     issuer: ECB Banking Supervision
     legal_level: supervisory

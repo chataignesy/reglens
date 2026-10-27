@@ -82,17 +82,20 @@ class ClaudeCLIProvider:
     ) -> Completion:
         model = self.config.model(tier)
         # System prompt goes via a file to stay clear of Windows command-line length limits.
-        with tempfile.NamedTemporaryFile(
-            "w", suffix=".txt", encoding="utf-8", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile("w", suffix=".txt", encoding="utf-8", delete=False) as f:
             f.write(system or DEFAULT_SYSTEM)
             system_file = f.name
         cmd = [
-            self.executable, "-p",
-            "--output-format", "json",
-            "--model", model,
-            "--system-prompt-file", system_file,
-            "--tools", "",
+            self.executable,
+            "-p",
+            "--output-format",
+            "json",
+            "--model",
+            model,
+            "--system-prompt-file",
+            system_file,
+            "--tools",
+            "",
             "--no-session-persistence",
             "--strict-mcp-config",
         ]

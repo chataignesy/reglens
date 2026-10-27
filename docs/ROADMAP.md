@@ -19,8 +19,8 @@ Dates are targets; phase exit criteria matter more than dates.
 
 | Phase | Dates | Status |
 |---|---|---|
-| 0 — Foundations | 26 Oct – 8 Nov 2026 | **In progress** — tooling, corpus, 30 golden questions and policy outline done; employer check open |
-| 1 — Ingestion & retrieval | 9 – 29 Nov 2026 | Not started |
+| 0 — Foundations | 26 Oct – 8 Nov 2026 | ✅ Done |
+| 1 — Ingestion & retrieval | 9 – 29 Nov 2026 | **In progress** (started early) — parsing, index, hybrid + rerank and retrieval eval running; see [results](results/retrieval-phase1.md) |
 | 2 — Grounded Q&A | 30 Nov – 20 Dec 2026 | Not started |
 | 3 — Agentic retrieval & MCP | 4 – 24 Jan 2027 | Not started |
 | 4 — Policy gap analysis | 25 Jan – 21 Feb 2027 | Not started |
@@ -76,7 +76,7 @@ version in force on the as-of date; `reglens download --as-of 2027-01-01` fetche
 | Golden-set schema, validator (`reglens golden`), field guide, 3 draft examples | Claude | ✅ |
 | **First 30 golden questions** (incl. ≥ 5 out-of-scope), all verified | **You** + Claude | ✅ |
 | Outline of the synthetic Model Validation Policy ([outline](synthetic-policy/outline.md)) — your review pending | You + Claude | ✅ |
-| Check employment contract / inform employer about the side project | **You** | ⏳ |
+| Check employment contract / inform employer about the side project | **You** | ✅ |
 
 **Exit:** corpus downloaded and counted ✅; 30 golden questions ✅; ledger records a test call ✅.
 
@@ -93,6 +93,13 @@ version in force on the as-of date; `reglens download --as-of 2027-01-01` fetche
 - Grow golden set to ~80 questions.
 
 **Exit:** recall@10 ≥ 0.85 on golden set. **LinkedIn post 1:** "Why regulation breaks naive RAG" (+ first retrieval chart).
+
+**Status (2026-10-27):**
+- ✅ EUR-Lex XHTML parser (hierarchy, paragraphs, points, recitals, amending acts); Docling PDF parser (numbering blocks, background vs operative text, sections); MVP scope filters
+- ✅ Chunking with hierarchy prefix; cross-reference, amendment and definition edges (7.9k)
+- ✅ Postgres + pgvector (Docker), BGE-M3 embeddings, bge-reranker-v2-m3; `reglens search`
+- ✅ Retrieval eval: reranked hybrid recall@10 **0.65** overall, **0.82** on single-answer questions, 0.22 on multi-hop ([results](results/retrieval-phase1.md))
+- ⏳ EBA Q&A extraction; golden set to ~80 questions; review alternative citations; push single-answer recall past 0.85
 
 ## Phase 2 — Grounded Q&A · 30 Nov – 20 Dec 2026 · €40
 

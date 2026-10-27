@@ -22,8 +22,7 @@ def _cmd_usage(args: argparse.Namespace) -> None:
     eur = _eur_label(cfg.billing)
 
     print(
-        f"{args.by:<24}{'calls':>7}{'input':>13}{'cached':>13}"
-        f"{'output':>11}{'total':>13}{eur:>12}"
+        f"{args.by:<24}{'calls':>7}{'input':>13}{'cached':>13}{'output':>11}{'total':>13}{eur:>12}"
     )
     for key in sorted(rows, key=str):
         r = rows[key]
@@ -38,8 +37,10 @@ def _cmd_usage(args: argparse.Namespace) -> None:
     phase_spent = phase_row.get("cost_eur", 0.0)
     phase_budget = budget.phases_eur.get(phase, 0.0)
     print()
-    print(f"Total tokens: {ledger.total_tokens():,}  (phase {phase}: "
-          f"{int(phase_row.get('total_tokens', 0)):,})")
+    print(
+        f"Total tokens: {ledger.total_tokens():,}  (phase {phase}: "
+        f"{int(phase_row.get('total_tokens', 0)):,})"
+    )
     print(
         f"{eur}: {total:.2f} of target {budget.target_eur:.0f}"
         f" (ceiling {budget.ceiling_eur:.0f}); phase {phase}: {phase_spent:.2f}"
@@ -102,8 +103,10 @@ def _cmd_tokens(args: argparse.Namespace) -> None:
         n = estimate_tokens(text, cfg.chars_per_token)
         total += n
         print(f"{sid:<26}{rec['celex'] or '-':<22}{len(text):>12,}{n:>11,}")
-    print(f"\nTotal ~{total:,} tokens (full documents; MVP scope is a subset) "
-          f"at {cfg.chars_per_token:.2f} chars/token")
+    print(
+        f"\nTotal ~{total:,} tokens (full documents; MVP scope is a subset) "
+        f"at {cfg.chars_per_token:.2f} chars/token"
+    )
 
 
 def _cmd_calibrate(args: argparse.Namespace) -> None:
@@ -122,6 +125,105 @@ def _cmd_calibrate(args: argparse.Namespace) -> None:
     model = cfg.model(args.tier)
     print(f"{rec['celex']}: {ratio:.3f} chars/token on {len(sample):,} chars ({model})")
     print("Set tokens.chars_per_token in config.yaml to this value.")
+
+
+def _cmd_parse(args: argparse.Namespace) -> None:
+    from reglens.ingest.chunks import build_chunks, write_chunks
+    from reglens.ingest.download import load_lock
+    from reglens.ingest.eurlex import parse_xhtml
+
+    cfg = load_config(args.config)
+    lock = load_lock()
+    print(f"{'source':<26}{'units':>7}{'chunks':>8}{'~tokens':>10}{'max':>7}")
+    for s in load_sources():
+        rec = lock.get(s.id)
+        if not rec or (args.source and s.id not in args.source):
+            continue
+        path = PROJECT_ROOT / rec["file"]
+        if path.suffix == ".xhtml":
+            base = s.celex if s.celex and s.celex.startswith("3") else None
+            base = base or ("3" + s.celex[1:] if s.consolidated and s.celex else None)
+            units = parse_xhtml(path, base_celex=base, chars_per_token=cfg.chars_per_token)
+        else:
+            from reglens.ingest.pdf import parse_markdown, pdf_to_markdown
+
+            md = pdf_to_markdown(s.id, path)  # cached Docling output
+            units = parse_markdown(md, parts=s.parts, blocks_include=s.blocks)
+        chunks = build_chunks(
+            s, units, version=rec["celex"] or rec["retrieved"], chars_per_token=cfg.chars_per_token
+        )
+        write_chunks(s.id, chunks)
+        toks = [len(c.text) / cfg.chars_per_token for c in chunks]
+        print(f"{s.id:<26}{len(units):>7}{len(chunks):>8}{int(sum(toks)):>10,}{int(max(toks)):>7}")
+
+
+def _cmd_index(args: argparse.Namespace) -> None:
+    from reglens.index import db
+    from reglens.ingest.chunks import load_chunks
+    from reglens.ingest.xrefs import build_edges, write_edges
+
+    chunks = load_chunks()
+    conn = db.connect()
+    db.init_schema(conn)
+    n = db.upsert_chunks(conn, chunks)
+    for sid in {c.source_id for c in chunks}:
+        db.delete_missing(conn, sid, {c.id for c in chunks if c.source_id == sid})
+    edges = build_edges(chunks)
+    write_edges(edges)
+    db.replace_edges(conn, edges)
+    print(f"{n} chunks upserted, {len(edges)} edges")
+    if args.no_embed:
+        return
+
+    from reglens.index.embed import embed
+
+    have = db.existing_hashes(conn)
+    todo = [c for c in chunks if not have.get(c.id, ("", False))[1]]
+    print(f"embedding {len(todo)} chunks (local BGE-M3, no token cost)")
+    batch = 256
+    for i in range(0, len(todo), batch):
+        part = todo[i : i + batch]
+        vectors = embed([c.text for c in part])
+        db.set_embeddings(conn, list(zip([c.id for c in part], vectors, strict=True)))
+        print(f"  {min(i + batch, len(todo))}/{len(todo)}", flush=True)
+
+
+def _cmd_search(args: argparse.Namespace) -> None:
+    from reglens.index import db
+    from reglens.retrieve.search import Filters, search
+
+    hits = search(
+        db.connect(),
+        args.query,
+        mode=args.mode,
+        k=args.k,
+        filters=Filters(source_ids=args.source, applies_to=args.applies_to),
+    )
+    for i, h in enumerate(hits, 1):
+        print(f"{i:>2}. {h.score:7.3f}  {h.source_id}  {h.ref}  {(h.title or '')[:60]}")
+
+
+def _cmd_eval_retrieval(args: argparse.Namespace) -> None:
+    from reglens.eval.golden import load_golden
+    from reglens.eval.retrieval import evaluate, save
+    from reglens.index import db
+
+    conn = db.connect()
+    indexed = {r[0] for r in conn.execute("SELECT DISTINCT source_id FROM chunks").fetchall()}
+    items = load_golden()
+    results = [evaluate(conn, items, mode=m, k=10, indexed=indexed) for m in args.modes]
+    print(f"{'mode':<8}{'items':>6}{'recall@5':>10}{'recall@10':>11}{'hit@10':>8}{'mrr@10':>8}")
+    for r in results:
+        print(
+            f"{r['mode']:<8}{r['items']:>6}{r['recall@5']:>10}{r['recall@10']:>11}"
+            f"{r['hit@10']:>8}{r['mrr@10']:>8}"
+        )
+    if results and results[0]["skipped_not_evaluable"]:
+        print(
+            "not evaluable (no indexed source/ref): "
+            + ", ".join(results[0]["skipped_not_evaluable"])
+        )
+    print(f"details: {save(results)}")
 
 
 def _cmd_golden(args: argparse.Namespace) -> None:
@@ -168,6 +270,28 @@ def main(argv: list[str] | None = None) -> None:
     cal.add_argument("--chars", type=int, default=8000, help="sample size in characters")
     cal.add_argument("--tier", choices=["bulk", "dev", "milestone"], default="bulk")
     cal.set_defaults(func=_cmd_calibrate)
+
+    prs = sub.add_parser("parse", help="parse downloaded sources into chunks (no LLM calls)")
+    prs.add_argument("--source", nargs="*", help="source ids (default: all downloaded)")
+    prs.set_defaults(func=_cmd_parse)
+
+    idx = sub.add_parser("index", help="load chunks + edges into Postgres and embed new chunks")
+    idx.add_argument("--no-embed", action="store_true", help="skip embedding")
+    idx.set_defaults(func=_cmd_index)
+
+    srch = sub.add_parser("search", help="search the index (no LLM calls)")
+    srch.add_argument("query")
+    srch.add_argument("--mode", choices=["bm25", "dense", "hybrid", "rerank"], default="rerank")
+    srch.add_argument("--k", type=int, default=10)
+    srch.add_argument("--source", nargs="*")
+    srch.add_argument("--applies-to", choices=["SI", "LSI"])
+    srch.set_defaults(func=_cmd_search)
+
+    evr = sub.add_parser(
+        "eval-retrieval", help="retrieval metrics on the golden set (no LLM calls)"
+    )
+    evr.add_argument("--modes", nargs="*", default=["bm25", "dense", "hybrid", "rerank"])
+    evr.set_defaults(func=_cmd_eval_retrieval)
 
     gold = sub.add_parser("golden", help="validate the golden eval set and show its mix")
     gold.set_defaults(func=_cmd_golden)

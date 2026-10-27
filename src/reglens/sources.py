@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -28,6 +29,30 @@ class Source:
     verify: bool
     celex: str | None = None
     consolidated: bool = False
+    short_name: str | None = None
+    articles: list[str] | None = None  # MVP scope filter, e.g. ["4", "107-241"]
+    parts: list[str] | None = None  # PDF: unnumbered part headings (regexes)
+    blocks: list[str] | None = None  # PDF: parts in MVP scope (regexes)
+    search_default: bool = True  # False: only searched when explicitly requested
+
+    def label(self) -> str:
+        return self.short_name or self.title
+
+    def in_scope(self, article: str | None) -> bool:
+        """True if `article` (e.g. "122a") falls inside the `articles` filter (or no filter)."""
+        if not self.articles or article is None:
+            return True
+        m = re.match(r"\d+", article)
+        if not m:
+            return False
+        n = int(m.group())
+        for spec in self.articles:
+            lo, _, hi = spec.partition("-")
+            if hi and int(lo) <= n <= int(hi):  # range: includes inserted articles like 122a
+                return True
+            if not hi and spec == article:  # single article: exact match
+                return True
+        return False
 
 
 def load_sources(path: str | Path | None = None) -> list[Source]:

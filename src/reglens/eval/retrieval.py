@@ -1,0 +1,116 @@
+"""Retrieval-only evaluation on the golden set (no LLM calls).
+
+A retrieved chunk matches an expected citation when the source is the same and one
+reference contains the other: expected "Art. 178(1)(b)" matches chunk "Art. 178(1)", and
+expected "Art. 4(1)" matches chunk "Art. 4(1)(54)". Citations that are not article,
+paragraph or recital references (e.g. "Foreword") are reported as not evaluable.
+"""
+
+from __future__ import annotations
+
+import json
+import re
+from dataclasses import asdict, dataclass, field
+from datetime import datetime
+
+from reglens.config import PROJECT_ROOT
+from reglens.eval.golden import GoldenItem
+from reglens.retrieve.search import Filters, search
+
+RESULTS_DIR = PROJECT_ROOT / "data" / "evals"
+
+
+def normalize_refs(ref: str) -> list[str]:
+    """'Art. 164(4), Table 1' -> ['art.164(4)']; 'paras. 36-37' -> ['para.36', 'para.37']."""
+    full = ref.lower()
+    ref = full.split(",")[0].strip()
+    m = re.match(r"paras?\.\s*(\d+)\s*-\s*(\d+)$", ref)
+    if m:
+        return [f"para.{n}" for n in range(int(m.group(1)), int(m.group(2)) + 1)]
+    ref = re.sub(r"\s+", "", ref).replace("paras.", "para.")
+    if re.match(r"^(art\.\d|para\.\d|recital\d|section\d)", ref):
+        return [ref]
+    # e.g. "Foreword, paras. 1-3": paragraph numbers after a part name
+    m = re.search(r"paras?\.\s*(\d+)(?:\s*-\s*(\d+))?", full)
+    if m:
+        return [f"para.{n}" for n in range(int(m.group(1)), int(m.group(2) or m.group(1)) + 1)]
+    return []
+
+
+def refs_match(expected: str, got: str) -> bool:
+    short, long = sorted((expected, got), key=len)
+    return long == short or (long.startswith(short) and long[len(short)] == "(")
+
+
+@dataclass
+class ItemResult:
+    id: str
+    type: str
+    expected: list[str]
+    found_at: dict[str, int | None] = field(default_factory=dict)  # citation -> rank (1-based)
+    top: list[str] = field(default_factory=list)
+
+
+def evaluate(conn, items: list[GoldenItem], *, mode: str, k: int = 10, indexed: set[str]) -> dict:
+    results: list[ItemResult] = []
+    skipped: list[str] = []
+    for item in items:
+        if item.type == "out_of_scope" or item.status != "verified":
+            continue
+        wanted = [
+            (c.source, r)
+            for c in item.expected_citations
+            if c.source in indexed
+            for r in normalize_refs(c.ref)
+        ]
+        if not wanted:
+            skipped.append(item.id)
+            continue
+        hits = search(conn, item.question, mode=mode, k=k, filters=Filters())
+        got = [
+            (h.source_id, normalize_refs(h.ref)[0] if normalize_refs(h.ref) else h.ref)
+            for h in hits
+        ]
+        res = ItemResult(
+            item.id, item.type, [f"{s}:{r}" for s, r in wanted], top=[f"{s}:{r}" for s, r in got]
+        )
+        for src, ref in wanted:
+            rank = next(
+                (i for i, (s, r) in enumerate(got, 1) if s == src and refs_match(ref, r)), None
+            )
+            res.found_at[f"{src}:{ref}"] = rank
+        results.append(res)
+
+    def recall(at: int) -> float:
+        per_item = [
+            sum(1 for r in x.found_at.values() if r and r <= at) / len(x.found_at) for x in results
+        ]
+        return sum(per_item) / len(per_item) if per_item else 0.0
+
+    def hit(at: int) -> float:
+        return sum(any(r and r <= at for r in x.found_at.values()) for x in results) / max(
+            len(results), 1
+        )
+
+    mrr = sum(
+        1 / min((r for r in x.found_at.values() if r), default=float("inf")) for x in results
+    ) / max(len(results), 1)
+    return {
+        "mode": mode,
+        "k": k,
+        "items": len(results),
+        "skipped_not_evaluable": skipped,
+        "recall@5": round(recall(5), 3),
+        "recall@10": round(recall(10), 3),
+        "hit@5": round(hit(5), 3),
+        "hit@10": round(hit(10), 3),
+        "mrr@10": round(mrr, 3),
+        "per_item": [asdict(x) for x in results],
+    }
+
+
+def save(results: list[dict]) -> str:
+    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    path = RESULTS_DIR / f"retrieval-{datetime.now():%Y%m%d-%H%M%S}.json"
+    path.write_text(json.dumps(results, indent=2), encoding="utf-8")
+    return str(path.relative_to(PROJECT_ROOT))

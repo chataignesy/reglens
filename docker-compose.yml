@@ -1,0 +1,21 @@
+# Local development database: Postgres + pgvector (chunks, embeddings, full-text, cross-refs).
+# Start: docker compose up -d    Stop: docker compose down    (data persists in the volume)
+services:
+  db:
+    image: pgvector/pgvector:pg17
+    container_name: reglens-db
+    environment:
+      POSTGRES_USER: reglens
+      POSTGRES_PASSWORD: ${REGLENS_DB_PASSWORD:-reglens-local}
+      POSTGRES_DB: reglens
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - reglens-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reglens -d reglens"]
+      interval: 5s
+      retries: 10
+
+volumes:
+  reglens-pgdata:

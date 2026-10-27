@@ -22,6 +22,9 @@ DIFFICULTIES = {"easy", "medium", "hard"}
 class Citation:
     source: str  # id in sources.yaml
     ref: str  # e.g. "Art. 178(1)(b)" or "para. 23"
+    # Equivalent citations that also count as finding this one (e.g. the ECB guide restating
+    # an EBA guideline paragraph).
+    alternatives: tuple[Citation, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -42,7 +45,10 @@ class GoldenItem:
 
 def _parse(raw: dict, where: str, source_ids: set[str]) -> GoldenItem:
     raw = dict(raw)
-    raw["expected_citations"] = [Citation(**c) for c in raw.get("expected_citations", [])]
+    raw["expected_citations"] = [
+        Citation(c["source"], c["ref"], tuple(Citation(**a) for a in c.get("alternatives", [])))
+        for c in raw.get("expected_citations", [])
+    ]
     item = GoldenItem(**raw)
     errors = []
     if item.type not in TYPES:
@@ -57,7 +63,8 @@ def _parse(raw: dict, where: str, source_ids: set[str]) -> GoldenItem:
         errors.append("out_of_scope items must have no expected_citations")
     if item.type != "out_of_scope" and not item.expected_citations:
         errors.append("in-scope items need at least one expected citation")
-    unknown = [c.source for c in item.expected_citations if c.source not in source_ids]
+    every = [c for e in item.expected_citations for c in (e, *e.alternatives)]
+    unknown = [c.source for c in every if c.source not in source_ids]
     if unknown:
         errors.append(f"unknown source ids {unknown}")
     if errors:

@@ -183,13 +183,14 @@ sources:
     issuer: EBA
     legal_level: qa
     reference: Single Rulebook Q&A tool, filtered to CRR credit risk articles
-    url: null
-    format: html
+    url: https://www.eba.europa.eu/single-rule-book-qa/all?qa_legal_act%5B%5D=33&qa_legal_act_topic%5B%5D=181&qa_final_publishing_date_start=2000-01-01
+    format: eba-qa
     applies_to: all
     scope:
       - Final answers on CRR Part Three Title II and Art. 178 (default)
+    search_default: false  # reached via answers_on links to CRR articles (get_qa) or explicit search
     reuse: *eba_reuse
-    verify: true
+    verify: false  # crawled politely (robots.txt crawl-delay 10s); final Q&As only
 
   # ---------------------------------------------------------------- ECB / SSM
   - id: ecb-guide-internal-models

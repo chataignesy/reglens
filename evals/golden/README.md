@@ -9,7 +9,7 @@ Target: 30 questions in Phase 0 (incl. ≥ 5 out-of-scope), ~150 by Phase 2.
 | `question` | As a modeller/validator would ask it |
 | `type` | `factual` · `multi_hop` (needs cross-references/definitions) · `comparison` (e.g. SA vs IRB, CRR2 vs CRR3) · `applicability` (SI vs LSI) · `out_of_scope` (system must abstain) |
 | `expected_answer` | Short reference answer: the key facts a correct answer must contain |
-| `expected_citations` | `[{"source": "<id from sources.yaml>", "ref": "Art. 178(1)(b)"}]`; empty for `out_of_scope` |
+| `expected_citations` | `[{"source": "<id from sources.yaml>", "ref": "Art. 178(1)(b)"}]`; empty for `out_of_scope`. Optional `"alternatives": [{"source": …, "ref": …}]` per citation: equivalent references that also count as finding it (e.g. the ECB guide restating an EBA paragraph) |
 | `applies_to` | `SI` · `LSI` · `all` |
 | `topic` | e.g. `definition-of-default`, `pd-estimation`, `lgd`, `crm`, `validation`, `output-floor` |
 | `difficulty` | `easy` · `medium` · `hard` |

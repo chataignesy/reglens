@@ -51,14 +51,30 @@ class ItemResult:
     top: list[str] = field(default_factory=list)
 
 
-def evaluate(conn, items: list[GoldenItem], *, mode: str, k: int = 10, indexed: set[str]) -> dict:
+def evaluate(
+    conn,
+    items: list[GoldenItem],
+    *,
+    mode: str,
+    k: int = 10,
+    indexed: set[str],
+    filters: Filters | None = None,
+    **search_kwargs,
+) -> dict:
+    """`search_kwargs` go to `search()` (e.g. candidates=50) for tuning experiments."""
+    filters = filters or Filters()
     results: list[ItemResult] = []
     skipped: list[str] = []
     for item in items:
         if item.type == "out_of_scope" or item.status != "verified":
             continue
+        # (source, ref, [(alt source, alt ref), ...]) per evaluable expected citation
         wanted = [
-            (c.source, r)
+            (
+                c.source,
+                r,
+                [(a.source, ar) for a in c.alternatives for ar in normalize_refs(a.ref)],
+            )
             for c in item.expected_citations
             if c.source in indexed
             for r in normalize_refs(c.ref)
@@ -66,17 +82,26 @@ def evaluate(conn, items: list[GoldenItem], *, mode: str, k: int = 10, indexed: 
         if not wanted:
             skipped.append(item.id)
             continue
-        hits = search(conn, item.question, mode=mode, k=k, filters=Filters())
+        hits = search(conn, item.question, mode=mode, k=k, filters=filters, **search_kwargs)
         got = [
             (h.source_id, normalize_refs(h.ref)[0] if normalize_refs(h.ref) else h.ref)
             for h in hits
         ]
         res = ItemResult(
-            item.id, item.type, [f"{s}:{r}" for s, r in wanted], top=[f"{s}:{r}" for s, r in got]
+            item.id,
+            item.type,
+            [f"{s}:{r}" for s, r, _ in wanted],
+            top=[f"{s}:{r}" for s, r in got],
         )
-        for src, ref in wanted:
+        for src, ref, alts in wanted:
+            targets = [(src, ref), *alts]  # the citation itself or any accepted alternative
             rank = next(
-                (i for i, (s, r) in enumerate(got, 1) if s == src and refs_match(ref, r)), None
+                (
+                    i
+                    for i, (s, r) in enumerate(got, 1)
+                    if any(s == ts and refs_match(tr, r) for ts, tr in targets)
+                ),
+                None,
             )
             res.found_at[f"{src}:{ref}"] = rank
         results.append(res)

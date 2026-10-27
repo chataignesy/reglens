@@ -62,6 +62,15 @@
     "sha256": "f306218f0eb94d0d3a9e452d156b5ea7b8500b0807f303a2e5a606536a3dda01",
     "url": "https://www.eba.europa.eu/documents/10180/2033363/6b062012-45d6-4655-af04-801d26493ed0/Guidelines%20on%20PD%20and%20LGD%20estimation%20%28EBA-GL-2017-16%29.pdf"
   },
+  "eba-qa-credit-risk": {
+    "as_of": "2026-10-27",
+    "bytes": 926209,
+    "celex": null,
+    "file": "data/raw/eba-qa-credit-risk/qa.jsonl",
+    "retrieved": "2026-10-27",
+    "sha256": "fed523dea52eeb05853bfcee47971c82941e82251d85165b2a828b5b545ed6aa",
+    "url": "https://www.eba.europa.eu/single-rule-book-qa/all?qa_legal_act%5B%5D=33&qa_legal_act_topic%5B%5D=181&qa_final_publishing_date_start=2000-01-01"
+  },
   "ecb-guide-internal-models": {
     "as_of": "2026-10-27",
     "bytes": 5817214,

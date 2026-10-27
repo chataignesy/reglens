@@ -62,6 +62,8 @@ def ref_of(unit: Unit) -> str:
         return f"background para. {p}" if p.isdigit() else f"background {p}".strip()
     if unit.kind == "section":  # unnumbered prose, referenced by its section number
         return unit.paragraph or "section"
+    if unit.kind == "qa":  # EBA Single Rulebook Q&A, by question ID
+        return f"Q&A {unit.paragraph}"
     ref = f"Art. {unit.article}"
     if unit.paragraph:
         ref += f"({unit.paragraph})"

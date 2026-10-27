@@ -4,6 +4,7 @@ Edge kinds:
 - refers_to       "Article 92(3)", "Articles 153 and 157", "... of Regulation (EU) No 575/2013"
 - amends          CRR3 amending act: "Article 160 is amended / replaced / inserted" -> CRR article
 - uses_definition chunk uses a term defined in CRR Art. 4(1) ('large corporate', 'QRRE', ...)
+- answers_on      EBA Q&A -> the CRR article it was asked about
 Targets are (source_id, article, paragraph); they are resolved to chunk ids at index time.
 """
 
@@ -44,8 +45,8 @@ class Edge:
 
 def _default_target(chunk: Chunk) -> str | None:
     """Where a bare 'Article N' points: the same act for regulations, nowhere for guidelines."""
-    if chunk.source_id == "crr3-amending-act":
-        return CRR  # article numbers in the amending act's points refer to the CRR
+    if chunk.source_id == "crr3-amending-act" or chunk.legal_level == "qa":
+        return CRR  # amending-act points and CRR Q&As cite CRR article numbers
     if chunk.legal_level in ("L1", "L2"):
         return chunk.source_id
     return None
@@ -57,6 +58,8 @@ def reference_edges(chunk: Chunk) -> list[Edge]:
     m = _AMENDS.match(body)
     if chunk.source_id == "crr3-amending-act" and m:
         edges.append(Edge(chunk.id, "amends", CRR, m.group(1), m.group(3)))
+    if chunk.kind == "qa" and chunk.article:
+        edges.append(Edge(chunk.id, "answers_on", CRR, chunk.article))  # Q&A about this article
     for m in _REF.finditer(body):
         after = body[m.end() :]
         if _OTHER_AFTER.match(after):

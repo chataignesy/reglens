@@ -51,7 +51,7 @@ Status per source is in [sources.yaml](../sources.yaml); exact versions and chec
 | EBA GL/2016/07, GL/2017/16, GL/2019/03, GL/2020/05, GL/2020/06 | Full (LOM: credit-risk sections) | ✅ downloaded |
 | ECB guide to internal models, **June 2026** | General topics + credit risk chapters | ✅ downloaded |
 | ECB validation reporting instructions, **Feb 2019** | Full — pre-CRR3, check for an update | ✅ downloaded |
-| EBA Single Rulebook Q&A (credit risk) | Final answers on Part Three Title II, Art. 178 | ⏳ Phase 1 (database, needs extraction) |
+| EBA Single Rulebook Q&A (credit risk) | 243 final Q&As (CRR, topic Credit risk) | ✅ crawled |
 
 **Size:** ~1.76M tokens as full documents at a calibrated 3.01 chars/token (legal text is ~33% denser
 than the usual 4). The MVP working set is a subset — mainly the CRR and ECB guide are trimmed to
@@ -98,8 +98,10 @@ version in force on the as-of date; `reglens download --as-of 2027-01-01` fetche
 - ✅ EUR-Lex XHTML parser (hierarchy, paragraphs, points, recitals, amending acts); Docling PDF parser (numbering blocks, background vs operative text, sections); MVP scope filters
 - ✅ Chunking with hierarchy prefix; cross-reference, amendment and definition edges (7.9k)
 - ✅ Postgres + pgvector (Docker), BGE-M3 embeddings, bge-reranker-v2-m3; `reglens search`
-- ✅ Retrieval eval: reranked hybrid recall@10 **0.65** overall, **0.82** on single-answer questions, 0.22 on multi-hop ([results](results/retrieval-phase1.md))
-- ⏳ EBA Q&A extraction; golden set to ~80 questions; review alternative citations; push single-answer recall past 0.85
+- ✅ EBA Q&A: 243 final credit-risk Q&As crawled politely (robots.txt crawl-delay), linked to CRR articles; excluded from default search
+- ✅ Golden set: accepted alternative citations (schema field `alternatives`)
+- ✅ Retrieval eval: reranked hybrid recall@10 **0.69** overall, **0.88** single-answer (target met), 0.22 multi-hop ([results](results/retrieval-phase1.md))
+- ⏳ Golden set to ~80 questions (you)
 
 ## Phase 2 — Grounded Q&A · 30 Nov – 20 Dec 2026 · €40
 

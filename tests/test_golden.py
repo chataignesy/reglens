@@ -48,6 +48,16 @@ def test_invalid_items(tmp_path, change, message):
         load_golden(write(tmp_path, {**GOOD, **change}))
 
 
+def test_alternatives_parsed_and_checked(tmp_path):
+    cit = {"source": "eba-gl-dod", "ref": "para. 71",
+           "alternatives": [{"source": "ecb-guide-internal-models", "ref": "para. 172"}]}
+    [item] = load_golden(write(tmp_path, {**GOOD, "expected_citations": [cit]}))
+    assert item.expected_citations[0].alternatives[0].ref == "para. 172"
+    bad = {**cit, "alternatives": [{"source": "nope", "ref": "x"}]}
+    with pytest.raises(ValueError, match="unknown source"):
+        load_golden(write(tmp_path, {**GOOD, "expected_citations": [bad]}))
+
+
 def test_duplicate_ids(tmp_path):
     with pytest.raises(ValueError, match="Duplicate"):
         load_golden(write(tmp_path, GOOD, GOOD))

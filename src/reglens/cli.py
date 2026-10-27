@@ -82,7 +82,14 @@ def _cmd_download(args: argparse.Namespace) -> None:
     wanted = set(args.source or [s.id for s in all_sources])
     sources = [s for s in all_sources if downloadable(s) and s.id in wanted]
     for s in sources:
-        r = download(s, as_of=as_of, force=args.force)
+        if s.format == "eba-qa":  # polite crawl (10 s between requests), cached and resumable
+            from reglens.ingest.download import record_file
+            from reglens.ingest.eba_qa import RAW, crawl
+
+            crawl(s.url, log=lambda m: print(f"  {m}", flush=True))
+            r = record_file(s, RAW / "qa.jsonl", url=s.url, as_of=as_of)
+        else:
+            r = download(s, as_of=as_of, force=args.force)
         version = r["celex"] or s.format
         print(f"{s.id:<26}{version:<22}{r['bytes']:>12,} bytes  {r['retrieved']}")
     skipped = [s.id for s in all_sources if not downloadable(s)]
@@ -99,7 +106,8 @@ def _cmd_tokens(args: argparse.Namespace) -> None:
     total = 0
     print(f"{'source':<26}{'version':<22}{'chars':>12}{'~tokens':>11}")
     for sid, rec in sorted(lock.items()):
-        text = file_text(PROJECT_ROOT / rec["file"])
+        path = PROJECT_ROOT / rec["file"]
+        text = path.read_text(encoding="utf-8") if path.suffix == ".jsonl" else file_text(path)
         n = estimate_tokens(text, cfg.chars_per_token)
         total += n
         print(f"{sid:<26}{rec['celex'] or '-':<22}{len(text):>12,}{n:>11,}")
@@ -140,7 +148,11 @@ def _cmd_parse(args: argparse.Namespace) -> None:
         if not rec or (args.source and s.id not in args.source):
             continue
         path = PROJECT_ROOT / rec["file"]
-        if path.suffix == ".xhtml":
+        if s.format == "eba-qa":
+            from reglens.ingest.eba_qa import load_qas, qa_units
+
+            units = qa_units(load_qas(path))
+        elif path.suffix == ".xhtml":
             base = s.celex if s.celex and s.celex.startswith("3") else None
             base = base or ("3" + s.celex[1:] if s.consolidated and s.celex else None)
             units = parse_xhtml(path, base_celex=base, chars_per_token=cfg.chars_per_token)

@@ -13,6 +13,7 @@ import json
 import urllib.parse
 import urllib.request
 from datetime import date
+from pathlib import Path
 
 import truststore
 
@@ -81,6 +82,24 @@ def save_lock(lock: dict) -> None:
 
 def downloadable(source: Source) -> bool:
     return bool(source.celex or source.url)
+
+
+def record_file(source: Source, path: Path, *, url: str, as_of: date) -> dict:
+    """Lock record for a file produced by something other than download() (e.g. a crawl)."""
+    body = path.read_bytes()
+    record = {
+        "celex": None,
+        "url": url,
+        "as_of": as_of.isoformat(),
+        "retrieved": date.today().isoformat(),
+        "file": path.relative_to(PROJECT_ROOT).as_posix(),
+        "bytes": len(body),
+        "sha256": hashlib.sha256(body).hexdigest(),
+    }
+    lock = load_lock()
+    lock[source.id] = record
+    save_lock(lock)
+    return record
 
 
 def download(source: Source, *, as_of: date, force: bool = False) -> dict:

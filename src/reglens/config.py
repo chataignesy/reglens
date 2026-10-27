@@ -48,6 +48,7 @@ class Config:
     batch_discount: float
     budget: Budget
     ledger_path: Path
+    chars_per_token: float = 4.0
 
     def model(self, tier: str | None = None) -> str:
         """Model ID for a tier ('bulk', 'dev', 'milestone'); default tier if None."""
@@ -107,6 +108,7 @@ def load_config(path: str | Path | None = None) -> Config:
             phases_eur={int(k): float(v) for k, v in b["phases_eur"].items()},
         ),
         ledger_path=ledger_path,
+        chars_per_token=float((raw.get("tokens") or {}).get("chars_per_token", 4.0)),
     )
     missing = [m for m in cfg.tiers.values() if m not in cfg.prices]
     if missing:

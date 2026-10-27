@@ -7,7 +7,9 @@
 #   applies_to    SI | LSI | all
 #   scope         what part of the document is in the MVP
 #   url           null = still to resolve; resolve and verify in Phase 0 before download
-#   retrieved     date downloaded (filled by the downloader)
+#   celex         EUR-Lex CELEX number, fetched via the official CELLAR API
+#   consolidated  true = resolve the consolidated version in force on the as-of date
+#   Download records (version, date, sha256) live in sources.lock.json.
 #   verify        true = identifier, URL or reuse note not yet checked against the official source
 #
 # Reuse notes are summaries for orientation only — check each site's legal notice before publishing.
@@ -26,7 +28,9 @@ sources:
     title: Regulation (EU) No 575/2013 (CRR), consolidated version including CRR3 amendments
     issuer: EU (EP & Council)
     legal_level: L1
-    reference: CELEX 32013R0575 (base act); use the latest consolidated CELEX 02013R0575-YYYYMMDD
+    reference: CELEX 32013R0575 (base act); consolidated versions CELEX 02013R0575-YYYYMMDD
+    celex: 02013R0575
+    consolidated: true
     url: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32013R0575
     format: html
     applies_to: all
@@ -38,21 +42,20 @@ sources:
       - Part Three, Title II, Ch. 4 (Credit risk mitigation)
       - Transitional provisions for the output floor and IRB (Part Ten)
     reuse: *eurlex_reuse
-    retrieved: null
-    verify: true   # pick the latest consolidated version at download time
+    verify: false  # version resolved at download for the as-of date
 
   - id: crr3-amending-act
     title: Regulation (EU) 2024/1623 amending Regulation (EU) No 575/2013 (CRR3)
     issuer: EU (EP & Council)
     legal_level: L1
     reference: CELEX 32024R1623
+    celex: 32024R1623
     url: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1623
     format: html
     applies_to: all
     scope:
       - Recitals and application dates (used for "what changed" and as-of reasoning)
     reuse: *eurlex_reuse
-    retrieved: null
     verify: false
 
   # ---------------------------------------------------------------- Level 2
@@ -61,12 +64,12 @@ sources:
     issuer: European Commission (EBA draft)
     legal_level: L2
     reference: CELEX 32022R0439
+    celex: 32022R0439
     url: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022R0439
     format: html
     applies_to: all
     scope: [full]
     reuse: *eurlex_reuse
-    retrieved: null
     verify: false
 
   - id: rts-default-materiality
@@ -74,12 +77,12 @@ sources:
     issuer: European Commission (EBA draft)
     legal_level: L2
     reference: CELEX 32018R0171
+    celex: 32018R0171
     url: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32018R0171
     format: html
     applies_to: all
     scope: [full]
     reuse: *eurlex_reuse
-    retrieved: null
     verify: false
 
   - id: rts-economic-downturn
@@ -87,12 +90,12 @@ sources:
     issuer: European Commission (EBA draft)
     legal_level: L2
     reference: CELEX 32021R0930
+    celex: 32021R0930
     url: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32021R0930
     format: html
     applies_to: all
     scope: [full]
     reuse: *eurlex_reuse
-    retrieved: null
     verify: false
 
   # ---------------------------------------------------------------- Level 3 (EBA)
@@ -106,7 +109,6 @@ sources:
     applies_to: all
     scope: [full]
     reuse: *eba_reuse
-    retrieved: null
     verify: true
 
   - id: eba-gl-pd-lgd
@@ -119,7 +121,6 @@ sources:
     applies_to: all
     scope: [full]
     reuse: *eba_reuse
-    retrieved: null
     verify: true
 
   - id: eba-gl-downturn-lgd
@@ -132,7 +133,6 @@ sources:
     applies_to: all
     scope: [full]
     reuse: *eba_reuse
-    retrieved: null
     verify: true
 
   - id: eba-gl-crm-airb
@@ -145,7 +145,6 @@ sources:
     applies_to: all
     scope: [full]
     reuse: *eba_reuse
-    retrieved: null
     verify: true
 
   - id: eba-gl-lom
@@ -159,7 +158,6 @@ sources:
     scope:
       - Credit-risk-relevant sections (governance, creditworthiness assessment, monitoring)
     reuse: *eba_reuse
-    retrieved: null
     verify: true
 
   # ---------------------------------------------------------------- EBA Q&A
@@ -174,7 +172,6 @@ sources:
     scope:
       - Final answers on CRR Part Three Title II and Art. 178 (default)
     reuse: *eba_reuse
-    retrieved: null
     verify: true
 
   # ---------------------------------------------------------------- ECB / SSM
@@ -190,7 +187,6 @@ sources:
       - General topics chapter
       - Credit risk chapter
     reuse: *ecb_reuse
-    retrieved: null
     verify: true
 
   - id: ecb-validation-reporting
@@ -203,5 +199,4 @@ sources:
     applies_to: SI
     scope: [full]
     reuse: *ecb_reuse
-    retrieved: null
     verify: true

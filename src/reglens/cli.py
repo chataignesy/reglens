@@ -1,11 +1,13 @@
-"""Command line: `reglens usage` (alias `cost`) and `reglens estimate`."""
+"""Command line: usage, estimate, download, tokens, calibrate."""
 
 from __future__ import annotations
 
 import argparse
+from datetime import date
 
-from reglens.config import load_config
+from reglens.config import PROJECT_ROOT, load_config
 from reglens.llm.ledger import Ledger, Usage
+from reglens.sources import load_sources
 
 
 def _eur_label(billing: str) -> str:
@@ -71,6 +73,54 @@ def _cmd_estimate(args: argparse.Namespace) -> None:
         print(f"Above {limit} — needs approval before running.")
 
 
+def _cmd_download(args: argparse.Namespace) -> None:
+    from reglens.ingest.download import download
+
+    as_of = date.fromisoformat(args.as_of) if args.as_of else date.today()
+    sources = [s for s in load_sources() if s.celex and (not args.source or s.id in args.source)]
+    for s in sources:
+        r = download(s, as_of=as_of, force=args.force)
+        print(f"{s.id:<26}{r['celex']:<22}{r['bytes']:>12,} bytes  {r['retrieved']}")
+    skipped = [s.id for s in load_sources() if not s.celex]
+    if skipped and not args.source:
+        print(f"\nNot on EUR-Lex (manual download, Phase 0): {', '.join(skipped)}")
+
+
+def _cmd_tokens(args: argparse.Namespace) -> None:
+    from reglens.ingest.download import load_lock
+    from reglens.ingest.tokens import estimate_tokens, file_text
+
+    cfg = load_config(args.config)
+    lock = load_lock()
+    total = 0
+    print(f"{'source':<26}{'version':<22}{'chars':>12}{'~tokens':>11}")
+    for sid, rec in sorted(lock.items()):
+        text = file_text(PROJECT_ROOT / rec["file"])
+        n = estimate_tokens(text, cfg.chars_per_token)
+        total += n
+        print(f"{sid:<26}{rec['celex']:<22}{len(text):>12,}{n:>11,}")
+    print(f"\nTotal ~{total:,} tokens (full documents; MVP scope is a subset) "
+          f"at {cfg.chars_per_token:.2f} chars/token")
+
+
+def _cmd_calibrate(args: argparse.Namespace) -> None:
+    from reglens.ingest.download import load_lock
+    from reglens.ingest.tokens import calibrate, file_text
+    from reglens.llm.provider import get_provider
+
+    cfg = load_config(args.config)
+    lock = load_lock()
+    if not lock:
+        raise SystemExit("Nothing downloaded yet — run `reglens download` first.")
+    rec = lock[args.source] if args.source else next(iter(lock.values()))
+    text = file_text(PROJECT_ROOT / rec["file"])
+    sample = text[len(text) // 3 : len(text) // 3 + args.chars]
+    ratio = calibrate(get_provider(cfg), sample, tier=args.tier)
+    model = cfg.model(args.tier)
+    print(f"{rec['celex']}: {ratio:.3f} chars/token on {len(sample):,} chars ({model})")
+    print("Set tokens.chars_per_token in config.yaml to this value.")
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="reglens")
     parser.add_argument("--config", help="path to config.yaml")
@@ -88,6 +138,21 @@ def main(argv: list[str] | None = None) -> None:
     est.add_argument("--calls", type=int, default=1)
     est.add_argument("--batch", action="store_true", help="apply Batch API discount")
     est.set_defaults(func=_cmd_estimate)
+
+    dl = sub.add_parser("download", help="download EUR-Lex sources via CELLAR")
+    dl.add_argument("--source", nargs="*", help="source ids (default: all with a CELEX number)")
+    dl.add_argument("--as-of", help="YYYY-MM-DD; consolidated version in force on this date")
+    dl.add_argument("--force", action="store_true", help="re-download even if present")
+    dl.set_defaults(func=_cmd_download)
+
+    tok = sub.add_parser("tokens", help="estimate tokens of downloaded documents (no LLM calls)")
+    tok.set_defaults(func=_cmd_tokens)
+
+    cal = sub.add_parser("calibrate", help="measure chars/token with two small LLM calls")
+    cal.add_argument("--source", help="source id to sample from")
+    cal.add_argument("--chars", type=int, default=8000, help="sample size in characters")
+    cal.add_argument("--tier", choices=["bulk", "dev", "milestone"], default="bulk")
+    cal.set_defaults(func=_cmd_calibrate)
 
     args = parser.parse_args(argv)
     args.func(args)

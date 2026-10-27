@@ -1,0 +1,47 @@
+{
+  "crr3-amending-act": {
+    "as_of": "2026-10-27",
+    "bytes": 3772724,
+    "celex": "32024R1623",
+    "file": "data/raw/crr3-amending-act/32024R1623.xhtml",
+    "retrieved": "2026-10-27",
+    "sha256": "22715503986fac39f70062c737ad60181358a002f17c36ef5297601dd783dff8",
+    "url": "http://publications.europa.eu/resource/celex/32024R1623"
+  },
+  "crr3-consolidated": {
+    "as_of": "2026-10-27",
+    "bytes": 13202626,
+    "celex": "02013R0575-20260626",
+    "file": "data/raw/crr3-consolidated/02013R0575-20260626.xhtml",
+    "retrieved": "2026-10-27",
+    "sha256": "2d041b5b32d4020fa1decb3bb64e835d6fcb747c5274a61f785b195a9dc9e6ad",
+    "url": "http://publications.europa.eu/resource/celex/02013R0575-20260626"
+  },
+  "rts-default-materiality": {
+    "as_of": "2026-10-27",
+    "bytes": 28943,
+    "celex": "32018R0171",
+    "file": "data/raw/rts-default-materiality/32018R0171.xhtml",
+    "retrieved": "2026-10-27",
+    "sha256": "7eaba53f1fe34f1fd113bd70bd58b1b294a858cc571a281ee8b3fb835d816af5",
+    "url": "http://publications.europa.eu/resource/celex/32018R0171"
+  },
+  "rts-economic-downturn": {
+    "as_of": "2026-10-27",
+    "bytes": 56650,
+    "celex": "32021R0930",
+    "file": "data/raw/rts-economic-downturn/32021R0930.xhtml",
+    "retrieved": "2026-10-27",
+    "sha256": "78ca3eec7360fb9b60801b67d10e19f98a1651ab88eeec5a1d6b3652842e4d38",
+    "url": "http://publications.europa.eu/resource/celex/32021R0930"
+  },
+  "rts-irb-assessment": {
+    "as_of": "2026-10-27",
+    "bytes": 822612,
+    "celex": "32022R0439",
+    "file": "data/raw/rts-irb-assessment/32022R0439.xhtml",
+    "retrieved": "2026-10-27",
+    "sha256": "277613891b43cdfc613153102bfa7acc72bcc03deaf0d78c0efb68dd0c2c2089",
+    "url": "http://publications.europa.eu/resource/celex/32022R0439"
+  }
+}

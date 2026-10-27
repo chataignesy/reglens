@@ -25,8 +25,9 @@ class Source:
     applies_to: str
     scope: list[str]
     reuse: str
-    retrieved: str | None
     verify: bool
+    celex: str | None = None
+    consolidated: bool = False
 
 
 def load_sources(path: str | Path | None = None) -> list[Source]:

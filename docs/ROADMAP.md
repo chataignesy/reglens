@@ -1,6 +1,6 @@
 # RegLens — plan & roadmap
 
-Project rules and budget policy: [../CLAUDE.md](../CLAUDE.md).
+Project rules and budget policy: [../CLAUDE.md](../CLAUDE.md). Last updated: 2026-10-27.
 
 ## Goal
 
@@ -11,6 +11,21 @@ against regulation — and publish **measured** evidence (benchmarks) of why the
 **Timeline assumption:** part-time (~8–10 h/week), start 2026-10-26, public launch early March 2027.
 Dates are targets; phase exit criteria matter more than dates.
 
+**Budget:** development runs on a Claude subscription, so usage is tracked in **tokens**
+(`reglens usage`). Phase budgets are in **API-equivalent EUR** as a yardstick (target €150, ceiling
+€250 for the MVP); any single run above 1M tokens needs approval first.
+
+## Status at a glance
+
+| Phase | Dates | Status |
+|---|---|---|
+| 0 — Foundations | 26 Oct – 8 Nov 2026 | **In progress** — tooling and corpus done; golden set and policy outline open |
+| 1 — Ingestion & retrieval | 9 – 29 Nov 2026 | Not started |
+| 2 — Grounded Q&A | 30 Nov – 20 Dec 2026 | Not started |
+| 3 — Agentic retrieval & MCP | 4 – 24 Jan 2027 | Not started |
+| 4 — Policy gap analysis | 25 Jan – 21 Feb 2027 | Not started |
+| 5 — Polish & launch | 22 Feb – 7 Mar 2027 | Not started |
+
 ## Success metrics (MVP targets, calibrate after Phase 1)
 
 | Area | Metric | Target |
@@ -20,52 +35,71 @@ Dates are targets; phase exit criteria matter more than dates.
 | Answers | Faithfulness (LLM judge, spot-checked by hand) | ≥ 0.90 |
 | Answers | Correct abstention on out-of-corpus questions | ≥ 90% |
 | Gap analysis | Recall of planted gaps in the synthetic policy | ≥ 0.85 |
-| Cost | Avg. cost per Q&A query (Sonnet tier) | ≤ $0.10 |
-| Budget | Total MVP API spend | ≤ €150 (ceiling €250) |
+| Efficiency | Avg. tokens per Q&A query (Sonnet tier) | ≤ 50k |
+| Budget | Total MVP usage (API-equivalent) | ≤ €150 (ceiling €250) |
 
 ## MVP corpus
 
-| Source | Scope |
-|---|---|
-| CRR3 (consolidated Reg. 575/2013 as amended by 2024/1623) | Art. 4 definitions; Part Three Title II Ch. 2 (SA), Ch. 3 (IRB, Art. 142–191), Ch. 4 (CRM); Art. 92 output floor + transitional provisions |
-| RTS | IRB assessment methodology (Del. Reg. 2022/439); materiality threshold of default (2018/171); economic downturn (2021/930) |
-| EBA Guidelines | Definition of default (GL/2016/07); PD/LGD estimation (GL/2017/16); downturn LGD (GL/2019/03); CRM for A-IRB (GL/2020/05); loan origination & monitoring (GL/2020/06) |
-| EBA Single Rulebook Q&A | Credit risk topics |
-| ECB | Guide to internal models (latest revision); instructions for reporting validation results |
+Status per source is in [sources.yaml](../sources.yaml); exact versions and checksums in
+[sources.lock.json](../sources.lock.json).
+
+| Source | Scope | Status |
+|---|---|---|
+| CRR consolidated (02013R0575-20260626) | Art. 4; Art. 92 + output floor transitional rules; Part Three Title II Ch. 2–4 | ✅ downloaded |
+| CRR3 amending act (2024/1623) | Recitals, application dates (change tracking) | ✅ downloaded |
+| RTS 2022/439 (IRB assessment), 2018/171 (default materiality), 2021/930 (downturn) | Full | ✅ downloaded |
+| EBA GL/2016/07, GL/2017/16, GL/2019/03, GL/2020/05, GL/2020/06 | Full (LOM: credit-risk sections) | ✅ downloaded |
+| ECB guide to internal models, **June 2026** | General topics + credit risk chapters | ✅ downloaded |
+| ECB validation reporting instructions, **Feb 2019** | Full — pre-CRR3, check for an update | ✅ downloaded |
+| EBA Single Rulebook Q&A (credit risk) | Final answers on Part Three Title II, Art. 178 | ⏳ Phase 1 (database, needs extraction) |
+
+**Size:** ~1.76M tokens as full documents at a calibrated 3.01 chars/token (legal text is ~33% denser
+than the usual 4). The MVP working set is a subset — mainly the CRR and ECB guide are trimmed to
+credit-risk scope in Phase 1.
+
+**Note:** EUR-Lex has already published a consolidated CRR dated 2027-01-01. The default is the
+version in force on the as-of date; `reglens download --as-of 2027-01-01` fetches the next one.
 
 ---
 
-## Phase 0 — Foundations · 26 Oct – 8 Nov 2026 · budget €5
+## Phase 0 — Foundations · 26 Oct – 8 Nov 2026 · €5
 
-| Task | Owner |
-|---|---|
-| Git repo, `uv` project, ruff/pytest, `.gitignore`, `.env.example`, MIT licence, README with disclaimer | Claude |
-| Config with model tiers; LLM provider interface; **cost ledger** (`data/ledger.jsonl`) + `reglens cost` CLI | Claude |
-| `sources.yaml` source registry (URL, date, legal level, reuse note) for the MVP corpus | Claude + you |
-| Download the corpus; **measure real token counts** per document | Claude |
-| Golden-set schema (`question, expected_answer, expected_citations, applies_to, type`) + **first 30 questions** (incl. 5 out-of-scope) | **You** (domain expert) |
-| Outline of the synthetic Model Validation Policy (sections only) | You + Claude |
-| Check employment contract / inform employer about the side project | **You** |
+| Task | Owner | Status |
+|---|---|---|
+| Git repo, `uv` project, ruff/pytest, `.gitignore`, `.env.example`, MIT licence, README + disclaimer | Claude | ✅ |
+| Private GitHub repo `MistVista/reglens` (public at launch) | Claude | ✅ |
+| Config with model tiers (Haiku / Sonnet / Opus) | Claude | ✅ |
+| Usage ledger (`data/ledger.jsonl`), `reglens usage` / `estimate` — token-first | Claude | ✅ |
+| LLM provider layer: `claude -p` on the subscription; API provider deferred to Phase 2 | Claude | ✅ |
+| `sources.yaml` registry; downloader (EUR-Lex via CELLAR API, EBA/ECB by URL) + lock file | Claude | ✅ |
+| Measure token counts; calibrate chars/token | Claude | ✅ |
+| Golden-set schema, validator (`reglens golden`), field guide, 3 draft examples | Claude | ✅ |
+| **First 30 golden questions** (incl. ≥ 5 out-of-scope); check/replace the examples | **You** | ⏳ |
+| Outline of the synthetic Model Validation Policy (sections only) | You + Claude | ⏳ |
+| Check employment contract / inform employer about the side project | **You** | ⏳ |
 
-**Exit:** corpus downloaded and counted; 30 golden questions; ledger records a test call.
+**Exit:** corpus downloaded and counted ✅; 30 golden questions ⏳; ledger records a test call ✅.
 
-## Phase 1 — Ingestion & retrieval · 9 – 29 Nov 2026 · budget €10
+## Phase 1 — Ingestion & retrieval · 9 – 29 Nov 2026 · €10
 
-- Parser for EUR-Lex HTML/XML that keeps the legal structure (Part → Title → Chapter → Section → Article → paragraph → point); Docling for EBA/ECB PDFs.
+- Parser for EUR-Lex XHTML that keeps the legal structure (Part → Title → Chapter → Section → Article → paragraph → point); Docling for EBA/ECB PDFs.
+- Trim to MVP scope (CRR credit-risk parts, ECB guide credit chapters).
+- EBA Q&A extraction for credit-risk articles.
 - Chunking at article/paragraph level with full metadata and **deterministic hierarchy prefix**.
 - Cross-reference extraction ("referred to in Article X") and Art. 4 definition links → edge table.
 - Postgres + pgvector + full-text index; local embeddings (BGE-M3) and local reranker.
 - Hybrid retrieval + reranker + metadata filters.
-- **Retrieval-only eval** (recall@k, MRR) — no LLM cost. Compare: BM25 vs dense vs hybrid vs hybrid+rerank.
+- **Retrieval-only eval** (recall@k, MRR) — no LLM tokens. Compare: BM25 vs dense vs hybrid vs hybrid+rerank.
 - Grow golden set to ~80 questions.
 
 **Exit:** recall@10 ≥ 0.85 on golden set. **LinkedIn post 1:** "Why regulation breaks naive RAG" (+ first retrieval chart).
 
-## Phase 2 — Grounded Q&A · 30 Nov – 20 Dec 2026 · budget €40
+## Phase 2 — Grounded Q&A · 30 Nov – 20 Dec 2026 · €40
 
 - Answer generation with paragraph-level citations, "as of" date, abstention, law / expectation / interpretation labels.
 - Automatic citation verifier (cited text must support the claim).
-- Eval harness: smoke set (30, Sonnet) + full set (Opus, milestone only); LLM judge via Batch API; hand spot-checks.
+- Eval harness: smoke set (30, Sonnet) + full set (Opus, milestone only); LLM judge; hand spot-checks.
+- Anthropic API provider for the bring-your-own-key demo; verify Haiku 5.5 list prices first.
 - Streamlit UI v0 with bring-your-own-key.
 - Comparison of each component: naive RAG → hybrid → +rerank → +hierarchy prefix.
 - Golden set to ~150 questions.
@@ -74,18 +108,18 @@ Dates are targets; phase exit criteria matter more than dates.
 
 *Buffer: 21 Dec – 3 Jan (holidays).*
 
-## Phase 3 — Agentic retrieval & MCP · 4 – 24 Jan 2027 · budget €45
+## Phase 3 — Agentic retrieval & MCP · 4 – 24 Jan 2027 · €45
 
 - Tools: `search`, `get_article`, `follow_reference`, `get_definition`, `get_qa`.
-- Bounded agent loop (max steps, task budget, logged usage), prompt caching verified.
+- Bounded agent loop (max steps, token cap, logged usage), prompt caching verified.
 - MCP server exposing the same tools.
 - Comparison: pipeline Q&A vs agentic, on multi-hop questions (cross-references, definitions, Q&A).
 
-**Exit:** agentic beats pipeline on multi-hop questions at ≤ $0.10/query (Sonnet). **LinkedIn post 3:** demo video incl. MCP in Claude.
+**Exit:** agentic beats pipeline on multi-hop questions at ≤ 50k tokens/query (Sonnet). **LinkedIn post 3:** demo video incl. MCP in Claude.
 
-## Phase 4 — Policy gap analysis · 25 Jan – 21 Feb 2027 · budget €40
+## Phase 4 — Policy gap analysis · 25 Jan – 21 Feb 2027 · €40
 
-- **Obligation register:** extract atomic requirements (ID, source paragraph, legal level, `applies_to`, topic) via Batch API; hand-review a sample.
+- **Obligation register:** extract atomic requirements (ID, source paragraph, legal level, `applies_to`, topic); hand-review a sample.
 - Write the **synthetic Model Validation Policy** with ~15 planted gaps (missing, partial, contradicted).
 - Matching pipeline: split policy into clauses → retrieve candidate requirements → classify coverage with evidence quotes.
 - Coverage matrix in the UI + export (xlsx/csv) with reviewer sign-off column.
@@ -93,12 +127,13 @@ Dates are targets; phase exit criteria matter more than dates.
 
 **Exit:** planted-gap recall ≥ 0.85. **LinkedIn post 4:** flagship gap-analysis demo.
 
-## Phase 5 — Polish & launch · 22 Feb – 7 Mar 2027 · budget €10
+## Phase 5 — Polish & launch · 22 Feb – 7 Mar 2027 · €10
 
-- README, architecture doc, published eval report, cost report from the ledger ("built for €X").
+- README, architecture doc, published eval report, usage report from the ledger ("built on X tokens").
 - Deploy Streamlit (BYOK) — e.g. Streamlit Community Cloud + hosted Postgres free tier.
 - Recorded demo video (most visitors won't enter a key).
-- **LinkedIn launch post** + repo public.
+- Make the GitHub repo public (after the employer check); consider a noreply commit email.
+- **LinkedIn launch post.**
 
 ---
 
@@ -106,7 +141,7 @@ Dates are targets; phase exit criteria matter more than dates.
 
 - Next.js UI
 - DNB, then other national regulators
-- Version switching over time (point-in-time answers, CRR2 vs CRR3 diff)
+- Version switching over time (point-in-time answers, CRR2 vs CRR3 diff; the 2027-01-01 CRR version)
 - Regulatory change monitoring ("what changed this month")
 - More topics: IFRS 9 ECL expectations, COREP credit risk templates, stress testing
 
@@ -115,7 +150,9 @@ Dates are targets; phase exit criteria matter more than dates.
 | Risk | Mitigation |
 |---|---|
 | Golden set takes longer than expected | Start in Phase 0; grow it gradually; it is also the most valuable asset |
-| Budget overrun from eval runs | Tiered evals, ledger, €2 approval rule, Batch API |
-| PDF parsing quality (EBA/ECB) | Docling + manual fixes for the ~10 key documents; prefer EUR-Lex HTML |
+| Subscription usage limits hit by eval runs | Tiered evals, token ledger, 1M-token approval rule, retrieval-only evals first |
+| PDF parsing quality (EBA/ECB) | Docling + manual fixes for the ~10 key documents; prefer EUR-Lex XHTML |
+| Source access breaks (EUR-Lex bot challenge, site moves) | CELLAR API for EUR-Lex; URLs and checksums pinned in the lock file |
+| Outdated sources (e.g. 2019 ECB validation instructions) | `verify` flags in sources.yaml; check for updates before each milestone |
 | Employer / IP concerns | Public sources, synthetic policy, built from scratch, disclaimer, early heads-up |
 | Scope creep | Backlog list; MVP corpus fixed until launch |

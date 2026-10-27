@@ -1,5 +1,22 @@
 # Retrieval results — Phase 1 (2026-10-27)
 
+## Latest: 80 verified golden questions (69 evaluable)
+
+| Mode | recall@10 | hit@10 | MRR@10 | Single-answer (n=57) | Multi-hop (n=12) |
+|---|---|---|---|---|---|
+| BM25 | 0.59 | 0.71 | 0.40 | 0.66 | 0.23 |
+| Dense (BGE-M3) | 0.74 | 0.84 | 0.65 | 0.81 | 0.38 |
+| Hybrid (RRF) | 0.76 | 0.88 | 0.58 | 0.84 | 0.36 |
+| **Hybrid + rerank** | **0.79** | 0.87 | **0.69** | **0.89** | 0.31 |
+
+The 50 questions added in Phase 1 cover the standardised approach, IRB scope and parameters,
+rating systems, PD/LGD estimation, defaulted exposures, downturn, validation, CRM and the output
+floor. Typical remaining single-answer misses are **vocabulary gaps**: practitioners say
+"foundation IRB" or "LGD in-default", the CRR says "institutions that have not received permission
+to use own estimates of LGD" and "exposures already in default" — a case for query rewriting.
+
+The sections below document the first 24-question run and how each change moved the numbers.
+
 Retrieval-only evaluation on the 24 evaluable verified golden questions (out-of-scope excluded;
 `cmp-002` cites a table, not a paragraph). No LLM calls — embeddings (BGE-M3) and reranker
 (bge-reranker-v2-m3) run locally on the GPU. Reproduce: `uv run reglens eval-retrieval`.

@@ -20,7 +20,7 @@ Dates are targets; phase exit criteria matter more than dates.
 | Phase | Dates | Status |
 |---|---|---|
 | 0 — Foundations | 26 Oct – 8 Nov 2026 | ✅ Done |
-| 1 — Ingestion & retrieval | 9 – 29 Nov 2026 | **In progress** (started early) — parsing, index, hybrid + rerank and retrieval eval running; see [results](results/retrieval-phase1.md) |
+| 1 — Ingestion & retrieval | 9 – 29 Nov 2026 | ✅ Done early (27 Oct) — single-answer recall@10 0.89 on 80 questions; see [results](results/retrieval-phase1.md) |
 | 2 — Grounded Q&A | 30 Nov – 20 Dec 2026 | Not started |
 | 3 — Agentic retrieval & MCP | 4 – 24 Jan 2027 | Not started |
 | 4 — Policy gap analysis | 25 Jan – 21 Feb 2027 | Not started |
@@ -100,8 +100,9 @@ version in force on the as-of date; `reglens download --as-of 2027-01-01` fetche
 - ✅ Postgres + pgvector (Docker), BGE-M3 embeddings, bge-reranker-v2-m3; `reglens search`
 - ✅ EBA Q&A: 243 final credit-risk Q&As crawled politely (robots.txt crawl-delay), linked to CRR articles; excluded from default search
 - ✅ Golden set: accepted alternative citations (schema field `alternatives`)
-- ✅ Retrieval eval: reranked hybrid recall@10 **0.69** overall, **0.88** single-answer (target met), 0.22 multi-hop ([results](results/retrieval-phase1.md))
-- ⏳ Golden set to ~80 questions (you)
+- ✅ Golden set: 80 verified questions (30 Phase 0 + 50 Phase 1), checked in source text and reviewed
+- ✅ Retrieval eval on 69 evaluable questions: reranked hybrid recall@10 **0.79** overall, **0.89** single-answer (target met), 0.31 multi-hop ([results](results/retrieval-phase1.md))
+- Carry-overs: ECB guide paragraph refs are not unique across parts (refs should name the part); query rewriting for practitioner terms ("F-IRB", "LGD in-default") → Phase 2
 
 ## Phase 2 — Grounded Q&A · 30 Nov – 20 Dec 2026 · €40
 

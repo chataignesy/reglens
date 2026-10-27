@@ -20,6 +20,7 @@ ml = [
     "docling>=2.0",
     "sentence-transformers>=3.0",
     "torch>=2.6",
+    "torchvision>=0.21",
 ]
 db = [
     "psycopg[binary]>=3.2",
@@ -31,6 +32,8 @@ reglens = "reglens.cli:main"
 
 [tool.uv.sources]
 torch = [{ index = "pytorch-cu126", marker = "sys_platform == 'win32' or sys_platform == 'linux'" }]
+# torchvision must come from the same index as torch, or its compiled ops don't match
+torchvision = [{ index = "pytorch-cu126", marker = "sys_platform == 'win32' or sys_platform == 'linux'" }]
 
 [[tool.uv.index]]
 name = "pytorch-cu126"

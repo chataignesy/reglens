@@ -205,8 +205,8 @@ sources:
     scope:
       - General topics chapter
       - Credit risk chapter
-    parts: ['Foreword', 'Overarching principles for internal models', 'Credit risk', 'Market risk.*', 'Counterparty credit risk']
-    blocks: ['Foreword', 'Overarching principles', 'Credit risk']  # MVP scope filter
+    parts: ['Document releases', 'Foreword', 'Overarching principles for internal models', 'Credit risk', 'Market risk.*', 'Counterparty credit risk']
+    blocks: ['Document releases', 'Foreword', 'Overarching principles', 'Credit risk']  # MVP scope filter
     reuse: *ecb_reuse
     verify: true
 

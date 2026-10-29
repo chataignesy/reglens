@@ -1,4 +1,39 @@
-# Answer results — Phase 2 smoke run (2026-10-28)
+# Answer results — Phase 2 smoke runs
+
+## Run 2 (2026-10-29): partial-answer prompt + glossary query expansion
+
+| Metric | Run 1 (28 Oct) | Run 2 (29 Oct) |
+|---|---|---|
+| Out-of-scope declined | 5 / 5 | 5 / 5 |
+| In-scope answered | 22 / 25 | **25 / 25** |
+| Citation recall, single-answer | 0.78 | 0.75 |
+| Citation recall, multi-hop | 0.18 | 0.18 |
+| Claims passing the citation check | 0.98 | **0.99** |
+| Avg tokens per question | 5.4k | 5.5k |
+| Tokens for the run | 163k | 164k + 8k (re-ask after corpus fix) |
+
+**What changed and why:**
+- `app-001` (ECB guide and LSIs) and `mh-001` (large corporate) are now answered as **bounded
+  partial answers** ("The passages only partly answer this… What they do say: …") instead of
+  abstentions — the prompt change.
+- `cmp-002` (June 2026 release of the ECB guide) was declined because the guide's "Document
+  releases" table was **not in the index** (it precedes the Foreword and was filtered out). After
+  adding it to the corpus scope, the answer is correct: release 4.1 removed all CCF-estimation content.
+- Citation recall did not improve, and two items moved down:
+  - `dod-003`: identical passages, the model cited ECB para. 147 instead of RTS Art. 2(2) —
+    run-to-run variance.
+  - `mh-005`: a **regression from query expansion** — "A-IRB" pulled retrieval towards own-LGD
+    articles and dropped Art. 164(4) (retail LGD floors) from the 8 passages. Expansion helps on
+    average (retrieval recall@10 0.79 → 0.81) but can displace an exact match.
+- New check finding: `app-001` labels a claim "law" while citing the ECB guide restating the CRR —
+  correctly flagged as `kind_mismatch`.
+
+**Takeaway:** abstention behaviour is now right on all 30 questions; the remaining gap is
+multi-hop retrieval (citation recall 0.18), which is the Phase 3 agent's job.
+
+---
+
+## Run 1 (2026-10-28)
 
 Smoke set: the 30 Phase 0 golden questions. Model: `claude-sonnet-5-5` (dev tier) via `claude -p`,
 effort `medium`, 8 reranked passages per question. Reproduce: `uv run reglens eval-answers --set

@@ -1,0 +1,43 @@
+# Practitioner terms -> wording used in the legal texts. Appended to the search query (not to the
+# reranker input), so "F-IRB" also finds "institutions that have not received permission to use
+# own estimates of LGD". Patterns are case-insensitive regexes matched on word boundaries.
+- terms: ['F-IRB', 'FIRB', 'foundation IRB', 'foundation approach']
+  expand: 'institution has not received permission to use own estimates of LGD; LGD values set out in Article 161(1); supervisory LGD'
+- terms: ['A-IRB', 'AIRB', 'advanced IRB', 'advanced approach']
+  expand: 'own estimates of LGD and conversion factors; permission to use own estimates of LGD'
+- terms: ['LGD in-default', 'LGD in default', 'LGD-in-default']
+  expand: 'exposures already in default; best estimate of expected loss; increase of loss rate caused by possible additional unexpected losses during the recovery period'
+- terms: ['ELBE']
+  expand: 'best estimate of expected loss for exposures in default'
+- terms: ['DoD']
+  expand: 'definition of default; default of an obligor'
+- terms: ['UTP']
+  expand: 'unlikeliness to pay'
+- terms: ['DPD', 'days past due']
+  expand: 'days past due; credit obligation past due; materiality threshold'
+- terms: ['PPU']
+  expand: 'permanent partial use; Standardised Approach permanently'
+- terms: ['MoC']
+  expand: 'margin of conservatism'
+- terms: ['CCF', 'CCFs']
+  expand: 'conversion factor; IRB-CCF; SA-CCF; undrawn commitments'
+- terms: ['EAD']
+  expand: 'exposure value'
+- terms: ['RWA', 'RWAs']
+  expand: 'risk-weighted exposure amounts'
+- terms: ['CRE']
+  expand: 'commercial immovable property'
+- terms: ['RRE', 'mortgage', 'mortgages']
+  expand: 'residential property; immovable property'
+- terms: ['ADC']
+  expand: 'land acquisition, development and construction'
+- terms: ['QRRE']
+  expand: 'qualifying revolving retail exposures'
+- terms: ['TTC', 'PIT', 'through-the-cycle', 'point-in-time', 'rating philosophy']
+  expand: 'rating philosophy; long-run average default rate; risk drivers sensitive to economic conditions'
+- terms: ['backtesting', 'back-testing', 'back testing']
+  expand: 'compare realised default rates with estimated PDs; validation of internal estimates'
+- terms: ['unrated']
+  expand: 'no credit assessment by a nominated ECAI is available'
+- terms: ['output floor']
+  expand: 'output floor; factor x; un-floored total risk exposure amount; standardised total risk exposure amount'

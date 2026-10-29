@@ -140,15 +140,21 @@ def search(
     k: int = 10,
     filters: Filters | None = None,
     candidates: int = 30,
+    expand: str = "both",
 ) -> list[Hit]:
+    """`expand`: add glossary wording to the query for "none", "bm25" only, or "both"
+    (BM25 and dense). The reranker always scores against the original question."""
+    from reglens.retrieve.glossary import expand_query
+
     filters = filters or Filters()
+    expanded = expand_query(question) if expand != "none" else question
+    q_bm25 = expanded
+    q_dense = expanded if expand == "both" else question
     if mode == "bm25":
-        return _fetch(conn, bm25(conn, question, k, filters))
+        return _fetch(conn, bm25(conn, q_bm25, k, filters))
     if mode == "dense":
-        return _fetch(conn, dense(conn, question, k, filters))
-    fused = rrf(
-        bm25(conn, question, candidates, filters), dense(conn, question, candidates, filters)
-    )
+        return _fetch(conn, dense(conn, q_dense, k, filters))
+    fused = rrf(bm25(conn, q_bm25, candidates, filters), dense(conn, q_dense, candidates, filters))
     if mode == "hybrid":
         return _fetch(conn, fused[:k])
     if mode != "rerank":

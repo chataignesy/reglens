@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "reglens-ui",
+      "runtimeExecutable": "uv",
+      "runtimeArgs": ["run", "--no-sync", "streamlit", "run", "src/reglens/ui/app.py", "--server.headless", "true", "--server.port", "8501"],
+      "port": 8501
+    }
+  ]
+}

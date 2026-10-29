@@ -2,7 +2,9 @@
 
 - `ClaudeCLIProvider` (billing: subscription): runs `claude -p` with no tools, so calls use the
   local Claude Code login. For the user's own development only.
-- An Anthropic API provider (billing: api) follows with the bring-your-own-key demo.
+- `AnthropicAPIProvider` (billing: api): the official Anthropic SDK with a caller-supplied key,
+  for the bring-your-own-key demo. The key is held by the client object only — never logged,
+  stored or written to the ledger.
 """
 
 from __future__ import annotations
@@ -154,7 +156,99 @@ class ClaudeCLIProvider:
             )
 
 
-def get_provider(config: Config, ledger: Ledger | None = None) -> LLMProvider:
+FALLBACK_BETA = "server-side-fallback-2026-07-01"  # with fallbacks="default"
+
+
+class AnthropicAPIProvider:
+    """Messages API via the official SDK. Adaptive thinking is the model default (no `thinking`
+    parameter); depth is set with `output_config.effort`. Server-side fallback ("default" form)
+    re-runs a policy-declined request on a suitable model inside the same call."""
+
+    def __init__(
+        self,
+        config: Config,
+        api_key: str | None = None,
+        ledger: Ledger | None = None,
+        *,
+        client=None,
+        max_tokens: int = 16000,
+        fallback: bool = True,
+    ):
+        self.config = config
+        self.ledger = ledger or Ledger(config)
+        self.max_tokens = max_tokens
+        self.fallback = fallback
+        if client is None:
+            import anthropic
+
+            # api_key=None lets the SDK resolve ANTHROPIC_API_KEY or an `ant auth login` profile
+            client = anthropic.Anthropic(api_key=api_key) if api_key else anthropic.Anthropic()
+        self.client = client
+
+    def complete(
+        self,
+        prompt: str,
+        *,
+        purpose: str,
+        system: str | None = None,
+        tier: str | None = None,
+        effort: str | None = None,
+    ) -> Completion:
+        import anthropic
+
+        model = self.config.model(tier)
+        kwargs: dict = {
+            "model": model,
+            "max_tokens": self.max_tokens,
+            # cache the static system prompt (shorter prefixes silently don't cache)
+            "system": [
+                {
+                    "type": "text",
+                    "text": system or DEFAULT_SYSTEM,
+                    "cache_control": {"type": "ephemeral"},
+                }
+            ],
+            "messages": [{"role": "user", "content": prompt}],
+        }
+        if effort:
+            kwargs["output_config"] = {"effort": effort}
+        try:
+            if self.fallback:
+                response = self.client.beta.messages.create(
+                    betas=[FALLBACK_BETA], fallbacks="default", **kwargs
+                )
+            else:
+                response = self.client.messages.create(**kwargs)
+        except anthropic.AuthenticationError as e:
+            raise LLMError("Anthropic API rejected the API key.") from e
+        except anthropic.PermissionDeniedError as e:
+            raise LLMError("The API key has no access to this model.") from e
+        except anthropic.RateLimitError as e:
+            raise LLMError("Rate limited by the Anthropic API; try again shortly.") from e
+        except anthropic.BadRequestError as e:
+            raise LLMError(f"Request rejected: {e.message}") from e
+        except anthropic.APIStatusError as e:
+            raise LLMError(f"Anthropic API error ({e.status_code}).") from e
+        except anthropic.APIConnectionError as e:
+            raise LLMError("Could not reach the Anthropic API.") from e
+
+        usage = Usage.from_response(response.usage)
+        served = getattr(response, "model", model) or model
+        if served in self.config.prices:
+            self.ledger.record(served, usage, purpose=purpose)
+        else:
+            self.ledger.record(model, usage, purpose=purpose)
+        if response.stop_reason == "refusal":
+            details = getattr(response, "stop_details", None)
+            category = getattr(details, "category", None) if details else None
+            raise LLMError(f"The model declined the request (category: {category}).")
+        text = "".join(b.text for b in response.content if getattr(b, "type", "") == "text")
+        return Completion(text=text, model=served, usage=usage, stop_reason=response.stop_reason)
+
+
+def get_provider(
+    config: Config, ledger: Ledger | None = None, *, api_key: str | None = None
+) -> LLMProvider:
     if config.billing == "subscription":
         return ClaudeCLIProvider(config, ledger)
-    raise NotImplementedError("API provider (billing: api) arrives with the BYOK demo, Phase 2.")
+    return AnthropicAPIProvider(config, api_key, ledger)

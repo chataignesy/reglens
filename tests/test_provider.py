@@ -6,7 +6,7 @@ import pytest
 
 from reglens.config import load_config
 from reglens.llm.ledger import Ledger
-from reglens.llm.provider import ClaudeCLIProvider, LLMError, get_provider
+from reglens.llm.provider import AnthropicAPIProvider, ClaudeCLIProvider, LLMError, get_provider
 
 # Trimmed real `claude -p --output-format json` output.
 SAMPLE = {
@@ -95,5 +95,53 @@ def test_non_json_output_raises(cfg):
 
 def test_get_provider_by_billing(cfg):
     assert isinstance(get_provider(cfg), ClaudeCLIProvider)
-    with pytest.raises(NotImplementedError):
-        get_provider(replace(cfg, billing="api"))
+    api = get_provider(replace(cfg, billing="api"), api_key="sk-test-not-real")
+    assert isinstance(api, AnthropicAPIProvider)
+
+
+class _Obj:
+    def __init__(self, **kw):
+        self.__dict__.update(kw)
+
+
+class FakeClient:
+    """Stands in for anthropic.Anthropic(): records the request, returns a canned response."""
+
+    def __init__(self, stop_reason="end_turn"):
+        self.calls = []
+        response = _Obj(
+            model="claude-sonnet-5-5",
+            stop_reason=stop_reason,
+            stop_details=_Obj(category="cyber") if stop_reason == "refusal" else None,
+            content=[_Obj(type="thinking", thinking=""), _Obj(type="text", text="{\"a\": 1}")],
+            usage=_Obj(input_tokens=900, output_tokens=120, cache_read_input_tokens=0,
+                       cache_creation_input_tokens=800),
+        )
+
+        def create(**kwargs):
+            self.calls.append(kwargs)
+            return response
+
+        self.beta = _Obj(messages=_Obj(create=create))
+        self.messages = _Obj(create=create)
+
+
+def test_api_provider_request_shape_and_ledger(cfg):
+    client = FakeClient()
+    p = AnthropicAPIProvider(replace(cfg, billing="api"), client=client)
+    out = p.complete("hi", purpose="answer", system="SYS", tier="dev", effort="medium")
+    req = client.calls[0]
+    assert req["model"] == cfg.model("dev")
+    assert req["system"][0]["text"] == "SYS" and req["system"][0]["cache_control"]
+    assert req["output_config"] == {"effort": "medium"}
+    assert req["fallbacks"] == "default" and req["betas"] == ["server-side-fallback-2026-07-01"]
+    assert "thinking" not in req  # adaptive thinking is the model default
+    assert out.text == '{"a": 1}' and out.usage.total_tokens == 1820
+    [entry] = Ledger(cfg).entries()
+    assert entry["purpose"] == "answer" and entry["total_tokens"] == 1820
+
+
+def test_api_provider_refusal_raises(cfg):
+    p = AnthropicAPIProvider(replace(cfg, billing="api"), client=FakeClient("refusal"))
+    with pytest.raises(LLMError, match="declined"):
+        p.complete("hi", purpose="answer")

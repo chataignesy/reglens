@@ -26,6 +26,9 @@ db = [
     "psycopg[binary]>=3.2",
     "pgvector>=0.3",
 ]
+ui = [
+    "streamlit>=1.40",
+]
 
 [project.scripts]
 reglens = "reglens.cli:main"

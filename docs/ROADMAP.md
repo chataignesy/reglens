@@ -121,7 +121,11 @@ version in force on the as-of date; `reglens download --as-of 2027-01-01` fetche
 - ✅ Two-layer abstention: retrieval gate (no LLM call below rerank score 0.05) + scope statement in the prompt
 - ✅ Deterministic citation verifier (citations exist, numbers supported, "law" cites CRR/RTS)
 - ✅ Answer eval (`reglens eval-answers`, dry run by default, cached): smoke run on 30 questions — out-of-scope abstention 5/5, claims passing the check 0.98, citation recall 0.78 single-answer / 0.18 multi-hop, 163k tokens ([results](results/answers-phase2.md))
-- ⏳ Prompt tweak (bounded partial answers), LLM judge, API provider, Streamlit UI, query rewriting
+- ✅ Glossary query expansion (practitioner terms → legal wording): retrieval recall@10 0.79 → **0.81**, single-answer 0.89 → **0.92**
+- ✅ Prompt: bounded partial answers instead of abstaining; missing information in the text, not as claims (not yet re-measured)
+- ✅ Anthropic API provider (official SDK, BYOK key never logged, server-side fallback, refusal handling; tested with a fake client)
+- ✅ Streamlit UI v0 (`streamlit run src/reglens/ui/app.py`): disclaimer, BYOK or local subscription, sources with legal level, citation check; end-to-end test answer 7.6k tokens
+- ⏳ Re-run smoke eval with new prompt + expansion; LLM judge for correctness
 
 *Buffer: 21 Dec – 3 Jan (holidays).*
 

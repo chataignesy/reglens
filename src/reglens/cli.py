@@ -247,7 +247,12 @@ def _cmd_ask(args: argparse.Namespace) -> None:
     from reglens.llm.provider import get_provider
 
     cfg = load_config(args.config)
-    ans = answer_question(db.connect(), get_provider(cfg), cfg, args.question)
+    if args.agent:
+        from reglens.agent.run import answer_agentic
+
+        ans = answer_agentic(db.connect(), get_provider(cfg), cfg, args.question)
+    else:
+        ans = answer_question(db.connect(), get_provider(cfg), cfg, args.question)
     summary = check_answer(ans)
     if args.json:
         print(json.dumps(ans.to_dict() | {"check": summary}, indent=2, ensure_ascii=False))
@@ -257,14 +262,22 @@ def _cmd_ask(args: argparse.Namespace) -> None:
         print(f"\n[{ans.model}, {ans.usage_tokens:,} tokens; citation check {summary}]")
 
 
-def _cmd_eval_answers(args: argparse.Namespace) -> None:
-    from reglens.eval.answers import ANSWER_DIR, PROMPT_VERSION, run
+def _golden_items(args: argparse.Namespace) -> list:
     from reglens.eval.golden import GOLDEN_DIR, load_golden
 
-    cfg = load_config(args.config)
     paths = [GOLDEN_DIR / f"{args.set}.jsonl"] if args.set != "all" else None
-    items = [i for i in load_golden(paths) if i.status == "verified"][: args.limit or None]
-    cached = {p.stem for p in (ANSWER_DIR / PROMPT_VERSION).glob("*.json")}
+    items = [i for i in load_golden(paths) if i.status == "verified"]
+    if getattr(args, "type", None):
+        items = [i for i in items if i.type == args.type]
+    return items[: getattr(args, "limit", None) or None]
+
+
+def _cmd_eval_answers(args: argparse.Namespace) -> None:
+    from reglens.eval.answers import ANSWER_DIR, answer_version, run
+
+    cfg = load_config(args.config)
+    items = _golden_items(args)
+    cached = {p.stem for p in (ANSWER_DIR / answer_version(args.agent)).glob("*.json")}
     todo = [i for i in items if i.id not in cached]
     per_call = args.tokens_per_call
     est = len(todo) * per_call
@@ -282,7 +295,8 @@ def _cmd_eval_answers(args: argparse.Namespace) -> None:
     from reglens.index import db
     from reglens.llm.provider import get_provider
 
-    s = run(db.connect(), get_provider(cfg), cfg, items, log=lambda m: print(m, flush=True))
+    s = run(db.connect(), get_provider(cfg), cfg, items, log=lambda m: print(m, flush=True),
+            agent=args.agent)
     print(
         f"\nabstain on out-of-scope {s['abstain_on_out_of_scope']}  "
         f"answered in-scope {s['answered_in_scope']}  citation recall {s['citation_recall']}  "
@@ -298,12 +312,13 @@ def _cmd_eval_answers(args: argparse.Namespace) -> None:
 
 
 def _cmd_judge(args: argparse.Namespace) -> None:
-    from reglens.eval.golden import GOLDEN_DIR, load_golden
-    from reglens.eval.judge import judge, plan
+    from reglens.eval.answers import answer_version
+    from reglens.eval.judge import judge, plan, use_answers
 
     cfg = load_config(args.config)
-    paths = [GOLDEN_DIR / f"{args.set}.jsonl"] if args.set != "all" else None
-    items = [i for i in load_golden(paths) if i.status == "verified"]
+    if args.agent:
+        use_answers(answer_version(agent=True))
+    items = _golden_items(args)
     p = plan(items)
     est = len(p["needs_call"]) * args.tokens_per_call
     print(
@@ -403,6 +418,8 @@ def main(argv: list[str] | None = None) -> None:
     ask = sub.add_parser("ask", help="answer a question with citations (one LLM call)")
     ask.add_argument("question")
     ask.add_argument("--json", action="store_true", help="print the full answer record")
+    ask.add_argument("--agent", action="store_true",
+                     help="agentic retrieval via the RegLens MCP tools (several tool calls)")
     ask.set_defaults(func=_cmd_ask)
 
     eva = sub.add_parser("eval-answers", help="answer-level eval on the golden set (LLM calls)")
@@ -412,12 +429,16 @@ def main(argv: list[str] | None = None) -> None:
     eva.add_argument("--limit", type=int, help="first N items only")
     eva.add_argument("--tokens-per-call", type=int, default=6000, help="for the estimate")
     eva.add_argument("--yes", action="store_true", help="actually call the model")
+    eva.add_argument("--agent", action="store_true", help="agentic answering (MCP tools)")
+    eva.add_argument("--type", help="only this golden type, e.g. multi_hop")
     eva.set_defaults(func=_cmd_eval_answers)
 
     jdg = sub.add_parser("judge", help="LLM judge of answer correctness (bulk tier, cached)")
     jdg.add_argument("--set", default="phase0", help="golden file stem or 'all'")
     jdg.add_argument("--tokens-per-call", type=int, default=2000, help="for the estimate")
     jdg.add_argument("--yes", action="store_true", help="actually call the judge model")
+    jdg.add_argument("--agent", action="store_true", help="grade the agentic answers")
+    jdg.add_argument("--type", help="only this golden type, e.g. multi_hop")
     jdg.set_defaults(func=_cmd_judge)
 
     gold = sub.add_parser("golden", help="validate the golden eval set and show its mix")

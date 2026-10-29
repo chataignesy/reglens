@@ -27,6 +27,17 @@ ANSWER_DIR = PROJECT_ROOT / "data" / "evals" / "answers"
 PROMPT_VERSION = hashlib.sha256(SYSTEM.encode()).hexdigest()[:8]
 
 
+def answer_version(agent: bool = False) -> str:
+    """Cache namespace: the single-pass prompt hash, or 'agent-<hash of prompt + tools>'."""
+    if not agent:
+        return PROMPT_VERSION
+    from reglens.agent import tools
+    from reglens.agent.run import AGENT_SYSTEM
+
+    src = AGENT_SYSTEM + open(tools.__file__, encoding="utf-8").read()
+    return "agent-" + hashlib.sha256(src.encode()).hexdigest()[:8]
+
+
 def _cited_refs(record: dict) -> list[tuple[str, str]]:
     ctx = record["context"]
     cited = {c for cl in record["claims"] for c in cl["citations"]}
@@ -54,8 +65,15 @@ def citation_recall(item: GoldenItem, record: dict) -> float | None:
     return found / len(wanted)
 
 
-def run(conn, provider, config: Config, items: list[GoldenItem], *, log=print) -> dict:
-    out_dir = ANSWER_DIR / PROMPT_VERSION
+def run(
+    conn, provider, config: Config, items: list[GoldenItem], *, log=print, agent: bool = False
+) -> dict:
+    version = answer_version(agent)
+    out_dir = ANSWER_DIR / version
+    if agent:
+        from reglens.agent.run import answer_agentic as answer_fn
+    else:
+        answer_fn = answer_question
     out_dir.mkdir(parents=True, exist_ok=True)
     rows, new_tokens = [], 0
     for n, item in enumerate(items, 1):
@@ -63,7 +81,7 @@ def run(conn, provider, config: Config, items: list[GoldenItem], *, log=print) -
         if path.exists():
             record = json.loads(path.read_text(encoding="utf-8"))
         else:
-            ans: Answer = answer_question(conn, provider, config, item.question)
+            ans: Answer = answer_fn(conn, provider, config, item.question)
             check = check_answer(ans)  # annotates claims first, so the record stores their checks
             record = ans.to_dict() | {"check": check, "id": item.id}
             path.write_text(json.dumps(record, indent=2, ensure_ascii=False), encoding="utf-8")
@@ -90,7 +108,7 @@ def run(conn, provider, config: Config, items: list[GoldenItem], *, log=print) -
     ins = [r for r in rows if r["type"] != "out_of_scope"]
     oos = [r for r in rows if r["type"] == "out_of_scope"]
     summary = {
-        "prompt_version": PROMPT_VERSION,
+        "prompt_version": version,
         "model": config.model((config.answer or {}).get("tier", "dev")),
         "items": len(rows),
         "abstain_on_out_of_scope": round(sum(r["abstained"] for r in oos) / len(oos), 3)

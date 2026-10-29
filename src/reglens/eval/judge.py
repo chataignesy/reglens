@@ -38,7 +38,15 @@ Reply with ONE JSON object and nothing else:
 """
 
 JUDGE_VERSION = hashlib.sha256(JUDGE_SYSTEM.encode()).hexdigest()[:8]
+ANSWER_VERSION = PROMPT_VERSION  # which cached answers to grade (see use_answers)
 JUDGE_DIR = PROJECT_ROOT / "data" / "evals" / "judge" / f"{PROMPT_VERSION}-{JUDGE_VERSION}"
+
+
+def use_answers(version: str) -> None:
+    """Grade the cached answers of `version` (e.g. an 'agent-…' run) instead of the default."""
+    global ANSWER_VERSION, JUDGE_DIR
+    ANSWER_VERSION = version
+    JUDGE_DIR = JUDGE_DIR.parent / f"{version}-{JUDGE_VERSION}"
 
 
 def judge_prompt(item: GoldenItem, answer_text: str) -> str:
@@ -64,7 +72,7 @@ def _parse(text: str) -> dict:
 
 
 def _load_answer(item_id: str) -> dict | None:
-    path = ANSWER_DIR / PROMPT_VERSION / f"{item_id}.json"
+    path = ANSWER_DIR / ANSWER_VERSION / f"{item_id}.json"
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
 
 
@@ -139,7 +147,7 @@ def judge(provider: LLMProvider, config: Config, items: list[GoldenItem], *, log
     multi = [r for r in rows if r["type"] == "multi_hop"]
     in_scope = single + multi
     summary = {
-        "answer_prompt": PROMPT_VERSION,
+        "answer_prompt": ANSWER_VERSION,
         "judge_prompt": JUDGE_VERSION,
         "judge_model": config.model("bulk"),
         "items": len(rows),

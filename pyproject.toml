@@ -29,6 +29,9 @@ db = [
 ui = [
     "streamlit>=1.40",
 ]
+mcp = [
+    "mcp>=1.2",
+]
 
 [project.scripts]
 reglens = "reglens.cli:main"

@@ -81,7 +81,9 @@ class ClaudeCLIProvider:
         system: str | None = None,
         tier: str | None = None,
         effort: str | None = None,
+        extra_args: list[str] | None = None,
     ) -> Completion:
+        """`extra_args` are appended to the `claude -p` command (e.g. --mcp-config)."""
         model = self.config.model(tier)
         # System prompt goes via a file to stay clear of Windows command-line length limits.
         with tempfile.NamedTemporaryFile("w", suffix=".txt", encoding="utf-8", delete=False) as f:
@@ -103,6 +105,7 @@ class ClaudeCLIProvider:
         ]
         if effort:
             cmd += ["--effort", effort]
+        cmd += extra_args or []
         try:
             # Neutral cwd so no project CLAUDE.md is loaded into the call; prompt via stdin.
             proc = self.runner(

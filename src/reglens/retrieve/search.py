@@ -19,6 +19,8 @@ class Hit:
     ref: str
     title: str | None
     text: str
+    legal_level: str
+    version: str | None
     score: float
 
 
@@ -71,8 +73,9 @@ def _doc_freqs(conn: psycopg.Connection) -> tuple[dict[str, int], int]:
     return _DF, _N[0]
 
 
-def _rare_terms_query(conn: psycopg.Connection, question: str, *, max_df: float = 0.1,
-                      max_terms: int = 10) -> str:
+def _rare_terms_query(
+    conn: psycopg.Connection, question: str, *, max_df: float = 0.1, max_terms: int = 10
+) -> str:
     """OR-query of the question's informative lexemes: common ones ('exposur', 'institut') are
     dropped, since OR-ing every word lets long generic chunks win."""
     vec = conn.execute("SELECT to_tsvector('english', %s)::text", (question,)).fetchone()[0]
@@ -88,7 +91,8 @@ def _fetch(conn: psycopg.Connection, scored: list[tuple[str, float]]) -> list[Hi
     if not scored:
         return []
     rows = conn.execute(
-        "SELECT id, source_id, ref, title, text FROM chunks WHERE id = ANY(%s)",
+        "SELECT id, source_id, ref, title, text, legal_level, version "
+        "FROM chunks WHERE id = ANY(%s)",
         ([i for i, _ in scored],),
     ).fetchall()
     by_id = {r[0]: r for r in rows}

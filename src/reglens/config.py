@@ -49,6 +49,7 @@ class Config:
     budget: Budget
     ledger_path: Path
     chars_per_token: float = 4.0
+    answer: dict | None = None  # tier, effort, k, abstain_below
 
     def model(self, tier: str | None = None) -> str:
         """Model ID for a tier ('bulk', 'dev', 'milestone'); default tier if None."""
@@ -109,6 +110,8 @@ def load_config(path: str | Path | None = None) -> Config:
         ),
         ledger_path=ledger_path,
         chars_per_token=float((raw.get("tokens") or {}).get("chars_per_token", 4.0)),
+        answer={"tier": "dev", "effort": "medium", "k": 8, "abstain_below": 0.05}
+        | (raw.get("answer") or {}),
     )
     missing = [m for m in cfg.tiers.values() if m not in cfg.prices]
     if missing:

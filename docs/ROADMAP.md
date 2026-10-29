@@ -21,7 +21,7 @@ Dates are targets; phase exit criteria matter more than dates.
 |---|---|---|
 | 0 — Foundations | 26 Oct – 8 Nov 2026 | ✅ Done |
 | 1 — Ingestion & retrieval | 9 – 29 Nov 2026 | ✅ Done early (27 Oct) — single-answer recall@10 0.89 on 80 questions; see [results](results/retrieval-phase1.md) |
-| 2 — Grounded Q&A | 30 Nov – 20 Dec 2026 | Not started |
+| 2 — Grounded Q&A | 30 Nov – 20 Dec 2026 | **In progress** (started early) — pipeline, verifier and smoke eval done; see [results](results/answers-phase2.md) |
 | 3 — Agentic retrieval & MCP | 4 – 24 Jan 2027 | Not started |
 | 4 — Policy gap analysis | 25 Jan – 21 Feb 2027 | Not started |
 | 5 — Polish & launch | 22 Feb – 7 Mar 2027 | Not started |
@@ -115,6 +115,13 @@ version in force on the as-of date; `reglens download --as-of 2027-01-01` fetche
 - Golden set to ~150 questions.
 
 **Exit:** citation accuracy ≥ 90%, abstention ≥ 85%. **LinkedIn post 2:** the benchmark chart.
+
+**Status (2026-10-28):**
+- ✅ Answer pipeline (`reglens ask`): numbered passages, JSON claims with citations and law / supervisory / interpretation labels; as-of line and legal levels set by code
+- ✅ Two-layer abstention: retrieval gate (no LLM call below rerank score 0.05) + scope statement in the prompt
+- ✅ Deterministic citation verifier (citations exist, numbers supported, "law" cites CRR/RTS)
+- ✅ Answer eval (`reglens eval-answers`, dry run by default, cached): smoke run on 30 questions — out-of-scope abstention 5/5, claims passing the check 0.98, citation recall 0.78 single-answer / 0.18 multi-hop, 163k tokens ([results](results/answers-phase2.md))
+- ⏳ Prompt tweak (bounded partial answers), LLM judge, API provider, Streamlit UI, query rewriting
 
 *Buffer: 21 Dec – 3 Jan (holidays).*
 

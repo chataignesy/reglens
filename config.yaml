@@ -42,7 +42,7 @@ budget:
   ceiling_eur: 250
   approval_threshold_eur: 2      # ask before any single run above this (billing: api)
   approval_threshold_tokens: 1000000  # ask before any single run above this (billing: subscription)
-  current_phase: 0
+  current_phase: 2
   phases_eur:                    # allocations from docs/ROADMAP.md
     0: 5
     1: 10
@@ -50,6 +50,12 @@ budget:
     3: 45
     4: 40
     5: 10
+
+answer:
+  tier: dev                      # model tier for answering
+  effort: medium                 # claude -p effort level
+  k: 8                           # retrieved chunks given to the model
+  abstain_below: 0.05            # skip the LLM call if the best rerank score is below this
 
 tokens:
   chars_per_token: 3.01          # calibrated 2026-10-27 on CRR text, claude-haiku-5-5

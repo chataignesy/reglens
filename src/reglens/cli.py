@@ -238,6 +238,65 @@ def _cmd_eval_retrieval(args: argparse.Namespace) -> None:
     print(f"details: {save(results)}")
 
 
+def _cmd_ask(args: argparse.Namespace) -> None:
+    import json
+
+    from reglens.answer.pipeline import answer_question, render
+    from reglens.answer.verify import check_answer
+    from reglens.index import db
+    from reglens.llm.provider import get_provider
+
+    cfg = load_config(args.config)
+    ans = answer_question(db.connect(), get_provider(cfg), cfg, args.question)
+    summary = check_answer(ans)
+    if args.json:
+        print(json.dumps(ans.to_dict() | {"check": summary}, indent=2, ensure_ascii=False))
+        return
+    print(render(ans))
+    if ans.usage_tokens:
+        print(f"\n[{ans.model}, {ans.usage_tokens:,} tokens; citation check {summary}]")
+
+
+def _cmd_eval_answers(args: argparse.Namespace) -> None:
+    from reglens.eval.answers import ANSWER_DIR, PROMPT_VERSION, run
+    from reglens.eval.golden import GOLDEN_DIR, load_golden
+
+    cfg = load_config(args.config)
+    paths = [GOLDEN_DIR / f"{args.set}.jsonl"] if args.set != "all" else None
+    items = [i for i in load_golden(paths) if i.status == "verified"][: args.limit or None]
+    cached = {p.stem for p in (ANSWER_DIR / PROMPT_VERSION).glob("*.json")}
+    todo = [i for i in items if i.id not in cached]
+    per_call = args.tokens_per_call
+    est = len(todo) * per_call
+    model = cfg.model((cfg.answer or {}).get("tier", "dev"))
+    print(
+        f"{len(items)} items ({len(items) - len(todo)} cached), {len(todo)} new LLM calls on "
+        f"{model}: ~{est:,} tokens (at ~{per_call:,}/call)"
+    )
+    if est > cfg.budget.approval_threshold_tokens:
+        print(f"Above {cfg.budget.approval_threshold_tokens:,} tokens — needs explicit approval.")
+    if not args.yes:
+        print("Dry run. Re-run with --yes to call the model.")
+        return
+
+    from reglens.index import db
+    from reglens.llm.provider import get_provider
+
+    s = run(db.connect(), get_provider(cfg), cfg, items, log=lambda m: print(m, flush=True))
+    print(
+        f"\nabstain on out-of-scope {s['abstain_on_out_of_scope']}  "
+        f"answered in-scope {s['answered_in_scope']}  citation recall {s['citation_recall']}  "
+        f"supported claims {s['supported_rate']}  avg tokens {s['avg_tokens']:,}  "
+        f"new tokens {s['new_tokens_this_run']:,}"
+    )
+    misses = [r for r in s["per_item"] if not r["abstain_correct"]]
+    for r in misses:
+        print(f"  abstention wrong: {r['id']} ({r['type']}, abstained={r['abstained']})")
+    if s["errors"]:
+        print(f"  parse errors: {', '.join(s['errors'])}")
+    print(f"details: {s['file']}")
+
+
 def _cmd_golden(args: argparse.Namespace) -> None:
     from collections import Counter
 
@@ -304,6 +363,20 @@ def main(argv: list[str] | None = None) -> None:
     )
     evr.add_argument("--modes", nargs="*", default=["bm25", "dense", "hybrid", "rerank"])
     evr.set_defaults(func=_cmd_eval_retrieval)
+
+    ask = sub.add_parser("ask", help="answer a question with citations (one LLM call)")
+    ask.add_argument("question")
+    ask.add_argument("--json", action="store_true", help="print the full answer record")
+    ask.set_defaults(func=_cmd_ask)
+
+    eva = sub.add_parser("eval-answers", help="answer-level eval on the golden set (LLM calls)")
+    eva.add_argument(
+        "--set", default="phase0", help="golden file stem (phase0 = smoke set) or 'all'"
+    )
+    eva.add_argument("--limit", type=int, help="first N items only")
+    eva.add_argument("--tokens-per-call", type=int, default=6000, help="for the estimate")
+    eva.add_argument("--yes", action="store_true", help="actually call the model")
+    eva.set_defaults(func=_cmd_eval_answers)
 
     gold = sub.add_parser("golden", help="validate the golden eval set and show its mix")
     gold.set_defaults(func=_cmd_golden)

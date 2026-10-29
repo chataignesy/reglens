@@ -1,0 +1,112 @@
+"""Answer-level evaluation on the golden set (deterministic metrics, no LLM judge yet).
+
+Metrics per run:
+- abstention accuracy: out-of-scope items abstain, in-scope items answer
+- citation recall: share of expected citations (or accepted alternatives) the answer cites
+- supported rate: share of claims passing the deterministic citation check
+- tokens: from the provider usage of each call
+
+Answers are cached in data/evals/answers/<prompt version>/<item id>.json, so re-running an
+unchanged set costs no tokens; delete the folder (or bump PROMPT_VERSION) to re-ask.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+from datetime import datetime
+
+from reglens.answer.pipeline import Answer, answer_question
+from reglens.answer.prompts import SYSTEM
+from reglens.answer.verify import check_answer
+from reglens.config import PROJECT_ROOT, Config
+from reglens.eval.golden import GoldenItem
+from reglens.eval.retrieval import normalize_refs, refs_match
+
+ANSWER_DIR = PROJECT_ROOT / "data" / "evals" / "answers"
+PROMPT_VERSION = hashlib.sha256(SYSTEM.encode()).hexdigest()[:8]
+
+
+def _cited_refs(record: dict) -> list[tuple[str, str]]:
+    ctx = record["context"]
+    cited = {c for cl in record["claims"] for c in cl["citations"]}
+    out = []
+    for i, h in enumerate(ctx, 1):
+        if f"C{i}" in cited:
+            refs = normalize_refs(h["ref"])
+            out.append((h["source_id"], refs[0] if refs else h["ref"]))
+    return out
+
+
+def citation_recall(item: GoldenItem, record: dict) -> float | None:
+    cited = _cited_refs(record)
+    wanted = [
+        [(c.source, r) for r in normalize_refs(c.ref)]
+        + [(a.source, r) for a in c.alternatives for r in normalize_refs(a.ref)]
+        for c in item.expected_citations
+    ]
+    wanted = [w for w in wanted if w]
+    if not wanted:
+        return None
+    found = sum(
+        any(s == ws and refs_match(wr, r) for ws, wr in w for s, r in cited) for w in wanted
+    )
+    return found / len(wanted)
+
+
+def run(conn, provider, config: Config, items: list[GoldenItem], *, log=print) -> dict:
+    out_dir = ANSWER_DIR / PROMPT_VERSION
+    out_dir.mkdir(parents=True, exist_ok=True)
+    rows, new_tokens = [], 0
+    for n, item in enumerate(items, 1):
+        path = out_dir / f"{item.id}.json"
+        if path.exists():
+            record = json.loads(path.read_text(encoding="utf-8"))
+        else:
+            ans: Answer = answer_question(conn, provider, config, item.question)
+            check = check_answer(ans)  # annotates claims first, so the record stores their checks
+            record = ans.to_dict() | {"check": check, "id": item.id}
+            path.write_text(json.dumps(record, indent=2, ensure_ascii=False), encoding="utf-8")
+            new_tokens += ans.usage_tokens
+            log(f"  [{n}/{len(items)}] {item.id}: {ans.usage_tokens:,} tokens")
+        oos = item.type == "out_of_scope"
+        rows.append(
+            {
+                "id": item.id,
+                "type": item.type,
+                "abstained": record["abstained"],
+                "abstain_correct": record["abstained"] == oos,
+                "citation_recall": None if oos else citation_recall(item, record),
+                "supported_rate": record["check"]["supported_rate"],
+                "tokens": record.get("usage_tokens", 0),
+                "errors": record.get("errors", []),
+            }
+        )
+
+    def mean(key, subset):
+        vals = [r[key] for r in subset if r[key] is not None]
+        return round(sum(vals) / len(vals), 3) if vals else None
+
+    ins = [r for r in rows if r["type"] != "out_of_scope"]
+    oos = [r for r in rows if r["type"] == "out_of_scope"]
+    summary = {
+        "prompt_version": PROMPT_VERSION,
+        "model": config.model((config.answer or {}).get("tier", "dev")),
+        "items": len(rows),
+        "abstain_on_out_of_scope": round(sum(r["abstained"] for r in oos) / len(oos), 3)
+        if oos
+        else None,
+        "answered_in_scope": round(sum(not r["abstained"] for r in ins) / len(ins), 3)
+        if ins
+        else None,
+        "citation_recall": mean("citation_recall", ins),
+        "supported_rate": mean("supported_rate", ins),
+        "avg_tokens": round(sum(r["tokens"] for r in rows) / max(len(rows), 1)),
+        "new_tokens_this_run": new_tokens,
+        "errors": [r["id"] for r in rows if r["errors"]],
+        "per_item": rows,
+    }
+    path = PROJECT_ROOT / "data" / "evals" / f"answers-{datetime.now():%Y%m%d-%H%M%S}.json"
+    path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    summary["file"] = str(path.relative_to(PROJECT_ROOT))
+    return summary

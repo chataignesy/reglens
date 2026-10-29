@@ -1,5 +1,31 @@
 # Answer results — Phase 2 smoke runs
 
+## Correctness (LLM judge, 2026-10-29)
+
+Judge: `claude-haiku-5-5`, low effort, sees question + reference answer + RegLens answer (no
+passages); score 2 = correct and complete, 1 = partly, 0 = wrong. Out-of-scope items and in-scope
+abstentions are scored by rule (no call). Reproduce: `uv run reglens judge --set phase0 --yes`
+(cached). **Cost: 39k tokens** for 25 calls (estimate 38–48k).
+
+| | Correctness (mean score / 2) | Fully correct | Partly | Wrong |
+|---|---|---|---|---|
+| In-scope (25) | **0.72** | 14 | 8 | 3 |
+| Single-answer (18) | **0.83** | | | |
+| Multi-hop (7) | 0.43 | | | |
+| Out-of-scope (5) | 5 / 5 abstained | | | |
+
+**Spot-check of the judge (4 verdicts):**
+- `lgd-001` = 2 — correct: every LGD floor matches.
+- `mh-006` = 0 — fair: the answer details the Jeffreys test but misses Art. 185(b) and the annual
+  reporting (multi-hop retrieval gap).
+- `moc-001` = 0 — **judge wrong**: the answer (A and B are deficiency categories; C, the general
+  estimation error, is a separate MoC component) is closer to EBA GL para. 36 than our reference.
+- `app-001` = 1 — debatable: "the passages do not say whether it applies to LSIs" vs. the
+  reference's "does not address LSIs" is arguably equivalent.
+
+So the judge is reliable on clear facts but strict on framing; treat single-item scores as
+indicative and the aggregate (0.83 single / 0.43 multi-hop) as the signal.
+
 ## Run 2 (2026-10-29): partial-answer prompt + glossary query expansion
 
 | Metric | Run 1 (28 Oct) | Run 2 (29 Oct) |

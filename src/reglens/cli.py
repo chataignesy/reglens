@@ -297,6 +297,42 @@ def _cmd_eval_answers(args: argparse.Namespace) -> None:
     print(f"details: {s['file']}")
 
 
+def _cmd_judge(args: argparse.Namespace) -> None:
+    from reglens.eval.golden import GOLDEN_DIR, load_golden
+    from reglens.eval.judge import judge, plan
+
+    cfg = load_config(args.config)
+    paths = [GOLDEN_DIR / f"{args.set}.jsonl"] if args.set != "all" else None
+    items = [i for i in load_golden(paths) if i.status == "verified"]
+    p = plan(items)
+    est = len(p["needs_call"]) * args.tokens_per_call
+    print(
+        f"{len(items)} items: {len(p['needs_call'])} judge calls on {cfg.model('bulk')} "
+        f"(~{est:,} tokens at ~{args.tokens_per_call:,}/call), "
+        f"{len(p['deterministic'])} scored without a call, {len(p['cached'])} cached, "
+        f"{len(p['no_answer'])} without a cached answer (run eval-answers first)"
+    )
+    if est > cfg.budget.approval_threshold_tokens:
+        print(f"Above {cfg.budget.approval_threshold_tokens:,} tokens — needs explicit approval.")
+    if not args.yes:
+        print("Dry run. Re-run with --yes to call the judge model.")
+        return
+
+    from reglens.llm.provider import get_provider
+
+    s = judge(get_provider(cfg), cfg, items, log=lambda m: print(m, flush=True))
+    print(
+        f"\ncorrectness (mean score/2): in-scope {s['correctness_in_scope']}  "
+        f"single {s['correctness_single']}  multi-hop {s['correctness_multi_hop']}\n"
+        f"fully correct {s['fully_correct']}, partly {s['partly_correct']}, wrong {s['wrong']}; "
+        f"new tokens {s['new_tokens']:,}"
+    )
+    for r in s["per_item"]:
+        if r["score"] < 2 and r["type"] != "out_of_scope":
+            print(f"  {r['id']:<10} {r['score']}  {r.get('rationale', '')[:150]}")
+    print(f"details: {s['file']}")
+
+
 def _cmd_golden(args: argparse.Namespace) -> None:
     from collections import Counter
 
@@ -377,6 +413,12 @@ def main(argv: list[str] | None = None) -> None:
     eva.add_argument("--tokens-per-call", type=int, default=6000, help="for the estimate")
     eva.add_argument("--yes", action="store_true", help="actually call the model")
     eva.set_defaults(func=_cmd_eval_answers)
+
+    jdg = sub.add_parser("judge", help="LLM judge of answer correctness (bulk tier, cached)")
+    jdg.add_argument("--set", default="phase0", help="golden file stem or 'all'")
+    jdg.add_argument("--tokens-per-call", type=int, default=2000, help="for the estimate")
+    jdg.add_argument("--yes", action="store_true", help="actually call the judge model")
+    jdg.set_defaults(func=_cmd_judge)
 
     gold = sub.add_parser("golden", help="validate the golden eval set and show its mix")
     gold.set_defaults(func=_cmd_golden)

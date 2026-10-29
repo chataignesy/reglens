@@ -126,8 +126,8 @@ version in force on the as-of date; `reglens download --as-of 2027-01-01` fetche
 - ✅ Anthropic API provider (official SDK, BYOK key never logged, server-side fallback, refusal handling; tested with a fake client)
 - ✅ Streamlit UI v0 (`streamlit run src/reglens/ui/app.py`): disclaimer, BYOK or local subscription, sources with legal level, citation check; end-to-end test answer 7.6k tokens
 - ✅ Smoke re-run (new prompt + expansion + ECB release table in scope): in-scope answered 25/25, out-of-scope declined 5/5, claims passing the check 0.99; citation recall unchanged (0.75 single / 0.18 multi-hop) ([results](results/answers-phase2.md))
-- ✅ LLM judge (`reglens judge`, Haiku, cached, deterministic where possible): correctness **0.83** single-answer, **0.43** multi-hop, 14/25 fully correct; 39k tokens. Spot-check: reliable on facts, strict on framing ([results](results/answers-phase2.md))
-- ⏳ Golden reference fix for `moc-001` (and possibly `app-001`); then Phase 3 (agentic multi-hop retrieval)
+- ✅ LLM judge (`reglens judge`, Haiku, cached, deterministic where possible): correctness **0.92** single-answer, **0.43** multi-hop, 16/25 fully correct; 42k tokens. Spot-check: reliable on facts, strict on framing; two golden references corrected ([results](results/answers-phase2.md))
+- ⏳ Phase 3 (agentic multi-hop retrieval) is the next lever
 
 *Buffer: 21 Dec – 3 Jan (holidays).*
 

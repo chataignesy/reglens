@@ -5,14 +5,17 @@
 Judge: `claude-haiku-5-5`, low effort, sees question + reference answer + RegLens answer (no
 passages); score 2 = correct and complete, 1 = partly, 0 = wrong. Out-of-scope items and in-scope
 abstentions are scored by rule (no call). Reproduce: `uv run reglens judge --set phase0 --yes`
-(cached). **Cost: 39k tokens** for 25 calls (estimate 38–48k).
+(cached). **Cost: 42k tokens** — 39k for the first 25 calls (estimate 38–48k), 2.7k to re-grade
+two questions after their references were corrected.
 
 | | Correctness (mean score / 2) | Fully correct | Partly | Wrong |
 |---|---|---|---|---|
-| In-scope (25) | **0.72** | 14 | 8 | 3 |
-| Single-answer (18) | **0.83** | | | |
+| In-scope (25) | **0.78** | 16 | 7 | 2 |
+| Single-answer (18) | **0.92** | | | |
 | Multi-hop (7) | 0.43 | | | |
 | Out-of-scope (5) | 5 / 5 abstained | | | |
+
+First grading (before the reference fixes): in-scope 0.72, single-answer 0.83, 14/8/3.
 
 **Spot-check of the judge (4 verdicts):**
 - `lgd-001` = 2 — correct: every LGD floor matches.
@@ -24,7 +27,12 @@ abstentions are scored by rule (no call). Reproduce: `uv run reglens judge --set
   reference's "does not address LSIs" is arguably equivalent.
 
 So the judge is reliable on clear facts but strict on framing; treat single-item scores as
-indicative and the aggregate (0.83 single / 0.43 multi-hop) as the signal.
+indicative and the aggregate as the signal. Both references were reworded (moc-001: A/B are
+deficiency categories, C a separate MoC component; app-001: "does not address LSIs" accepted) and
+both answers then scored 2.
+
+**Remaining gaps** (score < 2): 6 of 7 multi-hop questions (missing a second or third citation
+chain), plus dod-007 (omits the 5% sale threshold), cmp-001 and cmp-002 (omit a secondary detail).
 
 ## Run 2 (2026-10-29): partial-answer prompt + glossary query expansion
 

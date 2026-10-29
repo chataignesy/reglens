@@ -22,7 +22,7 @@ Dates are targets; phase exit criteria matter more than dates.
 | 0 — Foundations | 26 Oct – 8 Nov 2026 | ✅ Done |
 | 1 — Ingestion & retrieval | 9 – 29 Nov 2026 | ✅ Done early (27 Oct) — single-answer recall@10 0.89 on 80 questions; see [results](results/retrieval-phase1.md) |
 | 2 — Grounded Q&A | 30 Nov – 20 Dec 2026 | **In progress** (started early) — pipeline, verifier and smoke eval done; see [results](results/answers-phase2.md) |
-| 3 — Agentic retrieval & MCP | 4 – 24 Jan 2027 | Not started |
+| 3 — Agentic retrieval & MCP | 4 – 24 Jan 2027 | **In progress** (started early) — tools, MCP server, bounded agent; multi-hop correctness 0.43 → 0.71 ([results](results/agent-phase3.md)) |
 | 4 — Policy gap analysis | 25 Jan – 21 Feb 2027 | Not started |
 | 5 — Polish & launch | 22 Feb – 7 Mar 2027 | Not started |
 
@@ -139,6 +139,12 @@ version in force on the as-of date; `reglens download --as-of 2027-01-01` fetche
 - Comparison: pipeline Q&A vs agentic, on multi-hop questions (cross-references, definitions, Q&A).
 
 **Exit:** agentic beats pipeline on multi-hop questions at ≤ 50k tokens/query (Sonnet). **LinkedIn post 3:** demo video incl. MCP in Claude.
+
+**Status (2026-10-29):**
+- ✅ Tools (`search`, `get_article`, `follow_reference`, `get_definition`, `get_qa`) with citation keys; ECB keys name the part
+- ✅ RegLens MCP server (stdio) and bounded agent (`reglens ask --agent`): tool-call budget + cost cap
+- ✅ Multi-hop smoke (7): correctness **0.43 → 0.71**, citation recall **0.18 → 0.72**, no wrong answers; **~63k tokens/question** (above the 50k target)
+- ⏳ Routing (single-pass default, agent for multi-hop), stopping rule (mh-003), token reduction to ≤ 50k
 
 ## Phase 4 — Policy gap analysis · 25 Jan – 21 Feb 2027 · €40
 

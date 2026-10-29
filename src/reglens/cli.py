@@ -269,6 +269,9 @@ def _golden_items(args: argparse.Namespace) -> list:
     items = [i for i in load_golden(paths) if i.status == "verified"]
     if getattr(args, "type", None):
         items = [i for i in items if i.type == args.type]
+    if getattr(args, "id", None):
+        ids = set(args.id.split(","))
+        items = [i for i in items if i.id in ids]
     return items[: getattr(args, "limit", None) or None]
 
 
@@ -431,6 +434,7 @@ def main(argv: list[str] | None = None) -> None:
     eva.add_argument("--yes", action="store_true", help="actually call the model")
     eva.add_argument("--agent", action="store_true", help="agentic answering (MCP tools)")
     eva.add_argument("--type", help="only this golden type, e.g. multi_hop")
+    eva.add_argument("--id", help="only these golden ids, comma-separated")
     eva.set_defaults(func=_cmd_eval_answers)
 
     jdg = sub.add_parser("judge", help="LLM judge of answer correctness (bulk tier, cached)")
@@ -439,6 +443,7 @@ def main(argv: list[str] | None = None) -> None:
     jdg.add_argument("--yes", action="store_true", help="actually call the judge model")
     jdg.add_argument("--agent", action="store_true", help="grade the agentic answers")
     jdg.add_argument("--type", help="only this golden type, e.g. multi_hop")
+    jdg.add_argument("--id", help="only these golden ids, comma-separated")
     jdg.set_defaults(func=_cmd_judge)
 
     gold = sub.add_parser("golden", help="validate the golden eval set and show its mix")

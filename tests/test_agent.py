@@ -70,3 +70,37 @@ def test_agent_gate_skips_llm(monkeypatch):
     fake = FakeCLI("{}")
     ans = run.answer_agentic(None, fake, load_config(), "AML due diligence?")
     assert ans.abstained and fake.kwargs is None
+
+
+def test_shortened_and_combined_keys_resolve(monkeypatch):
+    """Prose often shortens a key or lists two in one bracket; both must map to passages."""
+    monkeypatch.setattr(run, "resolve_key", lambda conn, key: [ROWS[key]] if key in ROWS else [])
+    received = ["CRR Art. 151(8)", "CRR Art. 161(1)"]
+    context, mapping = run._resolve(
+        None, ["CRR Art. 151(8)", "Art. 161(1)", "CRR Art. 151(8); CRR Art. 161(1)", "para. 9"],
+        received,
+    )
+    assert [h.id for h in context] == ["c1", "c2"]  # one context entry per chunk
+    assert mapping["Art. 161(1)"] == ["C2"]
+    assert mapping["CRR Art. 151(8); CRR Art. 161(1)"] == ["C1", "C2"]
+    assert mapping["para. 9"] == ["C?"]
+    assert run._match_received("EBA Art. 161(1)", received) is None  # name words must match
+
+
+def test_mcp_tool_calls_are_traced(monkeypatch, tmp_path):
+    import reglens.agent.mcp_server as srv
+
+    class Box:
+        calls = 0
+
+        def search(self, query, k, source):
+            self.calls += 1
+            return "[CRR Art. 181(1)] (law)\ntext\n\n[EBA GL downturn LGD para. 36] (supervisory)\nx"
+
+    trace = tmp_path / "trace.jsonl"
+    monkeypatch.setenv("REGLENS_TRACE_FILE", str(trace))
+    monkeypatch.setattr(srv, "_box", Box())
+    srv.search("downturn LGD", 6, None)
+    entry = json.loads(trace.read_text(encoding="utf-8"))
+    assert entry["tool"] == "search" and entry["call"] == 1
+    assert entry["keys"] == ["CRR Art. 181(1)", "EBA GL downturn LGD para. 36"]

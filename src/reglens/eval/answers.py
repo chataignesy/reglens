@@ -28,13 +28,13 @@ PROMPT_VERSION = hashlib.sha256(SYSTEM.encode()).hexdigest()[:8]
 
 
 def answer_version(agent: bool = False) -> str:
-    """Cache namespace: the single-pass prompt hash, or 'agent-<hash of prompt + tools>'."""
+    """Cache namespace: the single-pass prompt hash, or 'agent-<hash of agent code>'."""
     if not agent:
         return PROMPT_VERSION
-    from reglens.agent import tools
-    from reglens.agent.run import AGENT_SYSTEM
+    from reglens.agent import run, tools
 
-    src = AGENT_SYSTEM + open(tools.__file__, encoding="utf-8").read()
+    src = run.AGENT_SYSTEM + open(tools.__file__, encoding="utf-8").read()
+    src += open(run.__file__, encoding="utf-8").read()  # key resolution changes answers too
     return "agent-" + hashlib.sha256(src.encode()).hexdigest()[:8]
 
 

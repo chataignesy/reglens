@@ -45,6 +45,7 @@ class Answer:
     model: str | None = None
     usage_tokens: int = 0
     errors: list[str] = field(default_factory=list)
+    trace: list[dict] = field(default_factory=list)  # agent tool calls (empty for single-pass)
 
     def cited_hits(self) -> list[Hit]:
         ids = {c for cl in self.claims for c in cl.citations}

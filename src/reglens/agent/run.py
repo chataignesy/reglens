@@ -36,7 +36,14 @@ How to work:
   exposure class, a defined term, a threshold in an RTS, a guideline paragraph), use
   `follow_reference` on its key and then `get_article` / `get_definition` to read them.
 - Use `get_qa` when an EBA interpretation of a CRR article could matter.
-- You have a small tool budget (about {{max_calls}} calls). Stop as soon as you can answer.
+- Before answering, check the legal basis:
+  (a) if the passages you rely on cite CRR or RTS provisions (e.g. "Article 181(1)(b)", "the RTS
+      on economic downturn"), read the main one with `get_article`, or `follow_reference` first;
+  (b) if the question asks what is required and all your passages are supervisory (EBA
+      guidelines, Q&A, ECB guide), `search` for the underlying CRR or RTS text.
+  Answer from supervisory passages alone only if these calls find nothing; then say so.
+- You have a small tool budget (about {{max_calls}} calls). Once the checks above are done,
+  stop as soon as you can answer.
 
 Rules:
 1. Every claim must be supported by passages you received and cite their keys exactly as shown in
@@ -56,7 +63,7 @@ Final reply: ONE JSON object and nothing else:
 """
 
 
-def _mcp_config(max_calls: int) -> str:
+def _mcp_config(max_calls: int, trace_path: str) -> str:
     cfg = {
         "mcpServers": {
             "reglens": {
@@ -64,6 +71,7 @@ def _mcp_config(max_calls: int) -> str:
                 "args": ["-m", "reglens.agent.mcp_server"],
                 "env": {
                     "REGLENS_MAX_TOOL_CALLS": str(max_calls),
+                    "REGLENS_TRACE_FILE": trace_path,
                     "PYTHONIOENCODING": "utf-8",
                     **(
                         {"REGLENS_DATABASE_URL": os.environ["REGLENS_DATABASE_URL"]}
@@ -79,22 +87,59 @@ def _mcp_config(max_calls: int) -> str:
         return f.name
 
 
-def _resolve(conn, keys: list[str]) -> tuple[list[Hit], dict[str, str]]:
-    """Unique cited keys -> context hits (in citation order) and key -> 'C#'."""
+_REF_RE = re.compile(r"(?:Art\.|Article|paras?\.|recital|Section)\s*\S.*$")
+
+
+def _match_received(key: str, received: list[str]) -> str | None:
+    """A shortened key ("para. 26", "EBA GL downturn LGD para. 26") -> the one received key
+    with the same reference whose name contains all the words given. None if not unique."""
+    m = _REF_RE.search(key)
+    if not m:
+        return None
+    ref, words = m.group(), set(re.findall(r"\w+", key[: m.start()].lower()))
+    hits = {
+        k
+        for k in received
+        if k.endswith(ref) and words <= set(re.findall(r"\w+", k[: -len(ref)].lower()))
+    }
+    return hits.pop() if len(hits) == 1 else None
+
+
+def _resolve(
+    conn, keys: list[str], received: list[str] = ()
+) -> tuple[list[Hit], dict[str, list[str]]]:
+    """Cited keys -> context hits (in citation order, one per chunk) and key -> ['C#', ...].
+    A key may list several passages ("A; B"); shortened keys are matched to `received` keys."""
     context: list[Hit] = []
-    mapping: dict[str, str] = {}
+    by_chunk: dict[str, str] = {}
+    mapping: dict[str, list[str]] = {}
     for key in keys:
         if key in mapping:
             continue
-        rows = resolve_key(conn, key)
-        if not rows:
-            mapping[key] = "C?"  # unknown key -> flagged by the citation check
-            continue
-        merged = rows[0].hit(1.0)
-        merged.text = "\n".join(r.text for r in rows)  # windowed chunks: verify against all parts
-        context.append(merged)
-        mapping[key] = f"C{len(context)}"
+        cids = []
+        for part in (p.strip() for p in key.split(";") if p.strip()):
+            rows = resolve_key(conn, part)
+            if not rows and (alt := _match_received(part, received)):
+                rows = resolve_key(conn, alt)
+            if not rows:
+                cids.append("C?")  # unknown key -> flagged by the citation check
+                continue
+            if rows[0].id not in by_chunk:
+                merged = rows[0].hit(1.0)
+                merged.text = "\n".join(r.text for r in rows)  # windowed chunks: all parts
+                context.append(merged)
+                by_chunk[rows[0].id] = f"C{len(context)}"
+            cids.append(by_chunk[rows[0].id])
+        mapping[key] = cids
     return context, mapping
+
+
+def _read_trace(path: str) -> list[dict]:
+    try:
+        lines = Path(path).read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return []
+    return [json.loads(line) for line in lines if line.strip()]
 
 
 def answer_agentic(
@@ -123,7 +168,9 @@ def answer_agentic(
             as_of_statement(top, today),
         )
 
-    mcp_file = _mcp_config(max_calls)
+    with tempfile.NamedTemporaryFile(suffix=".jsonl", delete=False) as f:
+        trace_file = f.name
+    mcp_file = _mcp_config(max_calls, trace_file)
     allowed = ",".join(f"mcp__reglens__{t}" for t in TOOLS)
     try:
         completion = provider.complete(
@@ -143,6 +190,8 @@ def answer_agentic(
         )
     finally:
         Path(mcp_file).unlink(missing_ok=True)
+        trace = _read_trace(trace_file)
+        Path(trace_file).unlink(missing_ok=True)
 
     ans = Answer(
         question,
@@ -154,6 +203,7 @@ def answer_agentic(
         "",
         model=completion.model,
         usage_tokens=completion.usage.total_tokens,
+        trace=trace,
     )
     try:
         data = _parse_json(completion.text)
@@ -166,9 +216,16 @@ def answer_agentic(
     text = str(data.get("answer") or "")
     keys = [str(k) for c in claims_raw for k in c.get("citations", [])]
     keys += re.findall(r"\[([^\[\]]+?)\]", text)
-    context, mapping = _resolve(conn, keys)
-    for key, cid in sorted(mapping.items(), key=lambda kv: -len(kv[0])):
-        text = text.replace(f"[{key}]", f"[{cid}]")
+    received = [k for t in trace for k in t.get("keys", [])]
+    context, mapping = _resolve(conn, keys, received)
+    text = re.sub(
+        r"\[([^\[\]]+?)\]",
+        lambda m: "".join(f"[{c}]" for c in mapping.get(m.group(1), ["C?"])),
+        text,
+    )
+    unresolved = [k for k, cids in mapping.items() if "C?" in cids]
+    if unresolved:
+        ans.trace.append({"tool": "answer", "unresolved_keys": unresolved})
 
     ans.abstained = bool(data.get("abstain"))
     ans.abstain_reason = str(data.get("abstain_reason") or "")
@@ -178,7 +235,7 @@ def answer_agentic(
     ans.claims = [
         Claim(
             str(c.get("text", "")),
-            [mapping.get(str(k), "C?") for k in c.get("citations", [])],
+            [cid for k in c.get("citations", []) for cid in mapping.get(str(k), ["C?"])],
             str(c.get("kind", "")),
         )
         for c in claims_raw

@@ -247,7 +247,11 @@ def _cmd_ask(args: argparse.Namespace) -> None:
     from reglens.llm.provider import get_provider
 
     cfg = load_config(args.config)
-    if args.agent:
+    if args.route:
+        from reglens.answer.route import answer_routed
+
+        ans = answer_routed(db.connect(), get_provider(cfg), cfg, args.question)
+    elif args.agent:
         from reglens.agent.run import answer_agentic
 
         ans = answer_agentic(db.connect(), get_provider(cfg), cfg, args.question)
@@ -280,10 +284,26 @@ def _cmd_eval_answers(args: argparse.Namespace) -> None:
 
     cfg = load_config(args.config)
     items = _golden_items(args)
-    cached = {p.stem for p in (ANSWER_DIR / answer_version(args.agent)).glob("*.json")}
-    todo = [i for i in items if i.id not in cached]
+    routes = None
+    if args.route:
+        from reglens.eval.route import cached_routes
+
+        routes = cached_routes()
+        if missing := [i.id for i in items if i.type != "out_of_scope" and i.id not in routes]:
+            print(f"No cached route for {', '.join(missing)}: run `reglens eval-route` first.")
+            return
+
+    def mode(item) -> bool:
+        return routes.get(item.id) == "agent" if routes is not None else args.agent
+
+    cached = {m: {p.stem for p in (ANSWER_DIR / answer_version(m)).glob("*.json")} for m in (0, 1)}
+    todo = [i for i in items if i.id not in cached[mode(i)]]
     per_call = args.tokens_per_call
     est = len(todo) * per_call
+    if routes is not None:
+        n_agent = sum(mode(i) for i in todo)
+        est = n_agent * args.agent_tokens_per_call + (len(todo) - n_agent) * per_call
+        print(f"routed: {n_agent} new agent calls, {len(todo) - n_agent} new single-pass calls")
     model = cfg.model((cfg.answer or {}).get("tier", "dev"))
     print(
         f"{len(items)} items ({len(items) - len(todo)} cached), {len(todo)} new LLM calls on "
@@ -298,8 +318,15 @@ def _cmd_eval_answers(args: argparse.Namespace) -> None:
     from reglens.index import db
     from reglens.llm.provider import get_provider
 
-    s = run(db.connect(), get_provider(cfg), cfg, items, log=lambda m: print(m, flush=True),
-            agent=args.agent)
+    s = run(
+        db.connect(),
+        get_provider(cfg),
+        cfg,
+        items,
+        log=lambda m: print(m, flush=True),
+        agent=args.agent,
+        routes=routes,
+    )
     print(
         f"\nabstain on out-of-scope {s['abstain_on_out_of_scope']}  "
         f"answered in-scope {s['answered_in_scope']}  citation recall {s['citation_recall']}  "
@@ -312,6 +339,35 @@ def _cmd_eval_answers(args: argparse.Namespace) -> None:
     if s["errors"]:
         print(f"  parse errors: {', '.join(s['errors'])}")
     print(f"details: {s['file']}")
+
+
+def _cmd_eval_route(args: argparse.Namespace) -> None:
+    from reglens.eval.route import ROUTE_DIR, routable, run
+
+    cfg = load_config(args.config)
+    items = routable(_golden_items(args))
+    cached = {p.stem for p in ROUTE_DIR.glob("*.json")}
+    todo = [i for i in items if i.id not in cached]
+    est = len(todo) * args.tokens_per_call
+    print(
+        f"{len(items)} items ({len(items) - len(todo)} cached), {len(todo)} router calls on "
+        f"{cfg.model('bulk')}: ~{est:,} tokens (at ~{args.tokens_per_call:,}/call)"
+    )
+    if not args.yes:
+        print("Dry run. Re-run with --yes to call the model.")
+        return
+
+    from reglens.llm.provider import get_provider
+
+    s = run(get_provider(cfg), items, log=lambda m: print(m, flush=True))
+    print(
+        f"\naccuracy {s['accuracy']}  agent recall {s['agent_recall']}  "
+        f"agent precision {s['agent_precision']}  confusion {s['confusion']}  "
+        f"new tokens {s['new_tokens_this_run']:,}"
+    )
+    for m in s["misrouted"]:
+        print(f"  misrouted: {m['id']} ({m['type']}) -> {m['route']}: {m['reason']}")
+    print(f"details: {s['path']}")
 
 
 def _cmd_judge(args: argparse.Namespace) -> None:
@@ -423,6 +479,9 @@ def main(argv: list[str] | None = None) -> None:
     ask.add_argument("--json", action="store_true", help="print the full answer record")
     ask.add_argument("--agent", action="store_true",
                      help="agentic retrieval via the RegLens MCP tools (several tool calls)")
+    ask.add_argument(
+        "--route", action="store_true", help="let the Haiku router pick single-pass or agent"
+    )
     ask.set_defaults(func=_cmd_ask)
 
     eva = sub.add_parser("eval-answers", help="answer-level eval on the golden set (LLM calls)")
@@ -435,7 +494,21 @@ def main(argv: list[str] | None = None) -> None:
     eva.add_argument("--agent", action="store_true", help="agentic answering (MCP tools)")
     eva.add_argument("--type", help="only this golden type, e.g. multi_hop")
     eva.add_argument("--id", help="only these golden ids, comma-separated")
+    eva.add_argument(
+        "--route", action="store_true", help="per item, the mode chosen by the cached router"
+    )
+    eva.add_argument(
+        "--agent-tokens-per-call", type=int, default=50000, help="for the routed estimate"
+    )
     eva.set_defaults(func=_cmd_eval_answers)
+
+    rte = sub.add_parser("eval-route", help="router accuracy: agent vs single-pass (bulk tier)")
+    rte.add_argument("--set", default="phase0", help="golden file stem or 'all'")
+    rte.add_argument("--tokens-per-call", type=int, default=1500, help="for the estimate")
+    rte.add_argument("--yes", action="store_true", help="actually call the router model")
+    rte.add_argument("--type", help="only this golden type")
+    rte.add_argument("--id", help="only these golden ids, comma-separated")
+    rte.set_defaults(func=_cmd_eval_route)
 
     jdg = sub.add_parser("judge", help="LLM judge of answer correctness (bulk tier, cached)")
     jdg.add_argument("--set", default="phase0", help="golden file stem or 'all'")

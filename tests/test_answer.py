@@ -106,3 +106,11 @@ def test_pipeline_gate_and_parse(monkeypatch):
     md = render(ans)
     assert "[C1] CRR Art. 178(1) — law" in md
     assert "not legal or regulatory advice" in md
+
+
+def test_parse_json_repairs_unescaped_quotes():
+    from reglens.answer.pipeline import _parse_json
+
+    raw = '{"answer": "I read your "past due" as unbroken.", "claims": [{"text": "a", "kind": "law"}]}'
+    assert _parse_json(raw)["answer"] == 'I read your "past due" as unbroken.'
+    assert _parse_json('```json\n{"a": "x\\"y"}\n```') == {"a": 'x"y'}

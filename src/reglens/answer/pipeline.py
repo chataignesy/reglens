@@ -94,7 +94,33 @@ def _parse_json(text: str) -> dict:
     start, end = text.find("{"), text.rfind("}")
     if start < 0 or end <= start:
         raise ValueError("no JSON object in model output")
-    return json.loads(text[start : end + 1])
+    raw = text[start : end + 1]
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        return json.loads(_escape_inner_quotes(raw))
+
+
+def _escape_inner_quotes(raw: str) -> str:
+    """Escape quotes the model left unescaped inside strings (e.g. 'read your "past due" as'):
+    inside a string, a quote ends it only if followed by , : } ] or the end."""
+    out, in_str, i = [], False, 0
+    while i < len(raw):
+        ch = raw[i]
+        if in_str and ch == "\\":
+            out.append(raw[i : i + 2])
+            i += 2
+            continue
+        if ch == '"':
+            if not in_str:
+                in_str = True
+            elif (rest := raw[i + 1 :].lstrip()) == "" or rest[0] in ",:}]":
+                in_str = False
+            else:
+                ch = '\\"'
+        out.append(ch)
+        i += 1
+    return "".join(out)
 
 
 def answer_question(

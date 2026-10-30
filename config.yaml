@@ -58,8 +58,8 @@ answer:
   abstain_below: 0.05            # skip the LLM call if the best rerank score is below this
 
 agent:
-  max_calls: 8                   # tool calls per question (enforced by the MCP server)
-  max_budget_usd: 0.5            # claude -p hard cap per question (CLI's own cost estimate)
+  max_calls: 10                  # tool calls per question (enforced by the MCP server)
+  max_budget_usd: 0.75           # claude -p hard cap per question (CLI's own cost estimate)
 
 tokens:
   chars_per_token: 3.01          # calibrated 2026-10-27 on CRR text, claude-haiku-5-5

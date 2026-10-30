@@ -66,17 +66,29 @@ def citation_recall(item: GoldenItem, record: dict) -> float | None:
 
 
 def run(
-    conn, provider, config: Config, items: list[GoldenItem], *, log=print, agent: bool = False
+    conn,
+    provider,
+    config: Config,
+    items: list[GoldenItem],
+    *,
+    log=print,
+    agent: bool = False,
+    routes: dict[str, str] | None = None,
 ) -> dict:
-    version = answer_version(agent)
-    out_dir = ANSWER_DIR / version
-    if agent:
-        from reglens.agent.run import answer_agentic as answer_fn
-    else:
-        answer_fn = answer_question
-    out_dir.mkdir(parents=True, exist_ok=True)
+    """`routes` (item id -> 'agent' | 'single', from the router eval) picks the mode per item;
+    each mode keeps its own cache, so routed runs reuse earlier single-pass and agent answers."""
+    from reglens.agent.run import answer_agentic
+
+    modes = {
+        False: (ANSWER_DIR / answer_version(False), answer_question),
+        True: (ANSWER_DIR / answer_version(True), answer_agentic),
+    }
+    version = "routed" if routes is not None else answer_version(agent)
     rows, new_tokens = [], 0
     for n, item in enumerate(items, 1):
+        use_agent = routes.get(item.id) == "agent" if routes is not None else agent
+        out_dir, answer_fn = modes[use_agent]
+        out_dir.mkdir(parents=True, exist_ok=True)
         path = out_dir / f"{item.id}.json"
         if path.exists():
             record = json.loads(path.read_text(encoding="utf-8"))
@@ -92,6 +104,7 @@ def run(
             {
                 "id": item.id,
                 "type": item.type,
+                "mode": "agent" if use_agent else "single",
                 "abstained": record["abstained"],
                 "abstain_correct": record["abstained"] == oos,
                 "citation_recall": None if oos else citation_recall(item, record),

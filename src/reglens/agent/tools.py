@@ -112,7 +112,7 @@ class Toolbox:
     """The agent's tools. Stateful only for the call budget."""
 
     def __init__(
-        self, conn, *, max_calls: int = 8, passage_chars: int = 1800, result_chars: int = 9000
+        self, conn, *, max_calls: int = 10, passage_chars: int = 4000, result_chars: int = 14000
     ):
         self.conn = conn
         self.max_calls = max_calls

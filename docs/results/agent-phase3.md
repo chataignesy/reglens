@@ -59,11 +59,66 @@ The behaviour changed as intended: the agent now grounds the requirement in law 
 answering from the guidelines alone. It still did not read RTS Art. 4 (duration). One key in the
 prose was a range ("RTS … Art. 1(1)-(2)") and still shows as `[C?]`.
 
+## Routing (2026-10-29)
+
+A Haiku router (`reglens ask --route`) sends each question to single-pass or to the agent;
+the retrieval gate runs first, so out-of-scope questions never reach it. Agent limits were
+raised for quality: 10 tool calls, 2,000 chars per passage, 10,000 per result, $0.75 cap.
+Independent tool calls are batched in one turn. A run with no tool call at all (tools not
+available) is retried once.
+
+**Router** (`reglens eval-route --set all`, 70 in-scope questions, ~1k tokens each): accuracy
+0.81; it routes 11 of 14 multi-hop/comparison questions to the agent (recall 0.79), but also
+10 of 56 single-answer questions (precision 0.52). Over-routing costs tokens, not quality.
+Under-routed: mh-011, mh-012 ("one guideline topic"), cmp-001.
+
+**Smoke set, 25 in-scope questions** (12 routed to the agent):
+
+| | Single-pass | **Routed** |
+|---|---|---|
+| Correctness (mean score / 2) | 0.78 | **0.86** |
+| — factual (15) | 0.97 | 0.97 |
+| — multi-hop (7) | 0.43 | **0.86** (5 fully, 2 partly) |
+| Fully correct / wrong | 16 / 2 | **19 / 1** |
+| Citation recall | 0.62 | **0.82** |
+| Tokens (25 questions) | 147k | 685k (+ ~25k router) |
+
+- mh-003 now scores 2 (reads CRR Art. 181 and the RTS before answering).
+- **Two losses:** cmp-002 (1 → 0): the ECB guide release table is cut by the 2,000-char
+  passage cap before the 2026 rows (they start at char 2,373 of a 3,674-char chunk), so the
+  agent abstained. app-001 (2 → 1): hedged on LSI scope.
+- Routed factual questions (dod-002, dod-007, moc-001) kept their scores at 2-8× the tokens.
+
+## Full-chunk passages (2026-10-30)
+
+Passage cap 2,000 → 4,000 chars (longest chunk: 3,940, so nothing is truncated any more),
+result cap 10,000 → 14,000. The 12 routed agent questions re-run and re-judged. The JSON
+parser now also repairs unescaped quotes inside strings (mh-002 failed on `your "past due"`).
+
+| Routed agent questions | Judge 2k cap → 4k cap | Tool calls | Tokens |
+|---|---|---|---|
+| cmp-002 ECB guide 2026 release | **0 → 2** | 2 → 11 | 20k → 151k |
+| app-001 guide and LSIs | **1 → 2** | 7 → 5 | 64k → 52k |
+| dod-007 materiality | **1 → 2** | 4 → 4 | 30k → 30k |
+| dod-002, moc-001, mh-001, mh-002 | 2 → 2 | | |
+| mh-006, mh-007 | 1 → 1 | | |
+| mh-003 downturn LGD | **2 → 1** | 8 → 9 | 80k → 109k |
+| mh-004 distressed restructuring | **2 → 1** | 7 → 5 | 72k → 50k |
+| mh-005 financial collateral | **2 → 1** | 5 → 2 | 50k → 14k |
+
+- Smoke set routed correctness **0.86 → 0.88** (multi-hop 0.86 → 0.64; others up); agent tokens
+  609k → 588k.
+- With larger results the agent often stops sooner (mh-005: 2 calls, misses the Art. 181(1)
+  conditions; mh-001: 12 → 3 calls, still correct). cmp-002 shows the opposite failure: 11
+  near-identical searches once the release table was found.
+- **Caveat:** one sample per question and n = 7 multi-hop; a 3-point swing is within run-to-run
+  and judge variance. A repeat run is needed before attributing the multi-hop drop to the cap.
+
 ## Next
 
-1. **Routing:** single-pass by default (single-answer correctness is already 0.92), agent for
-   questions that need several provisions — e.g. when the single-pass answer reports missing
-   passages, or a cheap classifier flags multi-hop.
-2. **Stopping:** require at least one `follow_reference` before answering when the first passages
-   cite other provisions (would have caught mh-003).
-3. **Cost:** shorter tool results (passage cap 1,800 → ~1,200 chars) and 6 instead of 8 calls; re-measure.
+1. ✅ Routing (Haiku classifier) and ✅ stopping rule — see above.
+2. **Passage cap:** chunks reach ~3,700 chars, so a 2,000-char cap truncates tables and long
+   points (cmp-002). Raise the cap to cover a full chunk and re-measure.
+3. **API agent loop** for the bring-your-own-key demo: today the agent runs only via `claude -p`
+   (subscription); limits (turns, tool calls, tokens) would then be enforced in RegLens code.
+4. Quality is prioritised over the 50k tokens/question target (multi-hop averages ~65k).

@@ -1,7 +1,7 @@
 """RegLens MCP server (stdio): the corpus tools for Claude or any MCP client.
 
 Run: uv run python -m reglens.agent.mcp_server
-Env: REGLENS_MAX_TOOL_CALLS (default 8) bounds the calls per server process (one agent run);
+Env: REGLENS_MAX_TOOL_CALLS (default 10) bounds the calls per server process (one agent run);
 REGLENS_TRACE_FILE, if set, gets one JSON line per tool call (tool, args, passage keys returned).
 All tools are read-only.
 """
@@ -34,7 +34,7 @@ def box() -> Toolbox:
     if _box is None:
         from reglens.index import db
 
-        _box = Toolbox(db.connect(), max_calls=int(os.environ.get("REGLENS_MAX_TOOL_CALLS", "8")))
+        _box = Toolbox(db.connect(), max_calls=int(os.environ.get("REGLENS_MAX_TOOL_CALLS", "10")))
     return _box
 
 

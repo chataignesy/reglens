@@ -42,8 +42,9 @@ How to work:
   (b) if the question asks what is required and all your passages are supervisory (EBA
       guidelines, Q&A, ECB guide), `search` for the underlying CRR or RTS text.
   Answer from supervisory passages alone only if these calls find nothing; then say so.
-- You have a small tool budget (about {{max_calls}} calls). Once the checks above are done,
-  stop as soon as you can answer.
+- You have a small tool budget (about {{max_calls}} calls). Make independent calls together in
+  one turn (e.g. several `get_article` calls at once): every extra turn re-reads all passages.
+  Once the checks above are done, stop as soon as you can answer.
 
 Rules:
 1. Every claim must be supported by passages you received and cite their keys exactly as shown in
@@ -142,6 +143,27 @@ def _read_trace(path: str) -> list[dict]:
     return [json.loads(line) for line in lines if line.strip()]
 
 
+def _run_once(provider, question, max_calls, opts, extra) -> tuple:
+    """One `claude -p` agent run with a fresh MCP server; returns (completion, tool trace)."""
+    with tempfile.NamedTemporaryFile(suffix=".jsonl", delete=False) as f:
+        trace_file = f.name
+    mcp_file = _mcp_config(max_calls, trace_file)
+    try:
+        completion = provider.complete(
+            question,
+            purpose="agent",
+            system=AGENT_SYSTEM.replace("{max_calls}", str(max_calls)),
+            tier=opts.get("tier", "dev"),
+            effort=opts.get("effort"),
+            extra_args=["--mcp-config", mcp_file, *extra],
+        )
+    finally:
+        Path(mcp_file).unlink(missing_ok=True)
+        trace = _read_trace(trace_file)
+        Path(trace_file).unlink(missing_ok=True)
+    return completion, trace
+
+
 def answer_agentic(
     conn,
     provider: ClaudeCLIProvider,
@@ -152,7 +174,7 @@ def answer_agentic(
 ) -> Answer:
     opts = (config.answer or {}) | (config.agent or {})
     today = today or date.today()
-    max_calls = int(opts.get("max_calls", 8))
+    max_calls = int(opts.get("max_calls", 10))
 
     # Same retrieval gate as the single-pass pipeline: no LLM call for clearly unrelated questions.
     top = search(conn, question, mode="rerank", k=1)
@@ -168,30 +190,14 @@ def answer_agentic(
             as_of_statement(top, today),
         )
 
-    with tempfile.NamedTemporaryFile(suffix=".jsonl", delete=False) as f:
-        trace_file = f.name
-    mcp_file = _mcp_config(max_calls, trace_file)
     allowed = ",".join(f"mcp__reglens__{t}" for t in TOOLS)
-    try:
-        completion = provider.complete(
-            question,
-            purpose="agent",
-            system=AGENT_SYSTEM.replace("{max_calls}", str(max_calls)),
-            tier=opts.get("tier", "dev"),
-            effort=opts.get("effort"),
-            extra_args=[
-                "--mcp-config",
-                mcp_file,
-                "--allowedTools",
-                allowed,
-                "--max-budget-usd",
-                str(opts.get("max_budget_usd", 0.5)),
-            ],
-        )
-    finally:
-        Path(mcp_file).unlink(missing_ok=True)
-        trace = _read_trace(trace_file)
-        Path(trace_file).unlink(missing_ok=True)
+    extra = ["--allowedTools", allowed, "--max-budget-usd", str(opts.get("max_budget_usd", 0.75))]
+    tokens = 0
+    for _attempt in range(2):  # a run without any tool call means the tools were not available
+        completion, trace = _run_once(provider, question, max_calls, opts, extra)
+        tokens += completion.usage.total_tokens
+        if trace:
+            break
 
     ans = Answer(
         question,
@@ -202,9 +208,11 @@ def answer_agentic(
         [],
         "",
         model=completion.model,
-        usage_tokens=completion.usage.total_tokens,
+        usage_tokens=tokens,
         trace=trace,
     )
+    if not trace:
+        ans.errors.append("agent made no tool calls (RegLens MCP tools unavailable?)")
     try:
         data = _parse_json(completion.text)
     except (ValueError, json.JSONDecodeError) as e:

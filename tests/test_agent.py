@@ -40,6 +40,7 @@ def test_agent_resolves_keys_and_bounds(monkeypatch):
     top = Hit("c1", "crr3-consolidated", "Art. 151(8)", "", "", "L1", None, 0.9)
     monkeypatch.setattr(run, "search", lambda *a, **k: [top])
     monkeypatch.setattr(run, "resolve_key", lambda conn, key: [ROWS[key]] if key in ROWS else [])
+    monkeypatch.setattr(run, "_read_trace", lambda path: [{"tool": "search", "keys": []}])
     reply = {
         "abstain": False,
         "answer": "Supervisory LGD applies [CRR Art. 151(8)]: 40 % [CRR Art. 161(1)].",
@@ -104,3 +105,19 @@ def test_mcp_tool_calls_are_traced(monkeypatch, tmp_path):
     entry = json.loads(trace.read_text(encoding="utf-8"))
     assert entry["tool"] == "search" and entry["call"] == 1
     assert entry["keys"] == ["CRR Art. 181(1)", "EBA GL downturn LGD para. 36"]
+
+
+def test_agent_retries_when_no_tool_was_called(monkeypatch):
+    top = Hit("c1", "crr3-consolidated", "Art. 151(8)", "", "", "L1", None, 0.9)
+    monkeypatch.setattr(run, "search", lambda *a, **k: [top])
+    monkeypatch.setattr(run, "_read_trace", lambda path: [])
+    calls = []
+
+    class Fake(FakeCLI):
+        def complete(self, prompt, **kw):
+            calls.append(1)
+            return super().complete(prompt, **kw)
+
+    ans = run.answer_agentic(None, Fake('{"abstain": true}'), load_config(), "F-IRB?")
+    assert len(calls) == 2 and ans.usage_tokens == 2 * 38900
+    assert ans.errors == ["agent made no tool calls (RegLens MCP tools unavailable?)"]

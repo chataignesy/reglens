@@ -144,7 +144,11 @@ version in force on the as-of date; `reglens download --as-of 2027-01-01` fetche
 - ✅ Tools (`search`, `get_article`, `follow_reference`, `get_definition`, `get_qa`) with citation keys; ECB keys name the part
 - ✅ RegLens MCP server (stdio) and bounded agent (`reglens ask --agent`): tool-call budget + cost cap
 - ✅ Multi-hop smoke (7): correctness **0.43 → 0.71**, citation recall **0.18 → 0.72**, no wrong answers; **~63k tokens/question** (above the 50k target)
-- ⏳ Routing (single-pass default, agent for multi-hop), stopping rule (mh-003), token reduction to ≤ 50k
+- ✅ Stopping rule (check the legal basis first) and tool-call traces; mh-003 now fully correct
+- ✅ Haiku router (accuracy 0.81, multi-hop recall 0.79): smoke correctness **0.78 → 0.86**, multi-hop **0.43 → 0.86**, citation recall 0.62 → 0.82; 685k vs 147k tokens on 25 questions
+- ✅ Full-chunk passages (4,000 chars): routed smoke 0.86 → 0.88; multi-hop 0.86 → 0.64 on one sample (variance check pending)
+- ⏳ API agent loop for the BYOK demo
+- Decision: quality over the 50k tokens/query target (multi-hop averages ~65k)
 
 ## Phase 4 — Policy gap analysis · 25 Jan – 21 Feb 2027 · €40
 

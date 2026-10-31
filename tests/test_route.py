@@ -69,3 +69,21 @@ def test_router_eval_metrics(monkeypatch, tmp_path):
     assert json.loads((tmp_path / "routes" / "m1.json").read_text())["route"] == "agent"
     eval_route.run(fake, items, log=lambda m: None)  # cached: no further calls
     assert len(fake.calls) == 3
+
+
+def test_single_pass_gap_falls_back_to_agent(monkeypatch):
+    top = Hit("c1", "crr3-consolidated", "Art. 162(1)", "", "", "L1", None, 0.9)
+    monkeypatch.setattr(route, "search", lambda *a, **k: [top])
+
+    def single(conn, provider, config, question, **kw):
+        return Answer(question, False, "", "partial", [], [], "", usage_tokens=100,
+                      missing_info=True)
+
+    def agent(conn, provider, config, question, **kw):
+        return Answer(question, False, "", "full", [], [], "", usage_tokens=5000)
+
+    monkeypatch.setattr(route, "answer_question", single)
+    monkeypatch.setattr(agent_run, "answer_agentic", agent)
+    ans = route.answer_routed(None, FakeRouter(['{"route": "single"}']), load_config(), "q")
+    assert ans.answer == "full" and ans.usage_tokens == 5000 + 100 + 920
+    assert ans.trace[0]["route"] == "agent" and ans.trace[0]["reason"].startswith("fallback")

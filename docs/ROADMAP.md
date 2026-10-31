@@ -149,6 +149,8 @@ version in force on the as-of date; `reglens download --as-of 2027-01-01` fetche
 - ✅ Search snippets + `get_passage` for full text: routed smoke correctness **0.90** (single-pass 0.78), 482k tokens for the 12 agent questions; a 4,000-char cap alone made the agent stop early (multi-hop 0.64 on two runs)
 - ✅ API agent loop for the BYOK demo: RegLens runs the tool loop on the Messages API with hard limits (10 tool calls, 13 turns, 200k tokens per question); UI modes Auto / Quick / Deep
 - Decision: quality over the 50k tokens/query target (multi-hop averages ~65k)
+- ✅ **Milestone eval, full golden set (80):** routed correctness **0.88** vs 0.81 single-pass (multi-hop 0.67 vs 0.46), 3 wrong of 70, citation recall 0.85, all claims pass the check; 9/10 out-of-scope declined ([results](results/golden-phase3.md))
+- ✅ Four fixes (glossary + expanded reranker query, agent fallback on `missing_info`, scope rule; stricter router tested and reverted): routed **0.91**, single-pass 0.86, **no wrong answers**, 10/10 out-of-scope declined, citation recall 0.90; retrieval recall@10 0.84
 
 ## Phase 4 — Policy gap analysis · 25 Jan – 21 Feb 2027 · €40
 

@@ -89,25 +89,36 @@ def run(
     version = "routed" if routes is not None else answer_version(agent)
     rows, new_tokens = [], 0
     for n, item in enumerate(items, 1):
-        use_agent = routes.get(item.id) == "agent" if routes is not None else agent
-        out_dir, answer_fn = modes[use_agent]
-        out_dir.mkdir(parents=True, exist_ok=True)
-        path = out_dir / f"{item.id}.json"
-        if path.exists():
-            record = json.loads(path.read_text(encoding="utf-8"))
-        else:
+
+        def answer(use_agent: bool, item: GoldenItem = item, n: int = n) -> dict:
+            nonlocal new_tokens
+            out_dir, answer_fn = modes[use_agent]
+            out_dir.mkdir(parents=True, exist_ok=True)
+            path = out_dir / f"{item.id}.json"
+            if path.exists():
+                return json.loads(path.read_text(encoding="utf-8"))
             ans: Answer = answer_fn(conn, provider, config, item.question)
             check = check_answer(ans)  # annotates claims first, so the record stores their checks
             record = ans.to_dict() | {"check": check, "id": item.id}
             path.write_text(json.dumps(record, indent=2, ensure_ascii=False), encoding="utf-8")
             new_tokens += ans.usage_tokens
             log(f"  [{n}/{len(items)}] {item.id}: {ans.usage_tokens:,} tokens")
+            return record
+
+        use_agent = routes.get(item.id) == "agent" if routes is not None else agent
+        record = answer(use_agent)
+        mode = "agent" if use_agent else "single"
+        if routes is not None and not use_agent and record.get("missing_info"):
+            first = record.get("usage_tokens", 0)  # as in answer_routed: agent after a gap
+            record = answer(True)
+            record = record | {"usage_tokens": record.get("usage_tokens", 0) + first}
+            mode = "fallback"
         oos = item.type == "out_of_scope"
         rows.append(
             {
                 "id": item.id,
                 "type": item.type,
-                "mode": "agent" if use_agent else "single",
+                "mode": mode,
                 "abstained": record["abstained"],
                 "abstain_correct": record["abstained"] == oos,
                 "citation_recall": None if oos else citation_recall(item, record),

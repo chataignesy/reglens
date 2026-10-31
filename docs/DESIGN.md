@@ -17,9 +17,9 @@ them, take the top-k by cosine similarity, and ask an LLM to answer from them.
 | Chunking | Fixed 500-token windows | Structure-aware: Part › Title › Chapter › Article › paragraph › point, with a deterministic hierarchy prefix on every chunk | — |
 | Metadata | None | Legal level (law / supervisory / Q&A), version, `applies_to` (SI / LSI), amending act | Answers label each claim |
 | Links between texts | None | Cross-reference graph: 10,274 edges (`refers_to`, `amends`, `uses_definition`, `answers_on`) | Used by the agent |
-| Retrieval | Dense top-k | Hybrid BM25 + dense (RRF) → cross-encoder reranker → practitioner glossary expansion | recall@10 0.59 (BM25) / 0.74 (dense) → **0.81** |
+| Retrieval | Dense top-k | Hybrid BM25 + dense (RRF) → cross-encoder reranker → practitioner glossary expansion | recall@10 0.59 (BM25) / 0.74 (dense) → **0.84** |
 | Grounding | "Answer from the context" | JSON claims, each citing passages; a deterministic checker verifies citations and numbers; abstention gate; "as of" line built by code | **0.99** of claims pass the check; 5/5 out-of-scope questions declined |
-| Multi-step questions | Same single pass | Router → bounded agent with 6 corpus tools over the graph; runs on the Messages API or as an MCP server | Multi-hop correctness 0.43 → **0.71** |
+| Multi-step questions | Same single pass | Router → bounded agent with 6 corpus tools over the graph, agent fallback when a quick answer has gaps; runs on the Messages API or as an MCP server | Correctness 0.86 → **0.91**, no wrong answers (70 questions) |
 | Evaluation | Eyeballing answers | 80-question expert golden set, retrieval metrics, deterministic citation metrics, LLM judge, router eval, repeat runs for variance | — |
 | Cost | Unknown | Token ledger on every call, model tiers, prompt caching, estimates before every run | 3.1M tokens, ≈ €3.6 API-equivalent so far |
 
@@ -96,8 +96,10 @@ dominate. The BM25 query keeps only rare terms (document frequency ≤ 10 %).
 **3.4 Practitioner glossary expansion.** Practitioners write "A-IRB", "LGD in-default", "DoD",
 "MoC", "CCF"; the regulation writes "own estimates of LGD", "definition of default", "margin of
 conservatism". A curated glossary of ~20 terms expands the query with the legal wording.
-*Evidence:* recall@10 0.79 → **0.81**, single-answer 0.89 → **0.92**. Known trade-off: one
-multi-hop question lost a passage, which the agent now recovers.
+The reranker also scores against the expanded query.
+*Evidence:* recall@10 0.79 → 0.81 (expansion in search), → **0.84** (also in the reranker);
+hit@10 0.93, MRR 0.73. Known trade-off: one multi-hop question lost a passage, which the agent
+now recovers.
 
 **3.5 Scope and metadata filters.** Default scope excludes the amending act and rationale text;
 filters by source, legal level and `applies_to` (SI / LSI) are available to the UI and agent.
@@ -115,7 +117,8 @@ passage that was actually provided, numbers in the claim must appear in that pas
 *Evidence:* **0.99** of claims pass on the smoke set; failures are shown to the user.
 
 **4.3 Abstention in two layers.** A free retrieval gate (no LLM call if the best rerank score is
-below 0.05) plus a scope rule in the prompt. Partial answers say what is missing instead of
+below 0.05) plus a scope rule in the prompt, which also covers off-topic provisions that are in
+the corpus (Art. 92 lists the leverage ratio). Partial answers say what is missing instead of
 guessing. *Evidence:* 5/5 out-of-scope questions declined; 25/25 in-scope answered.
 
 **4.4 "As of" dates built by code.** The answer header states the as-of date and the
@@ -169,7 +172,12 @@ complete, so it stopped early (multi-hop 12/14 → 9/14 on two runs).
 **5.6 Every tool call is traced.** Each answer stores its tool trace (tool, arguments, passages
 returned), which is how the failures above were diagnosed instead of guessed.
 
-*Overall:* single-pass vs routed on the 25 in-scope smoke questions — correctness **0.78 →
+*Full golden set (70 in-scope questions):* correctness **0.86 → 0.91** single-pass vs routed,
+factual 0.98, **no wrong answers**; 10/10 out-of-scope declined. A single-pass answer that
+reports missing information (`missing_info`) falls back to the agent (8 of 49 single-pass
+routes; fixed 3 answers).
+
+*Smoke set:* single-pass vs routed on the 25 in-scope smoke questions — correctness **0.78 →
 0.90**, multi-hop **0.43 → 0.71** (0.64–0.86 across the agent designs tried), citation
 recall **0.62 → 0.80**.
 

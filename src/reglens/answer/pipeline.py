@@ -46,6 +46,7 @@ class Answer:
     usage_tokens: int = 0
     errors: list[str] = field(default_factory=list)
     trace: list[dict] = field(default_factory=list)  # agent tool calls (empty for single-pass)
+    missing_info: bool = False  # the passages lacked information needed for a complete answer
 
     def cited_hits(self) -> list[Hit]:
         ids = {c for cl in self.claims for c in cl.citations}
@@ -175,6 +176,7 @@ def answer_question(
         return ans
     ans.abstained = bool(data.get("abstain"))
     ans.abstain_reason = str(data.get("abstain_reason") or "")
+    ans.missing_info = bool(data.get("missing_info"))
     ans.answer = str(data.get("answer") or "")
     ans.claims = [
         Claim(

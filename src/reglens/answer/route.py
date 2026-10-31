@@ -1,7 +1,8 @@
 """Routing: a cheap Haiku call decides whether a question goes to the single-pass pipeline
 (~6k tokens) or the agent (~50k tokens). Single-answer questions never pay the agent's cost.
 
-Order in `answer_routed`: free retrieval gate -> router (bulk tier, low effort) -> answer.
+Order in `answer_routed`: free retrieval gate -> router (bulk tier, low effort) -> answer; a
+single-pass answer that reports missing information (`missing_info`) is re-run with the agent.
 """
 
 from __future__ import annotations
@@ -61,12 +62,16 @@ def answer_routed(
         route, reason, tokens = route_question(provider, question)
     except LLMError as e:
         route, reason, tokens = "single", f"router failed: {e}", 0
-    if route == "agent":
-        from reglens.agent.run import answer_agentic
+    from reglens.agent.run import answer_agentic
 
+    if route == "agent":
         ans = answer_agentic(conn, provider, config, question, today=today)
     else:
         ans = answer_question(conn, provider, config, question, today=today)
+        if ans.missing_info:  # single pass reports a gap: let the agent look further
+            tokens += ans.usage_tokens
+            ans = answer_agentic(conn, provider, config, question, today=today)
+            route, reason = "agent", f"fallback: single pass lacked information ({reason})"
     ans.trace.insert(0, {"tool": "route", "route": route, "reason": reason, "tokens": tokens})
     ans.usage_tokens += tokens
     return ans

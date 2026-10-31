@@ -27,7 +27,9 @@ EXAMPLES = [
     "How long is the probation period after distressed restructuring?",
     "Which discount rate should be used to calculate realised LGD?",
     "What output floor factor applies in 2026?",
+    "Can a bank use own LGD estimates for a large corporate under A-IRB?",
 ]
+DEPTHS = {"Auto": "auto", "Quick (single pass)": "single", "Deep (agent)": "agent"}
 
 
 @st.cache_resource
@@ -60,10 +62,19 @@ def _sidebar(cfg):
             type="password",
             help="Used only for this session's requests to the Anthropic API; never stored.",
         )
+    st.sidebar.header("Answering")
+    depth = st.sidebar.radio(
+        "Mode",
+        list(DEPTHS),
+        help="Auto: a small model decides whether the question needs several provisions. "
+        "Deep: the agent searches, follows cross-references and reads definitions (more tokens).",
+    )
     st.sidebar.header("Filters")
-    applies = st.sidebar.selectbox("Institution type", ["any", "SI", "LSI"])
+    applies = st.sidebar.selectbox(
+        "Institution type", ["any", "SI", "LSI"], help="Applied in quick mode."
+    )
     st.sidebar.caption(f"Model: `{cfg.model((cfg.answer or {}).get('tier', 'dev'))}`")
-    return mode, key, None if applies == "any" else applies
+    return mode, key, DEPTHS[depth], None if applies == "any" else applies
 
 
 def _provider(cfg, mode, key):
@@ -72,6 +83,18 @@ def _provider(cfg, mode, key):
     if not key:
         return None
     return AnthropicAPIProvider(replace(cfg, billing="api"), api_key=key)
+
+
+def _answer(depth, provider, cfg, question, applies):
+    if depth == "agent":
+        from reglens.agent.run import answer_agentic
+
+        return answer_agentic(_conn(), provider, cfg, question)
+    if depth == "auto":
+        from reglens.answer.route import answer_routed
+
+        return answer_routed(_conn(), provider, cfg, question)
+    return answer_question(_conn(), provider, cfg, question, filters=Filters(applies_to=applies))
 
 
 def _show(ans, check):
@@ -100,8 +123,16 @@ def _show(ans, check):
                 icon = "✅" if c.check == "ok" else "⚠️"
                 st.markdown(f"{icon} *{c.kind}* — {c.text} `{', '.join(c.citations)}`"
                             + ("" if c.check == "ok" else f" — **{c.check}**"))
+    steps = [t for t in ans.trace if t.get("tool") not in ("route", "answer")]
+    if steps:
+        with st.expander(f"Research steps: {len(steps)} tool calls"):
+            for t in steps:
+                args = ", ".join(repr(a) for a in t.get("args", []) if a not in (None, ""))
+                st.markdown(f"`{t['tool']}({args})` → {len(t.get('keys', []))} passages")
+    route = next((t for t in ans.trace if t.get("tool") == "route"), None)
     if ans.usage_tokens:
-        st.caption(f"{ans.model} · {ans.usage_tokens:,} tokens")
+        mode = f" · routed to {route['route']}" if route else ""
+        st.caption(f"{ans.model} · {ans.usage_tokens:,} tokens{mode}")
 
 
 def main() -> None:
@@ -113,7 +144,7 @@ def main() -> None:
     )
     st.info(DISCLAIMER)
 
-    mode, key, applies = _sidebar(cfg)
+    mode, key, depth, applies = _sidebar(cfg)
     example = st.selectbox("Examples", ["—"] + EXAMPLES)
     question = st.text_area(
         "Your question", value="" if example == "—" else example, height=90,
@@ -128,9 +159,7 @@ def main() -> None:
     with st.spinner("Searching the corpus and drafting a cited answer…"):
         _warm_models()
         try:
-            ans = answer_question(
-                _conn(), provider, cfg, question.strip(), filters=Filters(applies_to=applies)
-            )
+            ans = _answer(depth, provider, cfg, question.strip(), applies)
         except LLMError as e:
             st.error(str(e))
             return

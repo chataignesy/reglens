@@ -197,13 +197,35 @@ class AnthropicAPIProvider:
         tier: str | None = None,
         effort: str | None = None,
     ) -> Completion:
+        response, usage, served = self.create(
+            [{"role": "user", "content": prompt}],
+            purpose=purpose,
+            system=system,
+            tier=tier,
+            effort=effort,
+        )
+        text = "".join(b.text for b in response.content if getattr(b, "type", "") == "text")
+        return Completion(text=text, model=served, usage=usage, stop_reason=response.stop_reason)
+
+    def create(
+        self,
+        messages: list[dict],
+        *,
+        purpose: str,
+        system: str | None = None,
+        tier: str | None = None,
+        effort: str | None = None,
+        tools: list[dict] | None = None,
+    ) -> tuple:
+        """One Messages API call (any number of turns, optional tools), logged to the ledger.
+        Returns (response, Usage, served model). Raises LLMError on API errors and refusals."""
         import anthropic
 
         model = self.config.model(tier)
         kwargs: dict = {
             "model": model,
             "max_tokens": self.max_tokens,
-            # cache the static system prompt (shorter prefixes silently don't cache)
+            # cache the static prefix: tools + system prompt (shorter prefixes silently don't cache)
             "system": [
                 {
                     "type": "text",
@@ -211,8 +233,10 @@ class AnthropicAPIProvider:
                     "cache_control": {"type": "ephemeral"},
                 }
             ],
-            "messages": [{"role": "user", "content": prompt}],
+            "messages": messages,
         }
+        if tools:
+            kwargs["tools"] = tools
         if effort:
             kwargs["output_config"] = {"effort": effort}
         try:
@@ -237,16 +261,13 @@ class AnthropicAPIProvider:
 
         usage = Usage.from_response(response.usage)
         served = getattr(response, "model", model) or model
-        if served in self.config.prices:
-            self.ledger.record(served, usage, purpose=purpose)
-        else:
-            self.ledger.record(model, usage, purpose=purpose)
+        logged = served if served in self.config.prices else model
+        self.ledger.record(logged, usage, purpose=purpose)
         if response.stop_reason == "refusal":
             details = getattr(response, "stop_details", None)
             category = getattr(details, "category", None) if details else None
             raise LLMError(f"The model declined the request (category: {category}).")
-        text = "".join(b.text for b in response.content if getattr(b, "type", "") == "text")
-        return Completion(text=text, model=served, usage=usage, stop_reason=response.stop_reason)
+        return response, usage, served
 
 
 def get_provider(

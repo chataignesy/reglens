@@ -1,0 +1,197 @@
+"""Agent loop on the Anthropic Messages API (bring-your-own-key demo): the same tools, prompt and
+citation keys as the `claude -p` + MCP path, but the loop and all limits run in RegLens code.
+
+Limits per question (config `agent`):
+- `max_calls` tool calls: the Toolbox stops returning data after this many;
+- `max_turns` model calls: a hard stop, whatever the model does;
+- `max_tokens_per_question`: total tokens across turns (from each response's usage).
+When a limit is reached the model is told to answer now with what it has; tool calls after that
+get an error result. Every model call goes through the provider, so it is logged to the ledger.
+
+Tools run in-process (no MCP server). Uses the documented manual tool-use loop.
+"""
+
+from __future__ import annotations
+
+from reglens.agent.tools import Toolbox, trace_entry
+from reglens.llm.provider import AnthropicAPIProvider
+
+_STR = {"type": "string"}
+
+TOOL_SCHEMAS: list[dict] = [
+    {
+        "name": "search",
+        "description": (
+            "Hybrid search (keywords + embeddings + reranker) over EU credit risk regulation. "
+            "Returns passage snippets, each starting with its citation key in brackets. `source` "
+            "optionally restricts to one source by short name (e.g. 'CRR', 'EBA Q&A', 'ECB guide "
+            "to internal models')."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "query": _STR,
+                "k": {"type": "integer", "description": "passages to return (max 8)"},
+                "source": _STR,
+            },
+            "required": ["query"],
+        },
+    },
+    {
+        "name": "get_article",
+        "description": (
+            "Full text of an article, or one paragraph, of a regulation (e.g. source 'CRR', "
+            "article '151', paragraph '8'; or source 'RTS materiality threshold (Reg. 2018/171)', "
+            "article '1')."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {"source": _STR, "article": _STR, "paragraph": _STR},
+            "required": ["source", "article"],
+        },
+    },
+    {
+        "name": "get_passage",
+        "description": (
+            "Full text of one passage by its citation key, exactly as shown in brackets. Use it "
+            "when a search snippet is marked truncated."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {"citation_key": _STR},
+            "required": ["citation_key"],
+        },
+    },
+    {
+        "name": "follow_reference",
+        "description": (
+            "List the articles, paragraphs and definitions a passage refers to, by its citation "
+            "key (e.g. 'CRR Art. 151(8)'), plus how many EBA Q&As exist on that article."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {"citation_key": _STR},
+            "required": ["citation_key"],
+        },
+    },
+    {
+        "name": "get_definition",
+        "description": "A CRR definition (Art. 4(1) or Art. 142(1)), e.g. 'large corporate'.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"term": _STR},
+            "required": ["term"],
+        },
+    },
+    {
+        "name": "get_qa",
+        "description": (
+            "Final EBA Single Rulebook Q&As on a CRR article, most relevant to `query` first."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {"article": _STR, "query": _STR, "k": {"type": "integer"}},
+            "required": ["article"],
+        },
+    },
+]
+
+# Toolbox method arguments in call order, with defaults for optional ones.
+_ARGS: dict[str, list[tuple[str, object]]] = {
+    "search": [("query", ""), ("k", 6), ("source", None)],
+    "get_article": [("source", ""), ("article", ""), ("paragraph", None)],
+    "get_passage": [("citation_key", "")],
+    "follow_reference": [("citation_key", "")],
+    "get_definition": [("term", "")],
+    "get_qa": [("article", ""), ("query", None), ("k", 4)],
+}
+
+STOP_NOTE = (
+    "Limit reached: no more tool calls. Answer now with the passages you already have, in the "
+    "required JSON, and say in the answer text what is missing."
+)
+
+
+def _run_tool(box: Toolbox, name: str, args: dict) -> tuple[str, list]:
+    if name not in _ARGS:
+        return f"Unknown tool '{name}'.", []
+    values = [args.get(a, default) for a, default in _ARGS[name]]
+    try:
+        return getattr(box, name)(*values), values
+    except Exception as e:  # bad arguments from the model -> tell it, don't crash the loop
+        return f"Tool error: {e}", values
+
+
+def _with_cache(messages: list[dict]) -> list[dict]:
+    """Copy with a cache breakpoint on the last block, so each turn reuses the previous prefix."""
+    out = [dict(m) for m in messages]
+    last = out[-1]
+    content = last["content"]
+    if isinstance(content, str):
+        content = [{"type": "text", "text": content}]
+    content = [dict(b) if isinstance(b, dict) else b for b in content]
+    if isinstance(content[-1], dict):
+        content[-1] = content[-1] | {"cache_control": {"type": "ephemeral"}}
+    last["content"] = content
+    return out
+
+
+def run_api_agent(
+    conn,
+    provider: AnthropicAPIProvider,
+    question: str,
+    *,
+    system: str,
+    tier: str | None,
+    effort: str | None,
+    max_calls: int,
+    max_turns: int,
+    max_tokens: int,
+) -> tuple[str, list[dict], int, str, list[str]]:
+    """Run the loop. Returns (final text, tool trace, total tokens, model, errors)."""
+    box = Toolbox(conn, max_calls=max_calls)
+    messages: list[dict] = [{"role": "user", "content": question}]
+    trace: list[dict] = []
+    tokens, model, errors = 0, "", []
+    stop = False  # set once a limit is reached: the next turn must answer
+    for turn in range(max_turns):
+        response, usage, model = provider.create(
+            _with_cache(messages),
+            purpose="agent",
+            system=system,
+            tier=tier,
+            effort=effort,
+            tools=TOOL_SCHEMAS,
+        )
+        tokens += usage.total_tokens
+        if response.stop_reason != "tool_use":
+            text = "".join(b.text for b in response.content if getattr(b, "type", "") == "text")
+            return text, trace, tokens, model, errors
+
+        messages.append({"role": "assistant", "content": response.content})
+        results: list[dict] = []
+        for block in (b for b in response.content if getattr(b, "type", "") == "tool_use"):
+            if stop:
+                out, err = STOP_NOTE, True
+            else:
+                out, values = _run_tool(box, block.name, dict(block.input or {}))
+                err = out.startswith(("Tool error", "Unknown tool"))
+                trace.append(trace_entry(box.calls, block.name, values, out))
+            results.append(
+                {"type": "tool_result", "tool_use_id": block.id, "content": out, "is_error": err}
+            )
+        stop = (
+            stop
+            or box.calls >= max_calls
+            or tokens >= max_tokens
+            or turn + 2 >= max_turns  # the next turn is the last one
+        )
+        if stop:
+            results.append({"type": "text", "text": STOP_NOTE})
+        messages.append({"role": "user", "content": results})
+
+    errors.append(f"agent did not finish within {max_turns} turns")
+    return "", trace, tokens, model, errors
+
+
+__all__ = ["TOOL_SCHEMAS", "run_api_agent"]

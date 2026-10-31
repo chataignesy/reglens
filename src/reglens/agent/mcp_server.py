@@ -10,12 +10,11 @@ from __future__ import annotations
 
 import json
 import os
-import re
 
 from mcp.server.mcpserver import MCPServer
 from mcp.types import ToolAnnotations
 
-from reglens.agent.tools import Toolbox
+from reglens.agent.tools import Toolbox, trace_entry
 
 INSTRUCTIONS = """\
 Search EU credit risk regulation (CRR incl. CRR3, RTS, EBA guidelines and Q&A, ECB guide to internal
@@ -42,11 +41,9 @@ def _call(tool: str, *args) -> str:
     """Run a Toolbox method and append it to the trace file (if any)."""
     out = getattr(box(), tool)(*args)
     if path := os.environ.get("REGLENS_TRACE_FILE"):
-        keys = re.findall(r"^\[(.+?)\] \(", out, re.M)  # passages: "[key] (level)"
-        keys += re.findall(r"^- \w+: (.+)$", out, re.M)  # follow_reference targets
-        entry = {"call": box().calls, "tool": tool, "args": list(args), "keys": keys}
+        entry = trace_entry(box().calls, tool, list(args), out)
         with open(path, "a", encoding="utf-8") as f:
-            f.write(json.dumps(entry | {"chars": len(out)}, ensure_ascii=False) + "\n")
+            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
     return out
 
 

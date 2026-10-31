@@ -147,7 +147,7 @@ version in force on the as-of date; `reglens download --as-of 2027-01-01` fetche
 - ✅ Stopping rule (check the legal basis first) and tool-call traces; mh-003 now fully correct
 - ✅ Haiku router (accuracy 0.81, multi-hop recall 0.79): smoke correctness **0.78 → 0.86**, multi-hop **0.43 → 0.86**, citation recall 0.62 → 0.82; 685k vs 147k tokens on 25 questions
 - ✅ Search snippets + `get_passage` for full text: routed smoke correctness **0.90** (single-pass 0.78), 482k tokens for the 12 agent questions; a 4,000-char cap alone made the agent stop early (multi-hop 0.64 on two runs)
-- ⏳ API agent loop for the BYOK demo
+- ✅ API agent loop for the BYOK demo: RegLens runs the tool loop on the Messages API with hard limits (10 tool calls, 13 turns, 200k tokens per question); UI modes Auto / Quick / Deep
 - Decision: quality over the 50k tokens/query target (multi-hop averages ~65k)
 
 ## Phase 4 — Policy gap analysis · 25 Jan – 21 Feb 2027 · €40

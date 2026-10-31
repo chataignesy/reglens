@@ -163,6 +163,6 @@ passage in full; `get_article` / `get_definition` stay full (4,000). The agent c
 1. ✅ Routing (Haiku classifier) and ✅ stopping rule — see above.
 2. **Passage cap:** chunks reach ~3,700 chars, so a 2,000-char cap truncates tables and long
    points (cmp-002). Raise the cap to cover a full chunk and re-measure.
-3. **API agent loop** for the bring-your-own-key demo: today the agent runs only via `claude -p`
-   (subscription); limits (turns, tool calls, tokens) would then be enforced in RegLens code.
+3. ✅ **API agent loop** for the bring-your-own-key demo (`agent/api_loop.py`): limits on tool
+   calls, turns and tokens enforced in RegLens code. Not yet run against the live API.
 4. Quality is prioritised over the 50k tokens/question target (multi-hop averages ~65k).

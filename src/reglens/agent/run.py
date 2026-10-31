@@ -2,8 +2,11 @@
 citing passage keys (e.g. "CRR Art. 178(1)"). Keys are resolved back to chunks so the same
 citation check, as-of line and rendering as the single-pass pipeline apply.
 
-Bounds: the MCP server stops serving data after `max_calls` tool calls, and `claude -p
---max-budget-usd` caps the cost of one question. Runs on the subscription (`claude -p`).
+Two backends, picked by the provider:
+- subscription (`claude -p`): Claude Code runs the loop over the RegLens MCP server; the server
+  stops serving data after `max_calls` tool calls and `--max-budget-usd` caps the cost;
+- Anthropic API (bring-your-own-key demo): `api_loop` runs the loop in RegLens code with hard
+  limits on tool calls, turns and tokens per question.
 """
 
 from __future__ import annotations
@@ -20,7 +23,7 @@ from reglens.agent.tools import key_of, resolve_key
 from reglens.answer.pipeline import Answer, Claim, _parse_json, as_of_statement
 from reglens.answer.prompts import SCOPE
 from reglens.config import Config
-from reglens.llm.provider import ClaudeCLIProvider
+from reglens.llm.provider import AnthropicAPIProvider, ClaudeCLIProvider
 from reglens.retrieve.search import Hit, search
 
 TOOLS = ["search", "get_article", "get_passage", "follow_reference", "get_definition", "get_qa"]
@@ -168,7 +171,7 @@ def _run_once(provider, question, max_calls, opts, extra) -> tuple:
 
 def answer_agentic(
     conn,
-    provider: ClaudeCLIProvider,
+    provider: ClaudeCLIProvider | AnthropicAPIProvider,
     config: Config,
     question: str,
     *,
@@ -192,34 +195,46 @@ def answer_agentic(
             as_of_statement(top, today),
         )
 
-    allowed = ",".join(f"mcp__reglens__{t}" for t in TOOLS)
-    extra = ["--allowedTools", allowed, "--max-budget-usd", str(opts.get("max_budget_usd", 0.75))]
-    tokens = 0
-    for _attempt in range(2):  # a run without any tool call means the tools were not available
-        completion, trace = _run_once(provider, question, max_calls, opts, extra)
-        tokens += completion.usage.total_tokens
-        if trace:
-            break
+    system = AGENT_SYSTEM.replace("{max_calls}", str(max_calls))
+    if isinstance(provider, AnthropicAPIProvider):  # bring-your-own-key: loop runs in RegLens
+        from reglens.agent.api_loop import run_api_agent
+
+        text, trace, tokens, model, errors = run_api_agent(
+            conn,
+            provider,
+            question,
+            system=system,
+            tier=opts.get("tier", "dev"),
+            effort=opts.get("effort"),
+            max_calls=max_calls,
+            max_turns=int(opts.get("max_turns", max_calls + 3)),
+            max_tokens=int(opts.get("max_tokens_per_question", 200_000)),
+        )
+    else:
+        allowed = ",".join(f"mcp__reglens__{t}" for t in TOOLS)
+        budget = str(opts.get("max_budget_usd", 0.75))
+        extra = ["--allowedTools", allowed, "--max-budget-usd", budget]
+        tokens, errors = 0, []
+        for _attempt in range(2):  # a run without any tool call means the tools were unavailable
+            completion, trace = _run_once(provider, question, max_calls, opts, extra)
+            tokens += completion.usage.total_tokens
+            if trace:
+                break
+        text, model = completion.text, completion.model
+        if not trace:
+            errors.append("agent made no tool calls (RegLens MCP tools unavailable?)")
 
     ans = Answer(
-        question,
-        False,
-        "",
-        "",
-        [],
-        [],
-        "",
-        model=completion.model,
-        usage_tokens=tokens,
-        trace=trace,
+        question, False, "", "", [], [], "", model=model, usage_tokens=tokens, trace=trace
     )
-    if not trace:
-        ans.errors.append("agent made no tool calls (RegLens MCP tools unavailable?)")
+    ans.errors += errors
+    if not text:
+        return ans
     try:
-        data = _parse_json(completion.text)
+        data = _parse_json(text)
     except (ValueError, json.JSONDecodeError) as e:
         ans.errors.append(f"unparseable model output: {e}")
-        ans.answer = completion.text
+        ans.answer = text
         return ans
 
     claims_raw = data.get("claims") or []

@@ -19,7 +19,7 @@ them, take the top-k by cosine similarity, and ask an LLM to answer from them.
 | Links between texts | None | Cross-reference graph: 10,274 edges (`refers_to`, `amends`, `uses_definition`, `answers_on`) | Used by the agent |
 | Retrieval | Dense top-k | Hybrid BM25 + dense (RRF) → cross-encoder reranker → practitioner glossary expansion | recall@10 0.59 (BM25) / 0.74 (dense) → **0.81** |
 | Grounding | "Answer from the context" | JSON claims, each citing passages; a deterministic checker verifies citations and numbers; abstention gate; "as of" line built by code | **0.99** of claims pass the check; 5/5 out-of-scope questions declined |
-| Multi-step questions | Same single pass | Router → bounded agent with 6 corpus tools over the graph, exposed as an MCP server | Multi-hop correctness 0.43 → **0.71** |
+| Multi-step questions | Same single pass | Router → bounded agent with 6 corpus tools over the graph; runs on the Messages API or as an MCP server | Multi-hop correctness 0.43 → **0.71** |
 | Evaluation | Eyeballing answers | 80-question expert golden set, retrieval metrics, deterministic citation metrics, LLM judge, router eval, repeat runs for variance | — |
 | Cost | Unknown | Token ledger on every call, model tiers, prompt caching, estimates before every run | 3.1M tokens, ≈ €3.6 API-equivalent so far |
 
@@ -135,9 +135,17 @@ questions to the agent. Over-routing costs tokens, not quality.
 
 **5.2 A bounded agent with domain tools.** Six read-only tools over the corpus: `search`,
 `get_article`, `get_passage`, `follow_reference` (walks the graph), `get_definition` (CRR
-Art. 4 / 142) and `get_qa` (EBA Q&As on an article). Limits: 10 tool calls (enforced by the tool
-server), a cost cap per question, citation keys that resolve back to chunks so the same checker
-applies.
+Art. 4 / 142) and `get_qa` (EBA Q&As on an article). Citation keys resolve back to chunks, so
+the same checker applies to agent answers.
+
+**5.2a Two runtimes, one agent.** The same prompt, tools and citation keys run in two places:
+- *Development:* Claude Code (`claude -p`) drives the loop over the RegLens MCP server, on the
+  Claude subscription; the tool server enforces 10 tool calls and the CLI caps cost.
+- *Public demo (bring your own key):* RegLens runs the loop itself on the **Anthropic Messages
+  API** (documented manual tool-use loop, tools executed in-process). Limits are enforced in
+  RegLens code: 10 tool calls, 13 model turns as a hard stop, 200k tokens per question; at a
+  limit the agent is told to answer with what it has. Each turn adds a cache breakpoint so the
+  growing conversation is read from cache, and every call is logged to the ledger.
 
 **5.3 Tools exposed as an MCP server.** The same tools run as a **Model Context Protocol**
 server (stdio), so any MCP client — Claude Desktop, Claude Code, other agents — can query the
@@ -211,16 +219,14 @@ exactly what it affects.
 
 ## 9. Engineering
 
-Python 3.12+ (developed on 3.14), **uv**, src layout, **ruff**, **pytest** (60 tests; no test
-calls a paid API — providers are faked), Docker for the database, **Streamlit** UI for the MVP.
+Python 3.12+ (developed on 3.14), **uv**, src layout, **ruff**, **pytest** (65 tests; no test
+calls a paid API — the CLI and the SDK client are faked), Docker for the database, **Streamlit** UI for the MVP.
 
 ## Roadmap items not built yet
 
 - **Policy gap analysis (Phase 4):** obligation register extracted from regulation, synthetic
   Model Validation Policy with planted gaps, coverage matrix (covered / partial / missing /
   contradicted) with evidence quotes.
-- **API agent loop** so the agent runs in the bring-your-own-key demo, with limits on turns,
-  tool calls and tokens enforced in RegLens code.
 - **Batch API** for offline jobs (obligation extraction, bulk judging).
 - National regulators (DNB first), point-in-time version switching, a Next.js UI.
 

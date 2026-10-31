@@ -111,6 +111,13 @@ def _format(rows: list[Row], max_chars: int) -> str:
     return "\n\n".join(out) if out else "No passages found."
 
 
+def trace_entry(call: int, tool: str, args: list, out: str) -> dict:
+    """One tool-call record: which passages (keys) the tool returned to the agent."""
+    keys = re.findall(r"^\[(.+?)\] \(", out, re.M)  # passages: "[key] (level)"
+    keys += re.findall(r"^- \w+: (.+)$", out, re.M)  # follow_reference targets
+    return {"call": call, "tool": tool, "args": args, "keys": keys, "chars": len(out)}
+
+
 class Toolbox:
     """The agent's tools. Stateful only for the call budget.
 

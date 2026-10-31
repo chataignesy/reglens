@@ -162,7 +162,7 @@ version in force on the as-of date; `reglens download --as-of 2027-01-01` fetche
 
 ## Phase 5 — Polish & launch · 22 Feb – 7 Mar 2027 · €10
 
-- README, architecture doc, published eval report, usage report from the ledger ("built on X tokens").
+- README, architecture doc (draft: [DESIGN.md](DESIGN.md)), published eval report, usage report from the ledger ("built on X tokens").
 - Deploy Streamlit (BYOK) — e.g. Streamlit Community Cloud + hosted Postgres free tier.
 - Recorded demo video (most visitors won't enter a key).
 - Make the GitHub repo public (after the employer check); consider a noreply commit email.

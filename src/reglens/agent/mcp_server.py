@@ -20,9 +20,9 @@ from reglens.agent.tools import Toolbox
 INSTRUCTIONS = """\
 Search EU credit risk regulation (CRR incl. CRR3, RTS, EBA guidelines and Q&A, ECB guide to internal
 models). Each passage starts with a citation key in brackets, e.g. [CRR Art. 178(1)]; cite those
-keys exactly. Typical flow: search -> read the passages -> follow_reference on a key passage to
-find the articles and definitions it relies on -> get_article / get_definition -> get_qa for EBA
-interpretations of a CRR article."""
+keys exactly. Typical flow: search (snippets) -> get_passage for the full text of a truncated
+passage -> follow_reference on a key passage to find the articles and definitions it relies on ->
+get_article / get_definition -> get_qa for EBA interpretations of a CRR article."""
 
 server = MCPServer("reglens", instructions=INSTRUCTIONS)
 READ_ONLY = ToolAnnotations(readOnlyHint=True, openWorldHint=False)
@@ -62,6 +62,13 @@ def get_article(source: str, article: str, paragraph: str | None = None) -> str:
     """Full text of an article, or one paragraph, of a regulation (e.g. source 'CRR', article
     '151', paragraph '8'; or source 'RTS materiality threshold (Reg. 2018/171)', article '1')."""
     return _call("get_article", source, article, paragraph)
+
+
+@server.tool(annotations=READ_ONLY)
+def get_passage(citation_key: str) -> str:
+    """Full text of one passage by its citation key (e.g. 'ECB guide to internal models,
+    Document releases, Document releases'); use it when a search snippet is truncated."""
+    return _call("get_passage", citation_key)
 
 
 @server.tool(annotations=READ_ONLY)

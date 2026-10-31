@@ -114,6 +114,50 @@ parser now also repairs unescaped quotes inside strings (mh-002 failed on `your 
 - **Caveat:** one sample per question and n = 7 multi-hop; a 3-point swing is within run-to-run
   and judge variance. A repeat run is needed before attributing the multi-hop drop to the cap.
 
+**Repeat run** (`--repeat 2`, same 4k settings, 255k tokens): multi-hop again **0.64**.
+
+| | Judge 2k \| 4k run 1, run 2 | Tool calls | Tokens |
+|---|---|---|---|
+| mh-001 | 2 \| 2, 2 | 12 \| 3, 5 | 118k \| 19k, 38k |
+| mh-002 | 2 \| 2, 1 | 8 \| 8, 7 | 72k \| 88k, 83k |
+| mh-003 | 2 \| 1, 1 | 8 \| 9, 3 | 80k \| 109k, 27k |
+| mh-004 | 2 \| 1, 2 | 7 \| 5, 4 | 71k \| 50k, 33k |
+| mh-005 | 2 \| 1, 1 | 5 \| 2, 2 | 50k \| 14k, 14k |
+| mh-006 | 1 \| 1, 1 | 6 \| 5, 6 | 42k \| 41k, 41k |
+| mh-007 | 1 \| 1, 1 | 3 \| 2, 3 | 16k \| 12k, 16k |
+| **Total** | **12 \| 9, 9** of 14 | | 449k \| 333k, 253k |
+
+Both 4k runs agree, and lose on the same questions (mh-003, mh-005). The likeliest mechanism:
+full passages in search results *look* complete, so the agent stops sooner (mh-005: 2 calls in
+both 4k runs vs 5 at 2k) and misses provisions it would otherwise have looked up. The 2k figure
+is still a single run. Short search results kept the agent reading; full text is needed only for
+the passages it decides to use (e.g. cmp-002's release table).
+
+## Snippets + `get_passage` (2026-10-31)
+
+`search` and `get_qa` now return 2,000-char snippets marked
+`…[truncated; get_passage('<key>') for the full text]`; the new `get_passage` tool returns any
+passage in full; `get_article` / `get_definition` stay full (4,000). The agent called
+`get_passage` 13 times on the 12 routed questions.
+
+| 12 routed agent questions | 2k cap | 4k cap | **Snippets + get_passage** |
+|---|---|---|---|
+| Score (of 24) | 18 | 19 | **20** |
+| Multi-hop (of 14) | **12** | 9 (9 on repeat) | 10 |
+| Other routed (of 10) | 6 | **10** | **10** |
+| Wrong answers | 1 | 0 | 0 |
+| Tokens | 609k | 588k | **482k** |
+
+- **Smoke set, routed:** correctness **0.90** (single-pass 0.78; previous routed 0.86 / 0.88),
+  citation recall 0.80.
+- cmp-002 is fixed cheaply: 2 calls and 19k tokens (search → `get_passage` on the release
+  table) instead of 11 calls and 151k.
+- Multi-hop recovers part of the drop (9 → 10) but not to the single 2k run (12): mh-003 again
+  stopped after 3 calls without reading RTS Art. 4; mh-005 now cites Art. 181(1)(c)-(d) but
+  hedges on the floor.
+- One run per configuration; multi-hop differences of 1-2 points are within the run-to-run
+  variance seen above (mh-002 and mh-004 each moved by a point between identical runs).
+
 ## Next
 
 1. ✅ Routing (Haiku classifier) and ✅ stopping rule — see above.

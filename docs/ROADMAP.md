@@ -146,7 +146,7 @@ version in force on the as-of date; `reglens download --as-of 2027-01-01` fetche
 - ✅ Multi-hop smoke (7): correctness **0.43 → 0.71**, citation recall **0.18 → 0.72**, no wrong answers; **~63k tokens/question** (above the 50k target)
 - ✅ Stopping rule (check the legal basis first) and tool-call traces; mh-003 now fully correct
 - ✅ Haiku router (accuracy 0.81, multi-hop recall 0.79): smoke correctness **0.78 → 0.86**, multi-hop **0.43 → 0.86**, citation recall 0.62 → 0.82; 685k vs 147k tokens on 25 questions
-- ✅ Full-chunk passages (4,000 chars): routed smoke 0.86 → 0.88; multi-hop 0.86 → 0.64 on one sample (variance check pending)
+- ✅ Search snippets + `get_passage` for full text: routed smoke correctness **0.90** (single-pass 0.78), 482k tokens for the 12 agent questions; a 4,000-char cap alone made the agent stop early (multi-hop 0.64 on two runs)
 - ⏳ API agent loop for the BYOK demo
 - Decision: quality over the 50k tokens/query target (multi-hop averages ~65k)
 

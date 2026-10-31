@@ -23,7 +23,7 @@ from reglens.config import Config
 from reglens.llm.provider import ClaudeCLIProvider
 from reglens.retrieve.search import Hit, search
 
-TOOLS = ["search", "get_article", "follow_reference", "get_definition", "get_qa"]
+TOOLS = ["search", "get_article", "get_passage", "follow_reference", "get_definition", "get_qa"]
 
 AGENT_SYSTEM = f"""\
 You are RegLens, an assistant for credit risk modellers and validators. You answer questions about
@@ -36,6 +36,8 @@ How to work:
   exposure class, a defined term, a threshold in an RTS, a guideline paragraph), use
   `follow_reference` on its key and then `get_article` / `get_definition` to read them.
 - Use `get_qa` when an EBA interpretation of a CRR article could matter.
+- Search results are snippets. If a passage you rely on is marked truncated, read it in full
+  with `get_passage` on its key (tables and long lists often continue there).
 - Before answering, check the legal basis:
   (a) if the passages you rely on cite CRR or RTS provisions (e.g. "Article 181(1)(b)", "the RTS
       on economic downturn"), read the main one with `get_article`, or `follow_reference` first;

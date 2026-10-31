@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from datetime import datetime
 
 from reglens.answer.pipeline import Answer, answer_question
@@ -35,7 +36,9 @@ def answer_version(agent: bool = False) -> str:
 
     src = run.AGENT_SYSTEM + open(tools.__file__, encoding="utf-8").read()
     src += open(run.__file__, encoding="utf-8").read()  # key resolution changes answers too
-    return "agent-" + hashlib.sha256(src.encode()).hexdigest()[:8]
+    repeat = int(os.environ.get("REGLENS_REPEAT", "1"))  # repeat runs get their own cache
+    suffix = f"-r{repeat}" if repeat > 1 else ""
+    return "agent-" + hashlib.sha256(src.encode()).hexdigest()[:8] + suffix
 
 
 def _cited_refs(record: dict) -> list[tuple[str, str]]:

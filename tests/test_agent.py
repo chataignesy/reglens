@@ -121,3 +121,17 @@ def test_agent_retries_when_no_tool_was_called(monkeypatch):
     ans = run.answer_agentic(None, Fake('{"abstain": true}'), load_config(), "F-IRB?")
     assert len(calls) == 2 and ans.usage_tokens == 2 * 38900
     assert ans.errors == ["agent made no tool calls (RegLens MCP tools unavailable?)"]
+
+
+def test_snippets_point_to_get_passage(monkeypatch):
+    import reglens.agent.tools as tools
+
+    long_row = Row("c9", "crr3-consolidated", "Art. 181(1)", "LGD", "x" * 3000, "L1",
+                   "02013R0575-20260626", "article", "181", "1", None)
+    monkeypatch.setattr(tools, "resolve_key", lambda conn, key: [long_row])
+    box = tools.Toolbox(None, snippet_chars=100, passage_chars=4000)
+    snippet = box._out([long_row], snippets=True)
+    assert "truncated; get_passage('CRR Art. 181(1)')" in snippet and len(snippet) < 300
+    full = box.get_passage("CRR Art. 181(1)")
+    assert "truncated" not in full and full.count("x") == 3000
+    assert box.calls == 1

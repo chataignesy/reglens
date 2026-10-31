@@ -103,19 +103,34 @@ def _format(rows: list[Row], max_chars: int) -> str:
     out = []
     for r in rows:
         level = LEVEL_LABEL.get(r.legal_level, r.legal_level)
-        body = r.text if len(r.text) <= max_chars else r.text[:max_chars] + " …[truncated]"
-        out.append(f"[{key_of(r)}] ({level})\n{body}")
+        key = key_of(r)
+        body = r.text
+        if len(body) > max_chars:  # search snippets: the full text is one get_passage call away
+            body = body[:max_chars] + f" …[truncated; get_passage('{key}') for the full text]"
+        out.append(f"[{key}] ({level})\n{body}")
     return "\n\n".join(out) if out else "No passages found."
 
 
 class Toolbox:
-    """The agent's tools. Stateful only for the call budget."""
+    """The agent's tools. Stateful only for the call budget.
+
+    `search` and `get_qa` return snippets (`snippet_chars` per passage) so the agent keeps
+    reading instead of treating long previews as complete; `get_article`, `get_definition` and
+    `get_passage` return full passages (chunks are at most ~4,000 chars).
+    """
 
     def __init__(
-        self, conn, *, max_calls: int = 10, passage_chars: int = 4000, result_chars: int = 14000
+        self,
+        conn,
+        *,
+        max_calls: int = 10,
+        snippet_chars: int = 2000,
+        passage_chars: int = 4000,
+        result_chars: int = 14000,
     ):
         self.conn = conn
         self.max_calls = max_calls
+        self.snippet_chars = snippet_chars
         self.passage_chars = passage_chars
         self.result_chars = result_chars
         self.calls = 0
@@ -130,10 +145,11 @@ class Toolbox:
             )
         return None
 
-    def _out(self, rows: list[Row], note: str = "") -> str:
+    def _out(self, rows: list[Row], note: str = "", *, snippets: bool = False) -> str:
         for r in rows:
             self.seen[key_of(r)] = r
-        text = (note + "\n\n" if note else "") + _format(rows, self.passage_chars)
+        cap = self.snippet_chars if snippets else self.passage_chars
+        text = (note + "\n\n" if note else "") + _format(rows, cap)
         return text[: self.result_chars]
 
     def search(self, query: str, k: int = 6, source: str | None = None) -> str:
@@ -149,7 +165,18 @@ class Toolbox:
         hits = search(self.conn, query, mode="rerank", k=min(int(k), 8), filters=filters)
         ids = [h.id for h in hits]
         rows = {r.id: r for r in _rows(self.conn, "id = ANY(%s)", [ids])}
-        return self._out([rows[i] for i in ids if i in rows])
+        return self._out([rows[i] for i in ids if i in rows], snippets=True)
+
+    def get_passage(self, citation_key_: str) -> str:
+        """Full text of one passage (all its parts), by the citation key shown in brackets."""
+        if msg := self._budget():
+            return msg
+        rows = resolve_key(self.conn, citation_key_)
+        if not rows:
+            return (
+                f"Unknown citation key '{citation_key_}'. Use a key exactly as shown in brackets."
+            )
+        return self._out(rows)
 
     def get_article(self, source: str, article: str, paragraph: str | None = None) -> str:
         """Full text of an article (or one paragraph) of a regulation, by number."""
@@ -224,4 +251,5 @@ class Toolbox:
 
             scores = rerank(query, [r.text for r in rows])
             rows = [r for _, r in sorted(zip(scores, rows, strict=True), key=lambda x: -x[0])]
-        return self._out(rows[: min(int(k), 6)], note=f"{len(rows)} Q&As on CRR Art. {art}.")
+        note = f"{len(rows)} Q&As on CRR Art. {art}."
+        return self._out(rows[: min(int(k), 6)], note=note, snippets=True)

@@ -279,7 +279,15 @@ def _golden_items(args: argparse.Namespace) -> list:
     return items[: getattr(args, "limit", None) or None]
 
 
+def _set_repeat(args: argparse.Namespace) -> None:
+    if getattr(args, "repeat", None):
+        import os
+
+        os.environ["REGLENS_REPEAT"] = str(args.repeat)
+
+
 def _cmd_eval_answers(args: argparse.Namespace) -> None:
+    _set_repeat(args)
     from reglens.eval.answers import ANSWER_DIR, answer_version, run
 
     cfg = load_config(args.config)
@@ -371,6 +379,7 @@ def _cmd_eval_route(args: argparse.Namespace) -> None:
 
 
 def _cmd_judge(args: argparse.Namespace) -> None:
+    _set_repeat(args)
     from reglens.eval.answers import answer_version
     from reglens.eval.judge import judge, plan, use_answers
 
@@ -494,6 +503,7 @@ def main(argv: list[str] | None = None) -> None:
     eva.add_argument("--agent", action="store_true", help="agentic answering (MCP tools)")
     eva.add_argument("--type", help="only this golden type, e.g. multi_hop")
     eva.add_argument("--id", help="only these golden ids, comma-separated")
+    eva.add_argument("--repeat", type=int, help="repeat run N (>1): separate agent cache")
     eva.add_argument(
         "--route", action="store_true", help="per item, the mode chosen by the cached router"
     )
@@ -517,6 +527,7 @@ def main(argv: list[str] | None = None) -> None:
     jdg.add_argument("--agent", action="store_true", help="grade the agentic answers")
     jdg.add_argument("--type", help="only this golden type, e.g. multi_hop")
     jdg.add_argument("--id", help="only these golden ids, comma-separated")
+    jdg.add_argument("--repeat", type=int, help="repeat run N (>1): separate agent cache")
     jdg.set_defaults(func=_cmd_judge)
 
     gold = sub.add_parser("golden", help="validate the golden eval set and show its mix")

@@ -42,7 +42,7 @@ budget:
   ceiling_eur: 250
   approval_threshold_eur: 2      # ask before any single run above this (billing: api)
   approval_threshold_tokens: 1000000  # ask before any single run above this (billing: subscription)
-  current_phase: 3
+  current_phase: 4
   phases_eur:                    # allocations from docs/ROADMAP.md
     0: 5
     1: 10

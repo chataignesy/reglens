@@ -1,0 +1,134 @@
+# Answer key for the gap-analysis eval: the deficiencies deliberately planted in
+# model-validation-policy.md. Not shown to the matcher. `refs` are citation keys of the source
+# passages; `obligations` are the register obligations the planted text breaks (the eval
+# counts a gap as found when the matcher flags at least one of them).
+#
+# type: missing (the policy does not address it), partial (addresses it incompletely),
+#       contradicted (the policy says something incompatible with it)
+
+- id: G01
+  type: contradicted
+  section: "15"
+  finding: Internal audit reviews the validation team every three years; the CRR requires a
+    review of the rating systems and their operations, including validation, at least annually.
+  refs: ["CRR Art. 191"]
+  obligations: [OB-0216]
+
+- id: G02
+  type: contradicted
+  section: "4.1"
+  finding: The validation team reports to the Head of Model Development; validation must be
+    independent of model development.
+  refs: ["RTS IRB assessment (Reg. 2022/439) Art. 10(1)",
+         "ECB guide to internal models, Overarching principles for internal models, para. 19",
+         "ECB guide to internal models, Overarching principles for internal models, para. 20"]
+  obligations: [OB-0424, OB-0558, OB-0560]
+
+- id: G03
+  type: partial
+  section: "8.3"
+  finding: PD back-testing per grade only every two years; realised default rates must be
+    compared with estimated PDs regularly, and estimates reviewed at least annually.
+  refs: ["CRR Art. 185(b)"]
+  obligations: [OB-0176, OB-0181]
+
+- id: G04
+  type: contradicted
+  section: "7.4"
+  finding: Return to non-defaulted status after one month; the guidelines require at least three
+    months from the moment the default triggers cease to apply.
+  refs: ["EBA GL definition of default (GL/2016/07) para. 71"]
+  obligations: [OB-0218]
+
+- id: G05
+  type: missing
+  section: "9"
+  finding: LGD validation does not cover downturn LGD, nor the approach when no downturn impact
+    can be observed or estimated.
+  refs: ["CRR Art. 181(1)(b)",
+         "EBA GL downturn LGD (GL/2019/03) para. 36"]
+  obligations: [OB-0136, OB-0410, OB-0411]
+
+- id: G06
+  type: partial
+  section: "11.1"
+  finding: MoC review covers Category A deficiencies only; Categories B (changes) and C (general
+    estimation error) must also be covered.
+  refs: ["EBA GL PD/LGD estimation (GL/2017/16) para. 36"]
+  obligations: [OB-0325, OB-0326]
+
+- id: G07
+  type: contradicted
+  section: "12.2"
+  finding: Large corporates may migrate to own LGD estimates; under CRR3 exposures to large
+    corporates must use the foundation (supervisory) LGD values.
+  refs: ["CRR Art. 151(8)"]
+  obligations: [OB-0023]
+
+- id: G08
+  type: missing
+  section: "9"
+  finding: No check that LGD estimates respect the CRR3 LGD input floors.
+  refs: ["CRR Art. 164(4)",
+         "CRR Art. 164(4a)"]
+  obligations: [OB-0029, OB-0032]
+
+- id: G09
+  type: partial
+  section: "3.4"
+  finding: The management body approves the policy, but material changes to rating systems are
+    approved by the Head of Model Development, not the management body or a committee of it and
+    senior management.
+  refs: ["CRR Art. 189(1)"]
+  obligations: [OB-0190]
+
+- id: G10
+  type: missing
+  section: "7"
+  finding: No requirement on the length of the historical observation period for PD data
+    (at least five years for at least one source).
+  refs: ["CRR Art. 180(1)(h)",
+         "CRR Art. 180(2)"]
+  obligations: [OB-0120, OB-0128]
+
+- id: G11
+  type: missing
+  section: "6"
+  finding: No validation of material changes or extensions of rating systems; only initial,
+    annual and ad hoc validation.
+  refs: ["RTS IRB assessment (Reg. 2022/439) Art. 11(2)"]
+  obligations: [OB-0454]
+
+- id: G12
+  type: missing
+  section: "3"
+  finding: The credit risk control unit, its independence and its responsibilities for the
+    rating systems are not described.
+  refs: ["CRR Art. 190(1)"]
+  obligations: [OB-0201, OB-0202, OB-0203]
+
+- id: G13
+  type: contradicted
+  section: "6.2"
+  finding: Validation uses internal data only and explicitly excludes external data sources;
+    the CRR requires comparisons with relevant external data sources as part of validation.
+  refs: ["CRR Art. 185(c)"]
+  obligations: [OB-0182]
+
+- id: G14
+  type: partial
+  section: "16.2"
+  finding: Estimates are updated only when validation finds material deficiencies; they must be
+    reviewed regularly, at least annually.
+  refs: ["CRR Art. 179(1)(c)",
+         "EBA GL PD/LGD estimation (GL/2017/16) para. 217"]
+  obligations: [OB-0091, OB-0364]
+
+- id: G15
+  type: partial
+  section: "7.1"
+  finding: Data checks cover completeness, accuracy and timeliness but not the representativeness
+    of the data used for estimation.
+  refs: ["CRR Art. 179(1)(d)",
+         "EBA GL PD/LGD estimation (GL/2017/16) para. 21"]
+  obligations: [OB-0092, OB-0093, OB-0287]

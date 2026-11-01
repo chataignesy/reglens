@@ -162,6 +162,15 @@ version in force on the as-of date; `reglens download --as-of 2027-01-01` fetche
 
 **Exit:** planted-gap recall ≥ 0.85. **LinkedIn post 4:** flagship gap-analysis demo.
 
+**Status (2026-11-01):**
+- ✅ Obligation register: 752 atomic obligations (720 validation-relevant) from 322 passages, Sonnet extraction, 746/752 quotes verbatim ([register](../register/obligations.jsonl))
+- ✅ Synthetic Model Validation Policy (53 clauses) with 15 planted gaps (5 missing, 5 partial, 5 contradicted) and answer key
+- ✅ Matcher: whole policy per call, one verdict per obligation with clause + verified quote; statuses incl. *not applicable* and *belongs in another document*
+- ✅ **Planted-gap recall 15/15, type accuracy 1.00** (after one prompt revision on the same gaps; tuning caveat); sample precision: 20/20 factually correct, ≈ 11/20 belong in a validation policy ([results](results/gap-phase4.md))
+- ✅ UI tab: coverage matrix with filters, planted-gap view, CSV/Excel export with reviewer columns
+- ⏳ Clean recall test on a second synthetic policy; precision calibration on reviewer-labelled findings
+- Note: Phase 4 tokens up to 2026-11-01 were logged under phase 3 (`current_phase` not yet switched)
+
 ## Phase 5 — Polish & launch · 22 Feb – 7 Mar 2027 · €10
 
 - README, architecture doc (draft: [DESIGN.md](DESIGN.md)), published eval report, usage report from the ledger ("built on X tokens").

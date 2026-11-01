@@ -1,0 +1,38 @@
+# Which passages feed the obligation register: the provisions a bank's IRB Model Validation
+# Policy (and the governance around it) must address, following the coverage map in
+# docs/synthetic-policy/outline.md. Background, rationale and recitals are always excluded.
+#
+# `articles`: article numbers (CRR, RTS). `sections`: a passage is in scope if any level of its
+# hierarchy path starts with one of these headings.
+
+- source: crr3-consolidated
+  articles: ['144', '151', '164', '166', '174', '178', '179', '180', '181', '183', '185',
+             '189', '190', '191']
+  why: permission conditions, A-IRB scope and floors, use test, default, PD/LGD/CCF
+       quantification, validation, management body, credit risk control, internal audit
+
+- source: eba-gl-dod
+  sections: ['7. Criteria for the return', '8. Consistency in the application',
+             '10. Documentation, internal policies']
+  why: probation and cure, consistent default definition, policies and governance
+
+- source: eba-gl-pd-lgd
+  sections: ['4 General estimation requirements', '9 Review of estimates']
+  why: data, representativeness, margin of conservatism, regular review of estimates
+
+- source: eba-gl-downturn-lgd
+  sections: ['4. General requirements on downturn', '7. Downturn LGD estimation where']
+  why: downturn LGD requirements and the fallback when no impact can be observed
+
+- source: rts-irb-assessment
+  sections: ['Chapter 3 Assessment methodology for the function of validation',
+             'Chapter 14 Assessment methodology for management of changes']
+  why: validation function, internal governance and oversight, model changes
+
+- source: ecb-guide-internal-models
+  sections: ['4 Implementation of a model risk management framework',
+             '5 Identification of management body', '6 General principles for internal validation',
+             '7 General principles for internal audit', '10 General principles for the implementation',
+             '3 Internal governance', '4 Internal validation', '51. Validation policy',
+             '5 Internal audit', '19 Model-related MoC', '20 Review of estimates']
+  why: model risk management, validation and audit principles, validation policy, MoC, review

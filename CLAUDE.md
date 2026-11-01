@@ -97,3 +97,5 @@ gitignored), `evals/golden/*.jsonl`, `docs/`.
 | 2026-10-26 | Public sources only; EU + ECB first, national regulators later |
 | 2026-10-26 | MVP API budget: target €150, ceiling €250 |
 | 2026-10-26 | Dev runs on Claude subscription: ledger tracks tokens; EUR is API-equivalent only |
+| 2026-10-31 | Gap analysis: validation-focused obligation register (scope in `src/reglens/gap/scope.yaml`), extracted with Sonnet (Opus needs a newer local CLI), verbatim quotes checked in code |
+| 2026-10-31 | Synthetic Model Validation Policy: short (~6–8 pages), ~15 planted gaps; matching per obligation |

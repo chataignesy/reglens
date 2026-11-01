@@ -378,6 +378,92 @@ def _cmd_eval_route(args: argparse.Namespace) -> None:
     print(f"details: {s['path']}")
 
 
+def _cmd_register(args: argparse.Namespace) -> None:
+    from collections import Counter
+
+    from reglens.gap import register as reg
+    from reglens.index import db
+
+    cfg = load_config(args.config)
+    conn = db.connect()
+    todo = reg.batches(reg.select_passages(conn))[: args.limit]
+    cached = {p.stem for p in (reg.BATCH_DIR / reg.REGISTER_VERSION).glob("*.json")}
+    new = [b for b in todo if reg.batch_id(b) not in cached]
+    text = sum(len(p.text) for b in new for p in b) / reg.CHARS_PER_TOKEN
+    est = int(text + len(new) * args.overhead_tokens)
+    print(
+        f"{sum(len(b) for b in todo)} passages in {len(todo)} batches ({len(todo) - len(new)} "
+        f"cached); {len(new)} calls on {cfg.model(reg.EXTRACT_TIER)}: ~{est:,} tokens "
+        f"(passage text + ~{args.overhead_tokens:,}/call for prompt, output and thinking)"
+    )
+    if est > cfg.budget.approval_threshold_tokens:
+        print(f"Above {cfg.budget.approval_threshold_tokens:,} tokens — needs explicit approval.")
+    if not args.yes:
+        print("Dry run. Re-run with --yes to call the model.")
+        return
+
+    from reglens.llm.provider import get_provider
+
+    obligations, tokens = reg.extract(
+        conn, get_provider(cfg), limit=args.limit, log=lambda m: print(m, flush=True)
+    )
+    path = reg.REGISTER_FILE if args.limit is None else reg.BATCH_DIR / "sample.jsonl"
+    reg.write_register(obligations, path)
+    bad = [o.id for o in obligations if not o.quote_ok]
+    print(f"\n{len(obligations)} obligations, new tokens {tokens:,}; written to {path}")
+    print("by source:", dict(Counter(o.source_id for o in obligations)))
+    print("by topic:", dict(Counter(o.topic for o in obligations).most_common()))
+    print(f"quotes not found verbatim: {len(bad)} {bad[:10]}")
+
+
+def _cmd_gap(args: argparse.Namespace) -> None:
+    from pathlib import Path
+
+    from reglens.gap import match as m
+    from reglens.gap.evaluate import evaluate, save
+    from reglens.gap.gaps import POLICY_FILE, load_gaps
+    from reglens.gap.policy import load_policy
+    from reglens.gap.register import load_register
+
+    cfg = load_config(args.config)
+    obligations = load_register()
+    clauses = load_policy(Path(args.policy) if args.policy else POLICY_FILE)
+    system = m.system_prompt(clauses)
+    todo = m.batches(obligations)[: args.limit]
+    cached = {p.stem for p in (m.MATCH_DIR / m.MATCH_VERSION).glob("*.json")}
+    new = [b for b in todo if m.batch_id(b, system) not in cached]
+    est = len(new) * args.tokens_per_call
+    print(
+        f"{len(clauses)} policy clauses; {sum(len(b) for b in todo)} obligations in {len(todo)} "
+        f"batches ({len(todo) - len(new)} cached); {len(new)} calls on "
+        f"{cfg.model(m.MATCH_TIER)}: ~{est:,} tokens (at ~{args.tokens_per_call:,}/call)"
+    )
+    if est > cfg.budget.approval_threshold_tokens:
+        print(f"Above {cfg.budget.approval_threshold_tokens:,} tokens — needs explicit approval.")
+    if not args.yes:
+        print("Dry run. Re-run with --yes to call the model.")
+        return
+
+    from reglens.llm.provider import get_provider
+
+    verdicts, tokens = m.match(
+        get_provider(cfg), obligations, clauses, limit=args.limit,
+        log=lambda s: print(s, flush=True),
+    )
+    s = evaluate(load_gaps(obligations), verdicts)
+    js, cs = save(s, m.to_rows(verdicts, obligations))
+    print(
+        f"\nplanted-gap recall {s['recall']} ({s['gaps_assessed']} of {s['gaps']} gaps assessed)"
+        f"  type accuracy {s['type_accuracy']}  by type {s['by_type']}"
+    )
+    print(f"statuses {s['statuses']}  other findings {s['other_findings']}  "
+          f"quotes not verbatim {s['quotes_not_verbatim']}  new tokens {tokens:,}")
+    for r in s["per_gap"]:
+        if r["assessed"] and not r["found"]:
+            print(f"  missed {r['id']} ({r['type']}): {r['statuses']}")
+    print(f"details: {js}\ncoverage matrix: {cs}")
+
+
 def _cmd_judge(args: argparse.Namespace) -> None:
     _set_repeat(args)
     from reglens.eval.answers import answer_version
@@ -529,6 +615,19 @@ def main(argv: list[str] | None = None) -> None:
     jdg.add_argument("--id", help="only these golden ids, comma-separated")
     jdg.add_argument("--repeat", type=int, help="repeat run N (>1): separate agent cache")
     jdg.set_defaults(func=_cmd_judge)
+
+    rg = sub.add_parser("register", help="extract the obligation register (LLM calls)")
+    rg.add_argument("--limit", type=int, help="first N batches only (a sample)")
+    rg.add_argument("--overhead-tokens", type=int, default=4000, help="for the estimate")
+    rg.add_argument("--yes", action="store_true", help="actually call the model")
+    rg.set_defaults(func=_cmd_register)
+
+    gp = sub.add_parser("gap", help="policy gap analysis against the obligation register")
+    gp.add_argument("--policy", help="policy Markdown file (default: the synthetic policy)")
+    gp.add_argument("--limit", type=int, help="first N batches only (a sample)")
+    gp.add_argument("--tokens-per-call", type=int, default=8500, help="for the estimate")
+    gp.add_argument("--yes", action="store_true", help="actually call the model")
+    gp.set_defaults(func=_cmd_gap)
 
     gold = sub.add_parser("golden", help="validate the golden eval set and show its mix")
     gold.set_defaults(func=_cmd_golden)

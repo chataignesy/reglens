@@ -181,6 +181,25 @@ routes; fixed 3 answers).
 0.90**, multi-hop **0.43 → 0.71** (0.64–0.86 across the agent designs tried), citation
 recall **0.62 → 0.80**.
 
+## 5b. Policy gap analysis
+
+**Obligation register from the regulation itself.** 322 passages chosen in
+`gap/scope.yaml` (the coverage map of a validation policy) are turned into **752 atomic
+obligations** (one actor, one action, one condition), each with its citation key, legal level,
+topic and a **verbatim quote checked in code** (746/752 found; the 6 misses are PDF artefacts).
+Committed as `register/obligations.jsonl`, so it can be reviewed like any other artefact.
+
+**Matching with evidence.** For each obligation, the matcher returns covered / partial /
+missing / contradicted / not applicable / belongs in another document, with the policy
+clauses it relies on and a verbatim quote from them (checked in code). A short policy is sent
+whole in a cached system prompt, so retrieval cannot hide the relevant clause.
+
+**Evaluated against planted gaps.** A synthetic policy with 15 planted deficiencies and a
+separate answer key: **15/15 found, flag type correct for all** — after one prompt revision on
+the same gaps (a caveat stated in the results). Sampled non-planted findings were 20/20
+factually correct, but only ≈ 11/20 belonged in a validation policy: precision is the open
+problem, and the matrix is built for reviewer sign-off.
+
 ## 6. Evaluation
 
 **6.1 An expert golden set.** 80 questions written and verified against the source texts by a
@@ -232,9 +251,7 @@ calls a paid API — the CLI and the SDK client are faked), Docker for the datab
 
 ## Roadmap items not built yet
 
-- **Policy gap analysis (Phase 4):** obligation register extracted from regulation, synthetic
-  Model Validation Policy with planted gaps, coverage matrix (covered / partial / missing /
-  contradicted) with evidence quotes.
+- **Gap analysis:** a second synthetic policy for an untuned recall test; precision calibration.
 - **Batch API** for offline jobs (obligation extraction, bulk judging).
 - National regulators (DNB first), point-in-time version switching, a Next.js UI.
 

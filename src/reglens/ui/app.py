@@ -135,16 +135,7 @@ def _show(ans, check):
         st.caption(f"{ans.model} · {ans.usage_tokens:,} tokens{mode}")
 
 
-def main() -> None:
-    st.set_page_config(page_title="RegLens", page_icon="⚖️", layout="wide")
-    cfg = load_config()
-    st.title("RegLens")
-    st.caption(
-        "Grounded answers on EU credit risk regulation — CRR3, RTS, EBA guidelines, ECB guide."
-    )
-    st.info(DISCLAIMER)
-
-    mode, key, depth, applies = _sidebar(cfg)
+def _ask_tab(cfg, mode, key, depth, applies) -> None:
     example = st.selectbox("Examples", ["—"] + EXAMPLES)
     question = st.text_area(
         "Your question", value="" if example == "—" else example, height=90,
@@ -164,6 +155,25 @@ def main() -> None:
             st.error(str(e))
             return
     _show(ans, check_answer(ans))
+
+
+def main() -> None:
+    st.set_page_config(page_title="RegLens", page_icon="⚖️", layout="wide")
+    cfg = load_config()
+    st.title("RegLens")
+    st.caption(
+        "Grounded answers on EU credit risk regulation — CRR3, RTS, EBA guidelines, ECB guide."
+    )
+    st.info(DISCLAIMER)
+
+    mode, key, depth, applies = _sidebar(cfg)
+    ask, gap = st.tabs(["Ask", "Policy gap analysis"])
+    with ask:
+        _ask_tab(cfg, mode, key, depth, applies)
+    with gap:
+        from reglens.ui.gap_view import gap_tab
+
+        gap_tab()
 
 
 if __name__ == "__main__" or st.runtime.exists():

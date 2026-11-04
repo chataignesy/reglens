@@ -173,9 +173,10 @@ version in force on the as-of date; `reglens download --as-of 2027-01-01` fetche
 
 ## Phase 5 — Polish & launch · 22 Feb – 7 Mar 2027 · €10
 
+- **Priority (2026-11-04):** the demo is about the Q&A — visitors asking questions and checking the answers. The gap analysis stays as a secondary showcase.
 - README, architecture doc (draft: [DESIGN.md](DESIGN.md)), published eval report, usage report from the ledger ("built on X tokens").
-- Deploy Streamlit (BYOK) — e.g. Streamlit Community Cloud + hosted Postgres free tier.
-- Recorded demo video (most visitors won't enter a key).
+- ~~Deploy Streamlit (BYOK)~~ — dropped 2026-11-04: the two local models (~2 GB each) need more memory than free tiers give, Hugging Face Docker Spaces now need a paid plan, and Spaces block outbound Postgres ports. Demo is a video instead.
+- **Recorded demo video** (script: [docs/demo/video-script.md](demo/video-script.md)); visitors can run it locally.
 - Make the GitHub repo public (after the employer check); consider a noreply commit email.
 - **LinkedIn launch post.**
 

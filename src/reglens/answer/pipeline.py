@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Callable
 from dataclasses import asdict, dataclass, field
 from datetime import date
 
@@ -60,6 +61,13 @@ class Answer:
             for h in self.context
         ]
         return d
+
+
+Progress = Callable[[dict], None]
+
+
+def _no_progress(event: dict) -> None:
+    return None
 
 
 def format_context(hits: list[Hit]) -> str:
@@ -132,10 +140,14 @@ def answer_question(
     *,
     filters: Filters | None = None,
     today: date | None = None,
+    progress: Progress | None = None,
 ) -> Answer:
+    """`progress`, if given, receives stage events (dicts) as the answer is produced."""
     opts = config.answer or {}
     today = today or date.today()
+    emit = progress or _no_progress
     hits = search(conn, question, mode="rerank", k=int(opts.get("k", 8)), filters=filters)
+    emit({"stage": "retrieved", "passages": len(hits), "refs": [h.ref for h in hits[:3]]})
     as_of = as_of_statement(hits, today)
 
     best = hits[0].score if hits else 0.0
@@ -150,6 +162,7 @@ def answer_question(
             as_of,
         )
 
+    emit({"stage": "drafting"})
     completion = provider.complete(
         user_prompt(question, format_context(hits)),
         purpose="answer",

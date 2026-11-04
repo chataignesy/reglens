@@ -174,6 +174,7 @@ version in force on the as-of date; `reglens download --as-of 2027-01-01` fetche
 ## Phase 5 — Polish & launch · 22 Feb – 7 Mar 2027 · €10
 
 - **Priority (2026-11-04):** the demo is about the Q&A — visitors asking questions and checking the answers. The gap analysis stays as a secondary showcase.
+- ✅ Next.js UI (`web/`) over a FastAPI backend: live research progress (each agent tool call streamed), citation badges that open their sources, gap-analysis page with filters and exports; Streamlit kept as fallback
 - README, architecture doc (draft: [DESIGN.md](DESIGN.md)), published eval report, usage report from the ledger ("built on X tokens").
 - ~~Deploy Streamlit (BYOK)~~ — dropped 2026-11-04: the two local models (~2 GB each) need more memory than free tiers give, Hugging Face Docker Spaces now need a paid plan, and Spaces block outbound Postgres ports. Demo is a video instead.
 - **Recorded demo video** (script: [docs/demo/video-script.md](demo/video-script.md)); visitors can run it locally.
@@ -184,7 +185,6 @@ version in force on the as-of date; `reglens download --as-of 2027-01-01` fetche
 
 ## Backlog (after MVP)
 
-- Next.js UI
 - DNB, then other national regulators
 - Version switching over time (point-in-time answers, CRR2 vs CRR3 diff; the 2027-01-01 CRR version)
 - Regulatory change monitoring ("what changed this month")

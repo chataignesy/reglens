@@ -20,6 +20,19 @@ from reglens.gap.gaps import Gap
 from reglens.gap.match import FINDINGS, Verdict
 
 GAP_RESULTS = PROJECT_ROOT / "data" / "gap"
+DEMO_RESULT = PROJECT_ROOT / "docs" / "synthetic-policy" / "coverage-demo.json"
+EXPORT_COLUMNS = [
+    "obligation_id", "status", "clauses", "rationale", "source", "obligation", "topic",
+    "quote", "reviewer_status", "reviewer_comment",
+]
+
+
+def latest_result() -> Path | None:
+    """The committed demo run if present, else the newest local `reglens gap` run."""
+    if DEMO_RESULT.exists():
+        return DEMO_RESULT
+    runs = sorted(GAP_RESULTS.glob("gap-*.json"))
+    return runs[-1] if runs else None
 
 
 def evaluate(gaps: list[Gap], verdicts: list[Verdict]) -> dict:

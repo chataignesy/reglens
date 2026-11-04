@@ -1,0 +1,110 @@
+"""HTTP API: request validation, the SSE stream, the answer payload and the gap endpoints.
+The answer path is faked: no database, no models, no LLM calls."""
+
+import json
+import os
+
+os.environ["REGLENS_SKIP_WARMUP"] = "1"
+
+import pytest  # noqa: E402
+from fastapi.testclient import TestClient  # noqa: E402
+
+import reglens.api.app as api  # noqa: E402
+from reglens.answer.pipeline import Answer, Claim  # noqa: E402
+from reglens.retrieve.search import Hit  # noqa: E402
+
+
+@pytest.fixture
+def client():
+    return TestClient(api.app)
+
+
+def events(body: str) -> list[tuple[str, dict]]:
+    out = []
+    for block in body.strip().split("\n\n"):
+        lines = dict(line.split(": ", 1) for line in block.splitlines() if not line.startswith(":"))
+        if "event" in lines:
+            out.append((lines["event"], json.loads(lines["data"])))
+    return out
+
+
+def test_meta_lists_examples_and_access(client):
+    m = client.get("/api/meta").json()
+    assert m["examples"] and "not legal" in m["disclaimer"].lower()
+    assert "api" in m["access"]
+
+
+def test_ask_needs_a_key_for_api_access(client):
+    r = client.post("/api/ask", json={"question": "What is the PD floor?", "access": "api"})
+    assert r.status_code == 400 and "API key" in r.json()["detail"]
+
+
+def test_ask_streams_progress_then_result(client, monkeypatch):
+    seen_key = {}
+
+    def fake_provider(cfg, access, key):
+        seen_key["key"] = key
+        return object()
+
+    def fake_run(req, provider, emit):
+        emit({"stage": "retrieved", "passages": 8})
+        emit({"stage": "tool", "tool": "search", "args": ["pd floor"], "keys": ["CRR Art. 160(1)"]})
+        return {"answer": "0,05 % [C1]", "mode": req.mode}
+
+    monkeypatch.setattr(api, "_provider", fake_provider)
+    monkeypatch.setattr(api, "_run", fake_run)
+    r = client.post("/api/ask", json={"question": "What is the PD floor?", "mode": "agent"},
+                    headers={"X-Anthropic-Key": "sk-test-not-real"})
+    assert r.headers["content-type"].startswith("text/event-stream")
+    ev = events(r.text)
+    assert [k for k, _ in ev] == ["progress", "progress", "result"]
+    assert ev[1][1]["tool"] == "search" and ev[2][1] == {"answer": "0,05 % [C1]", "mode": "agent"}
+    assert seen_key["key"] == "sk-test-not-real"
+    assert "sk-test" not in r.text  # the key never comes back
+
+
+def test_ask_reports_errors_without_details(client, monkeypatch):
+    monkeypatch.setattr(api, "_provider", lambda *a: object())
+
+    def boom(req, provider, emit):
+        raise RuntimeError("secret sk-test-not-real in a message")
+
+    monkeypatch.setattr(api, "_run", boom)
+    r = client.post("/api/ask", json={"question": "What is the PD floor?"},
+                    headers={"X-Anthropic-Key": "sk-test-not-real"})
+    [(kind, data)] = events(r.text)
+    assert kind == "error" and "sk-test" not in data["message"]
+
+
+def test_answer_payload_lists_only_cited_sources():
+    hits = [Hit("a", "crr3-consolidated", "Art. 160(1)", "", "CRR › Art. 160(1)\nPD floor 0,05 %",
+                "L1", None, 0.9),
+            Hit("b", "eba-gl-dod", "para. 71", "", "EBA GL › para. 71\nprobation", "L3", None, 0.5)]
+    ans = Answer("q", False, "", "The floor is 0,05 % [C2].",
+                 [Claim("The floor is 0,05 %.", ["C2"], "law")], hits[::-1], "As of today",
+                 model="m", usage_tokens=100,
+                 trace=[{"tool": "route", "route": "single", "reason": "one lookup"},
+                        {"tool": "search", "args": ["pd"], "keys": ["CRR Art. 160(1)"]}])
+    ans.claims[0].check = "ok"
+    p = api.answer_payload(ans, {"ok": 1, "claims": 1})
+    assert [s["id"] for s in p["sources"]] == ["C1"]  # [C2] renumbered to the first source
+    assert p["answer"] == "The floor is 0,05 % [C1]." and p["claims"][0]["citations"] == ["C1"]
+    assert p["sources"][0] == {"id": "C1", "label": "CRR", "ref": "Art. 160(1)", "level": "law",
+                               "level_key": "L1", "text": "CRR › Art. 160(1)\nPD floor 0,05 %"}
+    assert p["route"] == {"route": "single", "reason": "one lookup"}
+    assert p["steps"] == [{"tool": "search", "args": ["pd"], "passages": 1}]
+
+
+def test_gap_endpoints(client, monkeypatch, tmp_path):
+    result = tmp_path / "gap.json"
+    result.write_text(json.dumps({"recall": 1.0, "rows": [{
+        "obligation_id": "OB-1", "status": "contradicted", "clauses": ["§15.1"], "rationale": "r",
+        "source": "CRR Art. 191", "obligation": "o", "topic": "internal-audit", "quote": "q",
+        "reviewer_status": "", "reviewer_comment": ""}]}), encoding="utf-8")
+    monkeypatch.setattr("reglens.gap.evaluate.latest_result", lambda: result)
+    g = client.get("/api/gap").json()
+    assert g["recall"] == 1.0 and g["file"] == "gap.json"
+    csv = client.get("/api/gap/export?format=csv")
+    assert "OB-1" in csv.content.decode("utf-8-sig") and "§15.1" in csv.text
+    xlsx = client.get("/api/gap/export?format=xlsx")
+    assert xlsx.content[:2] == b"PK"  # a zip container, i.e. a real .xlsx

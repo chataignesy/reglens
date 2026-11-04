@@ -135,3 +135,16 @@ def test_snippets_point_to_get_passage(monkeypatch):
     full = box.get_passage("CRR Art. 181(1)")
     assert "truncated" not in full and full.count("x") == 3000
     assert box.calls == 1
+
+
+def test_keys_fall_back_to_the_enclosing_passage_and_expand_ranges(monkeypatch):
+    para = {"CRR Art. 151(8)": ROWS["CRR Art. 151(8)"], "CRR Art. 161(1)": ROWS["CRR Art. 161(1)"]}
+    monkeypatch.setattr(run, "resolve_key", lambda conn, key: [para[key]] if key in para else [])
+    context, mapping = run._resolve(None, ["CRR Art. 151(8)(c)(ii)", "CRR Art. 999(1)(a)"])
+    assert mapping["CRR Art. 151(8)(c)(ii)"] == ["C1"]  # point -> paragraph passage
+    assert mapping["CRR Art. 999(1)(a)"] == ["C?"]
+    _, m2 = run._resolve(None, ["CRR Art. 161(1)(b)-(c)"])
+    assert m2["CRR Art. 161(1)(b)-(c)"] == ["C1"]  # a range of points -> the paragraph
+    assert run._expand_range("EBA GL DoD paras. 71-73") == [
+        "EBA GL DoD para. 71", "EBA GL DoD para. 72", "EBA GL DoD para. 73"]
+    assert run._expand_range("EBA GL DoD para. 71") == ["EBA GL DoD para. 71"]

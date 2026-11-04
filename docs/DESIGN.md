@@ -247,7 +247,13 @@ exactly what it affects.
 ## 9. Engineering
 
 Python 3.12+ (developed on 3.14), **uv**, src layout, **ruff**, **pytest** (65 tests; no test
-calls a paid API — the CLI and the SDK client are faked), Docker for the database, **Streamlit** UI for the MVP.
+calls a paid API — the CLI and the SDK client are faked), Docker for the database.
+
+**Web UI:** **Next.js** (App Router, TypeScript) with Tailwind and shadcn/ui, over a small
+**FastAPI** backend. Answers stream as **Server-Sent Events**: retrieval, the routing decision
+and every agent tool call appear live, then the answer with citation badges that open their
+sources. The bring-your-own key is held in page memory only and forwarded per request. The
+earlier Streamlit UI remains as a fallback.
 
 ## Roadmap items not built yet
 

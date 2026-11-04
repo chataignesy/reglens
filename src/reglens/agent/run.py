@@ -16,11 +16,12 @@ import os
 import re
 import sys
 import tempfile
+import threading
 from datetime import date
 from pathlib import Path
 
 from reglens.agent.tools import key_of, resolve_key
-from reglens.answer.pipeline import Answer, Claim, _parse_json, as_of_statement
+from reglens.answer.pipeline import Answer, Claim, Progress, _parse_json, as_of_statement
 from reglens.answer.prompts import SCOPE
 from reglens.config import Config
 from reglens.llm.provider import AnthropicAPIProvider, ClaudeCLIProvider
@@ -111,6 +112,30 @@ def _match_received(key: str, received: list[str]) -> str | None:
     return hits.pop() if len(hits) == 1 else None
 
 
+_RANGE_RE = re.compile(r"^(.*?)\bparas?\.\s*(\d+)\s*(?:-|–|to|and)\s*(\d+)$")
+_POINT_RE = re.compile(r"\([^()]*\)(?:\s*(?:-|–|and|to)\s*\([^()]*\))?$")  # "(b)" or "(b)-(c)"
+
+
+def _expand_range(key: str) -> list[str]:
+    """'EBA GL … paras. 71-73' -> one key per paragraph (at most 10)."""
+    m = _RANGE_RE.match(key)
+    if not m or not 0 < int(m.group(3)) - int(m.group(2)) < 10:
+        return [key]
+    return [f"{m.group(1)}para. {n}" for n in range(int(m.group(2)), int(m.group(3)) + 1)]
+
+
+def _lookup(conn, key: str, received: list[str]) -> list:
+    """Exact key, then a shortened key matched to a received one, then the enclosing passage
+    ('CRR Art. 178(1)(b)' -> 'CRR Art. 178(1)'), since passages are stored per paragraph."""
+    while True:
+        rows = resolve_key(conn, key)
+        if not rows and (alt := _match_received(key, received)):
+            rows = resolve_key(conn, alt)
+        if rows or not _POINT_RE.search(key):
+            return rows
+        key = _POINT_RE.sub("", key).rstrip()
+
+
 def _resolve(
     conn, keys: list[str], received: list[str] = ()
 ) -> tuple[list[Hit], dict[str, list[str]]]:
@@ -123,10 +148,9 @@ def _resolve(
         if key in mapping:
             continue
         cids = []
-        for part in (p.strip() for p in key.split(";") if p.strip()):
-            rows = resolve_key(conn, part)
-            if not rows and (alt := _match_received(part, received)):
-                rows = resolve_key(conn, alt)
+        parts = [p.strip() for p in key.split(";") if p.strip()]
+        for part in (q for p in parts for q in _expand_range(p)):
+            rows = _lookup(conn, part, received)
             if not rows:
                 cids.append("C?")  # unknown key -> flagged by the citation check
                 continue
@@ -135,7 +159,8 @@ def _resolve(
                 merged.text = "\n".join(r.text for r in rows)  # windowed chunks: all parts
                 context.append(merged)
                 by_chunk[rows[0].id] = f"C{len(context)}"
-            cids.append(by_chunk[rows[0].id])
+            if by_chunk[rows[0].id] not in cids:
+                cids.append(by_chunk[rows[0].id])
         mapping[key] = cids
     return context, mapping
 
@@ -148,11 +173,28 @@ def _read_trace(path: str) -> list[dict]:
     return [json.loads(line) for line in lines if line.strip()]
 
 
-def _run_once(provider, question, max_calls, opts, extra) -> tuple:
+def _watch_trace(path: str, emit, stop: threading.Event) -> None:
+    """Report each tool call as the MCP server appends it to the trace file."""
+    seen = 0
+    while True:
+        entries = _read_trace(path)
+        for entry in entries[seen:]:
+            emit({"stage": "tool"} | entry)
+        seen = max(seen, len(entries))
+        if stop.wait(0.5):
+            return
+
+
+def _run_once(provider, question, max_calls, opts, extra, progress=None) -> tuple:
     """One `claude -p` agent run with a fresh MCP server; returns (completion, tool trace)."""
     with tempfile.NamedTemporaryFile(suffix=".jsonl", delete=False) as f:
         trace_file = f.name
     mcp_file = _mcp_config(max_calls, trace_file)
+    stop = threading.Event()
+    watcher = None
+    if progress:
+        watcher = threading.Thread(target=_watch_trace, args=(trace_file, progress, stop))
+        watcher.start()
     try:
         completion = provider.complete(
             question,
@@ -163,6 +205,9 @@ def _run_once(provider, question, max_calls, opts, extra) -> tuple:
             extra_args=["--mcp-config", mcp_file, *extra],
         )
     finally:
+        stop.set()
+        if watcher:
+            watcher.join()
         Path(mcp_file).unlink(missing_ok=True)
         trace = _read_trace(trace_file)
         Path(trace_file).unlink(missing_ok=True)
@@ -176,7 +221,9 @@ def answer_agentic(
     question: str,
     *,
     today: date | None = None,
+    progress: Progress | None = None,
 ) -> Answer:
+    """`progress`, if given, receives stage events, including one per tool call."""
     opts = (config.answer or {}) | (config.agent or {})
     today = today or date.today()
     max_calls = int(opts.get("max_calls", 10))
@@ -196,6 +243,8 @@ def answer_agentic(
         )
 
     system = AGENT_SYSTEM.replace("{max_calls}", str(max_calls))
+    if progress:
+        progress({"stage": "agent", "max_calls": max_calls})
     if isinstance(provider, AnthropicAPIProvider):  # bring-your-own-key: loop runs in RegLens
         from reglens.agent.api_loop import run_api_agent
 
@@ -209,6 +258,7 @@ def answer_agentic(
             max_calls=max_calls,
             max_turns=int(opts.get("max_turns", max_calls + 3)),
             max_tokens=int(opts.get("max_tokens_per_question", 200_000)),
+            progress=progress,
         )
     else:
         allowed = ",".join(f"mcp__reglens__{t}" for t in TOOLS)
@@ -216,7 +266,7 @@ def answer_agentic(
         extra = ["--allowedTools", allowed, "--max-budget-usd", budget]
         tokens, errors = 0, []
         for _attempt in range(2):  # a run without any tool call means the tools were unavailable
-            completion, trace = _run_once(provider, question, max_calls, opts, extra)
+            completion, trace = _run_once(provider, question, max_calls, opts, extra, progress)
             tokens += completion.usage.total_tokens
             if trace:
                 break

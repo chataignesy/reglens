@@ -5,32 +5,19 @@ from __future__ import annotations
 
 import io
 import json
-from pathlib import Path
 
 import streamlit as st
 
-from reglens.config import PROJECT_ROOT
-from reglens.gap.evaluate import GAP_RESULTS
+from reglens.gap.evaluate import EXPORT_COLUMNS, latest_result
 from reglens.gap.match import FINDINGS
 
-DEMO_RESULT = PROJECT_ROOT / "docs" / "synthetic-policy" / "coverage-demo.json"
 POLICY_URL = "docs/synthetic-policy/model-validation-policy.md"
-COLUMNS = [
-    "obligation_id", "status", "clauses", "rationale", "source", "obligation", "topic",
-    "quote", "reviewer_status", "reviewer_comment",
-]
+COLUMNS = EXPORT_COLUMNS
 LABELS = {
     "covered": "✅ covered", "partial": "🟡 partial", "missing": "🔴 missing",
     "contradicted": "⛔ contradicted", "not_applicable": "➖ not applicable",
     "other_document": "📄 other document", "unassessed": "❔ unassessed",
 }
-
-
-def _latest() -> Path | None:
-    if DEMO_RESULT.exists():
-        return DEMO_RESULT
-    runs = sorted(GAP_RESULTS.glob("gap-*.json"))
-    return runs[-1] if runs else None
 
 
 def _xlsx(df) -> bytes | None:
@@ -51,7 +38,7 @@ def gap_tab() -> None:
         "against an obligation register extracted from the CRR, RTS, EBA guidelines and the ECB "
         "guide. Each verdict cites the policy clause and quotes it; quotes are verified in code."
     )
-    path = _latest()
+    path = latest_result()
     if path is None:
         st.info("No gap analysis run yet. Run `reglens gap --yes` first.")
         return

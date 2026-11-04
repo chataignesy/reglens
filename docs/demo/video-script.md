@@ -6,11 +6,12 @@ wording will differ from run to run; the facts should not.
 
 ## Before recording
 
-1. Start the database and the app:
-   `docker compose up -d` then `uv run streamlit run src/reglens/ui/app.py`.
+1. Start the database, the API and the web UI:
+   `docker compose up -d`, `uv run uvicorn reglens.api.app:app --port 8000`, and in `web/`
+   `npm run dev`; open http://localhost:3000.
 2. **Warm up:** ask one throwaway question first, so the embedding and reranker models are
    loaded (the first answer takes noticeably longer).
-3. **Model access:** use "Local Claude subscription", so no API key appears on screen. If you
+3. **Model access:** use "Local subscription", so no API key appears on screen. If you
    use your own key instead, enter it before you start recording.
 4. **Window:** browser at 1920×1080, zoom 110–125 % so text is readable on a phone; close other
    tabs; hide bookmarks and notifications (Windows: Focus assist on).
@@ -28,22 +29,23 @@ the CRR including CRR3, the RTS, EBA guidelines and Q&A, and the ECB guide to in
 Every answer has to show where it comes from."
 
 ### 2. A quick factual question (≈ 30 s)
-**Mode:** Quick (single pass). **Ask:** *What PD input floors apply to retail exposures under CRR3?*
-**Show:** the answer (0,05 % and 0,1 % for QRRE revolvers) → open a source expander
-(CRR Art. 163(1), labelled *law*) → the "As of" line → the citation check (all claims
-supported).
+**Answering:** Quick. **Ask:** *What PD input floors apply to retail exposures under CRR3?*
+**Show:** the live steps (searched the corpus, drafting) → the answer (0,05 % and 0,1 % for
+QRRE revolvers) → click a citation badge to open its source (CRR Art. 163(1), labelled *law*)
+→ the "As of" line → "Citation check: all claims supported".
 **Say:** "Each claim cites the exact article, is labelled law, supervisory expectation or
 interpretation, and the as-of line says which consolidated version the answer is based on.
 Before I see the answer, code checks that every claim cites a passage it was given and that
 its numbers are actually in that passage."
 
 ### 3. A real-world scenario (≈ 60 s)
-**Mode:** Auto. **Ask:** *In a jurisdiction where the competent authority set the retail
+**Answering:** Auto. **Ask:** *In a jurisdiction where the competent authority set the retail
 materiality threshold at EUR 100 and 1%, a retail obligor owes EUR 120 past due, which is 3% of
 its exposure, for 95 days, then pays it off. Is it in default, and when can it return to
 non-default?*
-**Show:** the caption "routed to agent" → open **Research steps** (the agent reads CRR Art. 178,
-then searches for the materiality threshold and the probation period) → the answer: in default,
+**Show:** the live timeline: "Needs several provisions: research agent", then each tool call as
+it happens (reads CRR Art. 178, searches for the materiality threshold and the probation
+period). The agent takes 30 s to 2 min; cut the wait in editing. Then the answer: in default,
 both components exceeded and more than 90 days; return to non-default only after at least
 three months' probation → the assumption it flags as *interpretation*.
 **Say:** "Questions like this need several provisions. A small model routes it to an agent that
@@ -57,8 +59,9 @@ its steps. Note that it states its own assumptions as interpretation, not as law
 that sets the leverage ratio happens to be in the corpus."
 
 ### 5. Policy gap analysis (≈ 40 s)
-**Show:** the **Policy gap analysis** tab → the verdict counts and "planted gaps found 15 of 15"
-→ filter Status to *contradicted* and search *previously defaulted* → OB-0218, from the EBA
+**Show:** the **Policy gap analysis** page → the verdict counts and "planted gaps found 100 %"
+→ click the *partial* and *missing* cards to hide them (only *contradicted* stays) and search
+*previously defaulted* → click the row (OB-0218), from the EBA
 guideline on return to non-default: the policy's §7.4 says one month, the guideline requires at
 least three → the Excel download with reviewer columns. (Other good rows: search *internal
 audit* for the three-year audit cycle vs annually, or *large corporates* for own LGD estimates.)

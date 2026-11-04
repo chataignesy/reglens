@@ -147,6 +147,7 @@ def run_api_agent(
     max_calls: int,
     max_turns: int,
     max_tokens: int,
+    progress=None,
 ) -> tuple[str, list[dict], int, str, list[str]]:
     """Run the loop. Returns (final text, tool trace, total tokens, model, errors)."""
     box = Toolbox(conn, max_calls=max_calls)
@@ -177,6 +178,8 @@ def run_api_agent(
                 out, values = _run_tool(box, block.name, dict(block.input or {}))
                 err = out.startswith(("Tool error", "Unknown tool"))
                 trace.append(trace_entry(box.calls, block.name, values, out))
+                if progress:
+                    progress({"stage": "tool"} | trace[-1])
             results.append(
                 {"type": "tool_result", "tool_use_id": block.id, "content": out, "is_error": err}
             )

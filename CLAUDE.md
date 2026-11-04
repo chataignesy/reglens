@@ -14,7 +14,7 @@ portfolio project (GitHub + LinkedIn). Plan and milestones: [docs/ROADMAP.md](do
   `applies_to: SI | LSI | all` — answers must say which applies.
 - **Language:** English only.
 - **Out of scope for MVP:** non-public documents, multi-version point-in-time history (store
-  effective dates now, build version switching later), Next.js UI, non-credit-risk topics.
+  effective dates now, build version switching later), non-credit-risk topics.
 
 ## Hard rules
 
@@ -66,7 +66,7 @@ limits are the practical constraint — large runs can exhaust them.
 
 ## Architecture (target)
 
-- **Python 3.12+**, `uv`, FastAPI backend, **Streamlit** UI for the MVP (Next.js later).
+- **Python 3.12+**, `uv`, FastAPI backend (`reglens.api`), **Next.js** UI in `web/` (Streamlit as fallback).
 - **Postgres + pgvector + full-text search** in one database: chunks, embeddings, cross-reference
   edges, obligation register. No separate vector or graph DB.
 - **Ingestion:** EUR-Lex HTML/XML (preferred over PDF), Docling for EBA/ECB PDFs. Chunk at
@@ -100,3 +100,4 @@ gitignored), `evals/golden/*.jsonl`, `docs/`.
 | 2026-10-31 | Gap analysis: validation-focused obligation register (scope in `src/reglens/gap/scope.yaml`), extracted with Sonnet (Opus needs a newer local CLI), verbatim quotes checked in code |
 | 2026-10-31 | Synthetic Model Validation Policy: short (~6–8 pages), ~15 planted gaps; matching per obligation |
 | 2026-11-04 | No public deployment: demo is a recorded video; Q&A is the main demo, gap analysis secondary |
+| 2026-11-04 | Next.js UI (`web/`, Tailwind + shadcn/ui) over a FastAPI backend (`reglens.api`) with streamed progress; Streamlit kept as fallback |

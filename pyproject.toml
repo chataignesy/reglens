@@ -32,6 +32,10 @@ ui = [
 mcp = [
     "mcp>=1.2",
 ]
+api = [
+    "fastapi>=0.115",
+    "uvicorn>=0.30",
+]
 
 [project.scripts]
 reglens = "reglens.cli:main"

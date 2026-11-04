@@ -99,13 +99,19 @@ policy; see [the results and caveats](docs/results/gap-phase4.md).
 ## Run it locally
 
 ```bash
-uv sync --extra ml --extra db --extra ui --extra mcp  # Docling, BGE-M3, Postgres client, Streamlit, MCP
-docker compose up -d                                  # Postgres + pgvector on 127.0.0.1:5433
-uv run reglens download                               # sources: EU Publications Office, EBA, ECB
+uv sync --extra ml --extra db --extra api --extra mcp  # Docling, BGE-M3, Postgres client, API, MCP
+docker compose up -d                                   # Postgres + pgvector on 127.0.0.1:5433
+uv run reglens download                                # sources: EU Publications Office, EBA, ECB
 uv run reglens parse && uv run reglens index
 uv run reglens ask --route "Can a bank use own LGD estimates for a large corporate under A-IRB?"
-uv run streamlit run src/reglens/ui/app.py            # web UI
+
+uv run uvicorn reglens.api.app:app --port 8000         # API for the web UI
+cd web && npm install && npm run dev                   # web UI on http://localhost:3000
 ```
+
+The web UI (Next.js) streams the research steps live while an answer is produced; see
+[web/README.md](web/README.md). The earlier Streamlit UI still works as a fallback
+(`uv sync --extra ui`, then `uv run streamlit run src/reglens/ui/app.py`).
 
 A GPU is recommended for indexing (embeddings and reranker run locally).
 

@@ -6,6 +6,18 @@
       "runtimeExecutable": "uv",
       "runtimeArgs": ["run", "--no-sync", "streamlit", "run", "src/reglens/ui/app.py", "--server.headless", "true", "--server.port", "8501"],
       "port": 8501
+    },
+    {
+      "name": "reglens-api",
+      "runtimeExecutable": "uv",
+      "runtimeArgs": ["run", "--no-sync", "uvicorn", "reglens.api.app:app", "--port", "8000"],
+      "port": 8000
+    },
+    {
+      "name": "reglens-web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "web", "run", "dev"],
+      "port": 3000
     }
   ]
 }

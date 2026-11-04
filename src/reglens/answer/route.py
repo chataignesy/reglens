@@ -10,7 +10,7 @@ from __future__ import annotations
 import hashlib
 from datetime import date
 
-from reglens.answer.pipeline import Answer, _parse_json, answer_question
+from reglens.answer.pipeline import Answer, Progress, _parse_json, answer_question
 from reglens.config import Config
 from reglens.llm.provider import LLMError, LLMProvider
 from reglens.retrieve.search import search
@@ -51,26 +51,36 @@ def route_question(provider: LLMProvider, question: str) -> tuple[str, str, int]
 
 
 def answer_routed(
-    conn, provider: LLMProvider, config: Config, question: str, *, today: date | None = None
+    conn,
+    provider: LLMProvider,
+    config: Config,
+    question: str,
+    *,
+    today: date | None = None,
+    progress: Progress | None = None,
 ) -> Answer:
     opts = config.answer or {}
+    emit = progress or (lambda event: None)
     top = search(conn, question, mode="rerank", k=1)
-    if not top or top[0].score < float(opts.get("abstain_below", 0.05)):
-        return answer_question(conn, provider, config, question, today=today)  # gate abstains
+    if not top or top[0].score < float(opts.get("abstain_below", 0.05)):  # gate abstains
+        return answer_question(conn, provider, config, question, today=today, progress=progress)
 
+    emit({"stage": "routing"})
     try:
         route, reason, tokens = route_question(provider, question)
     except LLMError as e:
         route, reason, tokens = "single", f"router failed: {e}", 0
+    emit({"stage": "routed", "route": route, "reason": reason})
     from reglens.agent.run import answer_agentic
 
     if route == "agent":
-        ans = answer_agentic(conn, provider, config, question, today=today)
+        ans = answer_agentic(conn, provider, config, question, today=today, progress=progress)
     else:
-        ans = answer_question(conn, provider, config, question, today=today)
+        ans = answer_question(conn, provider, config, question, today=today, progress=progress)
         if ans.missing_info:  # single pass reports a gap: let the agent look further
+            emit({"stage": "fallback"})
             tokens += ans.usage_tokens
-            ans = answer_agentic(conn, provider, config, question, today=today)
+            ans = answer_agentic(conn, provider, config, question, today=today, progress=progress)
             route, reason = "agent", f"fallback: single pass lacked information ({reason})"
     ans.trace.insert(0, {"tool": "route", "route": route, "reason": reason, "tokens": tokens})
     ans.usage_tokens += tokens

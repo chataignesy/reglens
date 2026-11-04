@@ -17,18 +17,8 @@ from reglens.answer.verify import check_answer
 from reglens.config import load_config
 from reglens.llm.provider import AnthropicAPIProvider, ClaudeCLIProvider, LLMError
 from reglens.retrieve.search import Filters
+from reglens.ui.content import DISCLAIMER, EXAMPLES
 
-DISCLAIMER = (
-    "Personal open-source project — not affiliated with any employer, supervisor or regulator. "
-    "Not legal or regulatory advice; always check the official texts."
-)
-EXAMPLES = [
-    "What is the PD input floor for IRB corporate exposures under CRR3?",
-    "How long is the probation period after distressed restructuring?",
-    "Which discount rate should be used to calculate realised LGD?",
-    "What output floor factor applies in 2026?",
-    "Can a bank use own LGD estimates for a large corporate under A-IRB?",
-]
 DEPTHS = {"Auto": "auto", "Quick (single pass)": "single", "Deep (agent)": "agent"}
 
 

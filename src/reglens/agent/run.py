@@ -24,9 +24,10 @@ from reglens.agent.tools import key_of, resolve_key
 from reglens.answer.pipeline import Answer, Claim, Progress, _parse_json, as_of_statement
 from reglens.answer.prompts import SCOPE
 from reglens.config import Config
-from reglens.llm.provider import AnthropicAPIProvider, ClaudeCLIProvider
+from reglens.llm.provider import AnthropicAPIProvider, ClaudeCLIProvider, LLMError
 from reglens.retrieve.search import Hit, search
 
+AGENT_CAP_ERROR = "the research agent reached its cost cap before answering"
 TOOLS = ["search", "get_article", "get_passage", "follow_reference", "get_definition", "get_qa"]
 
 AGENT_SYSTEM = f"""\
@@ -265,14 +266,22 @@ def answer_agentic(
         budget = str(opts.get("max_budget_usd", 0.75))
         extra = ["--allowedTools", allowed, "--max-budget-usd", budget]
         tokens, errors = 0, []
-        for _attempt in range(2):  # a run without any tool call means the tools were unavailable
-            completion, trace = _run_once(provider, question, max_calls, opts, extra, progress)
-            tokens += completion.usage.total_tokens
-            if trace:
-                break
-        text, model = completion.text, completion.model
-        if not trace:
-            errors.append("agent made no tool calls (RegLens MCP tools unavailable?)")
+        try:
+            for _attempt in range(2):  # a run without any tool call: the tools were unavailable
+                completion, trace = _run_once(provider, question, max_calls, opts, extra, progress)
+                tokens += completion.usage.total_tokens
+                if trace:
+                    break
+            text, model = completion.text, completion.model
+            if not trace:  # no tool call means an ungrounded answer: drop it, routing falls back
+                text = ""
+                errors.append("agent made no tool calls (RegLens MCP tools unavailable?)")
+        except LLMError as e:
+            if "max_budget" not in str(e):
+                raise
+            # claude -p stops without an answer at --max-budget-usd: report it, don't crash
+            text, model, trace = "", None, []
+            errors.append(AGENT_CAP_ERROR)
 
     ans = Answer(
         question, False, "", "", [], [], "", model=model, usage_tokens=tokens, trace=trace

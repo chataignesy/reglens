@@ -73,20 +73,20 @@ can query the regulation directly. Design choices and evidence: [docs/DESIGN.md]
 
 ## How well it works
 
-Measured on 80 golden questions, drafted with an LLM and checked and corrected against the
+Measured on 120 golden questions, drafted with an LLM and checked and corrected against the
 source texts by a credit risk practitioner, graded by an LLM judge against the expert answers
-([full results](docs/results/golden-phase3.md)):
+([first 80](docs/results/golden-phase3.md), [40 harder ones](docs/results/golden-120.md)):
 
-| 70 in-scope questions | |
+| 104 in-scope questions | |
 |---|---|
-| Correctness (fully / partly / wrong) | **0.91** (57 / 13 / **0**) |
-| Factual questions | 0.98 |
-| Citation recall (expected sources cited) | 0.90 |
+| Correctness (fully / partly / wrong) | **0.89** (82 / 22 / **0**) |
+| Citation recall (expected sources cited) | 0.89 |
 | Claims passing the citation check | 0.99 |
-| Out-of-scope questions declined | 10 / 10 |
+| Out-of-scope questions declined | 15 / 16 |
 
-Multi-step questions remain the hardest (0.63–0.67, against 0.46 for a single retrieval pass);
-see [the agent results](docs/results/agent-phase3.md).
+Multi-step questions are where the research agent earns its cost. On the 11 newest multi-hop
+questions, a single retrieval pass scores 0.59 and the routed agent 0.86. See
+[the agent results](docs/results/agent-phase3.md).
 
 ## Also included: policy gap analysis
 

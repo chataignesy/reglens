@@ -23,6 +23,7 @@ from reglens.answer.verify import check_answer
 from reglens.config import PROJECT_ROOT, Config
 from reglens.eval.golden import GoldenItem
 from reglens.eval.retrieval import normalize_refs, refs_match
+from reglens.llm.provider import LLMError
 
 ANSWER_DIR = PROJECT_ROOT / "data" / "evals" / "answers"
 PROMPT_VERSION = hashlib.sha256(SYSTEM.encode()).hexdigest()[:8]
@@ -97,7 +98,10 @@ def run(
             path = out_dir / f"{item.id}.json"
             if path.exists():
                 return json.loads(path.read_text(encoding="utf-8"))
-            ans: Answer = answer_fn(conn, provider, config, item.question)
+            try:
+                ans: Answer = answer_fn(conn, provider, config, item.question)
+            except LLMError as e:  # one failed item must not stop the run: record it as an error
+                ans = Answer(item.question, False, "", "", [], [], "", errors=[str(e)])
             check = check_answer(ans)  # annotates claims first, so the record stores their checks
             record = ans.to_dict() | {"check": check, "id": item.id}
             path.write_text(json.dumps(record, indent=2, ensure_ascii=False), encoding="utf-8")
@@ -108,7 +112,12 @@ def run(
         use_agent = routes.get(item.id) == "agent" if routes is not None else agent
         record = answer(use_agent)
         mode = "agent" if use_agent else "single"
-        if routes is not None and not use_agent and record.get("missing_info"):
+        if routes is not None and use_agent and not record.get("answer") and record.get("errors"):
+            first = record.get("usage_tokens", 0)  # as in answer_routed: agent stopped, single-pass
+            record = answer(False)
+            record = record | {"usage_tokens": record.get("usage_tokens", 0) + first}
+            mode = "agent_failed"
+        elif routes is not None and not use_agent and record.get("missing_info"):
             first = record.get("usage_tokens", 0)  # as in answer_routed: agent after a gap
             record = answer(True)
             record = record | {"usage_tokens": record.get("usage_tokens", 0) + first}

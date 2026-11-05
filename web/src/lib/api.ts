@@ -54,7 +54,7 @@ export interface AnswerPayload {
 }
 
 export interface ProgressEvent {
-  stage: "retrieved" | "routing" | "routed" | "drafting" | "agent" | "tool" | "fallback";
+  stage: "retrieved" | "routing" | "routed" | "drafting" | "agent" | "tool" | "fallback" | "agent_failed";
   [key: string]: unknown;
 }
 

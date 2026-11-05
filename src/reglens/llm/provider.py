@@ -116,6 +116,9 @@ class ClaudeCLIProvider:
                 encoding="utf-8",
                 timeout=self.timeout_s,
                 cwd=tempfile.gettempdir(),
+                # MCP tools must be loaded up front: with tool search on, the CLI defers them
+                # behind ToolSearch, which `--tools ""` removes, so the agent sees no tools.
+                env=os.environ | {"ENABLE_TOOL_SEARCH": "false"},
             )
         except subprocess.TimeoutExpired as e:
             raise LLMError(f"claude -p timed out after {self.timeout_s}s") from e

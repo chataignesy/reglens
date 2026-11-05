@@ -114,3 +114,9 @@ def test_parse_json_repairs_unescaped_quotes():
     raw = '{"answer": "I read your "past due" as unbroken.", "claims": [{"text": "a", "kind": "law"}]}'
     assert _parse_json(raw)["answer"] == 'I read your "past due" as unbroken.'
     assert _parse_json('```json\n{"a": "x\\"y"}\n```') == {"a": 'x"y'}
+
+
+def test_parse_json_tolerates_raw_control_characters():
+    from reglens.answer.pipeline import _parse_json
+
+    assert _parse_json('{"answer": "line one\nline two\ttab"}')["answer"] == "line one\nline two\ttab"

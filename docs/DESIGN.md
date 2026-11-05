@@ -20,7 +20,7 @@ them, take the top-k by cosine similarity, and ask an LLM to answer from them.
 | Retrieval | Dense top-k | Hybrid BM25 + dense (RRF) → cross-encoder reranker → practitioner glossary expansion | recall@10 0.59 (BM25) / 0.74 (dense) → **0.84** |
 | Grounding | "Answer from the context" | JSON claims, each citing passages; a deterministic checker verifies citations and numbers; abstention gate; "as of" line built by code | **0.99** of claims pass the check; 5/5 out-of-scope questions declined |
 | Multi-step questions | Same single pass | Router → bounded agent with 6 corpus tools over the graph, agent fallback when a quick answer has gaps; runs on the Messages API or as an MCP server | Correctness 0.86 → **0.91**, no wrong answers (70 questions) |
-| Evaluation | Eyeballing answers | 80-question expert golden set, retrieval metrics, deterministic citation metrics, LLM judge, router eval, repeat runs for variance | — |
+| Evaluation | Eyeballing answers | 120-question expert golden set, retrieval metrics, deterministic citation metrics, LLM judge, router eval, repeat runs for variance | — |
 | Cost | Unknown | Token ledger on every call, model tiers, prompt caching, estimates before every run | 3.1M tokens, ≈ €3.6 API-equivalent so far |
 
 ## 1. Sources and ingestion
@@ -177,6 +177,10 @@ factual 0.98, **no wrong answers**; 10/10 out-of-scope declined. A single-pass a
 reports missing information (`missing_info`) falls back to the agent (8 of 49 single-pass
 routes; fixed 3 answers).
 
+*40 harder questions (34 in scope):* single-pass **0.72 → 0.87** routed, multi-hop
+**0.59 → 0.86**, 5 wrong answers → **0**. Across all 104 in-scope questions: **0.89**, no wrong
+answers, 15/16 out-of-scope declined ([results](results/golden-120.md)).
+
 *Smoke set:* single-pass vs routed on the 25 in-scope smoke questions — correctness **0.78 →
 0.90**, multi-hop **0.43 → 0.71** (0.64–0.86 across the agent designs tried), citation
 recall **0.62 → 0.80**.
@@ -202,7 +206,7 @@ problem, and the matrix is built for reviewer sign-off.
 
 ## 6. Evaluation
 
-**6.1 An expert golden set.** 80 questions written and verified against the source texts by a
+**6.1 An expert golden set.** 120 questions written and verified against the source texts by a
 credit risk practitioner (CFA, FRM): factual, multi-hop, comparison, applicability (SI / LSI)
 and out-of-scope, each with expected citations and accepted alternatives where two provisions
 say the same thing.

@@ -87,3 +87,24 @@ def test_single_pass_gap_falls_back_to_agent(monkeypatch):
     ans = route.answer_routed(None, FakeRouter(['{"route": "single"}']), load_config(), "q")
     assert ans.answer == "full" and ans.usage_tokens == 5000 + 100 + 920
     assert ans.trace[0]["route"] == "agent" and ans.trace[0]["reason"].startswith("fallback")
+
+
+def test_agent_without_answer_falls_back_to_single_pass(monkeypatch):
+    top = Hit("c1", "crr3-consolidated", "Art. 162(1)", "", "", "L1", None, 0.9)
+    monkeypatch.setattr(route, "search", lambda *a, **k: [top])
+    events = []
+
+    def agent(conn, provider, config, question, **kw):
+        return Answer(question, False, "", "", [], [], "", usage_tokens=9000,
+                      errors=["the research agent reached its cost cap before answering"])
+
+    def single(conn, provider, config, question, **kw):
+        return Answer(question, False, "", "quick answer", [], [], "", usage_tokens=100)
+
+    monkeypatch.setattr(agent_run, "answer_agentic", agent)
+    monkeypatch.setattr(route, "answer_question", single)
+    ans = route.answer_routed(None, FakeRouter(['{"route": "agent"}']), load_config(), "q",
+                              progress=events.append)
+    assert ans.answer == "quick answer" and ans.usage_tokens == 100 + 9000 + 920
+    assert ans.trace[0]["route"] == "single" and "cost cap" in ans.trace[0]["reason"]
+    assert any(e["stage"] == "agent_failed" for e in events)

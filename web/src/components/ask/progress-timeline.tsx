@@ -53,6 +53,11 @@ function describe(e: ProgressEvent): { icon: React.ReactNode; text: string } {
       return { icon: <PenLine className="size-4" />, text: "Drafting a cited answer" };
     case "agent":
       return { icon: <Bot className="size-4" />, text: `Research agent started (up to ${e.max_calls} tool calls)` };
+    case "agent_failed":
+      return {
+        icon: <Undo2 className="size-4" />,
+        text: "The research agent reached its cost cap without an answer: answering in a single pass instead",
+      };
     case "fallback":
       return {
         icon: <Undo2 className="size-4" />,

@@ -105,9 +105,9 @@ def _parse_json(text: str) -> dict:
         raise ValueError("no JSON object in model output")
     raw = text[start : end + 1]
     try:
-        return json.loads(raw)
+        return json.loads(raw, strict=False)  # strict=False: raw newlines/tabs inside strings
     except json.JSONDecodeError:
-        return json.loads(_escape_inner_quotes(raw))
+        return json.loads(_escape_inner_quotes(raw), strict=False)
 
 
 def _escape_inner_quotes(raw: str) -> str:

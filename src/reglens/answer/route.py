@@ -75,6 +75,12 @@ def answer_routed(
 
     if route == "agent":
         ans = answer_agentic(conn, provider, config, question, today=today, progress=progress)
+        if not ans.answer and ans.errors:  # agent stopped (e.g. cost cap): answer single-pass
+            why = "; ".join(ans.errors)
+            emit({"stage": "agent_failed", "reason": why})
+            tokens += ans.usage_tokens
+            ans = answer_question(conn, provider, config, question, today=today, progress=progress)
+            route, reason = "single", f"agent stopped ({why}); single-pass answer"
     else:
         ans = answer_question(conn, provider, config, question, today=today, progress=progress)
         if ans.missing_info:  # single pass reports a gap: let the agent look further

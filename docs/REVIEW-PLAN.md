@@ -21,7 +21,37 @@ Work happens on branch `review-fixes`.
 | 5 | ✅ Done. **D9:** failed and cancelled CLI calls are logged with an `outcome`; usage they did not report is `usage_known: false`, not zero; the agent's cost-cap path counts the failed call's tokens. **F8:** the API agent loop checks the budget before each request (a fifth reserved for the final answer); the final turn uses `tool_choice: none`; no request once the budget is spent. **F5:** per-request cancel token: providers check it before every call, the `claude -p` process is killed on cancel, disconnect detected by an async SSE stream; at most 2 questions at once (HTTP 429 beyond); `/api/ready` reports warm-up and database. Verified live: disconnect during drafting killed the process and logged a cancelled call. **D8:** a standalone MCP server has no process-wide cap; RegLens's per-question server keeps its 10 calls. |
 | 6 | ✅ Done. **F6:** `gap.match.validate`: covered / partial / contradicted need an existing clause and a quote, otherwise *unassessed (invalid output)*; unknown statuses are no longer turned into *missing*; non-verbatim quotes are flagged `not_verbatim`. `reglens gap --rescore` re-validates a saved run with no LLM calls. The committed demo still finds 15/15 under the strict rules (0 invalid verdicts, 3 non-verbatim quotes flagged). **F9:** recall is over all planted gaps; `recall_of_assessed`, `gaps_assessed` and `complete` are reported; incomplete runs are flagged in both UIs. **F7:** runs are listed (`/api/gap/runs`) and chosen explicitly (`?run=`); default is the newest local run, else the demo; the demo is labelled; exports follow the chosen run. The tuning caveat and the precision sample sit next to the figure; *unassessed* status card; empty-filter message. The 3 un-cached register batches (≈ 22k tokens) and a re-match stay deferred to step 8. |
 | 7 | ✅ Done. **Docs:** ROADMAP status (phases 2–4 done, 5 in progress), DESIGN tables and token totals (10.6M tokens, ≈ €19, 8 Nov 2026), Next.js removed from "not built yet". **Wording:** the API key goes from the browser via the local API to Anthropic (README, DESIGN, UI); lexical search is named Postgres `ts_rank`, not BM25. **Dates:** "Answered <date> from: <source versions>" instead of "As of". **Sources:** citation panels show the version and link to the official text (the exact consolidated CRR version on EUR-Lex). **Applicability:** SI/LSI works in every mode (gate, router path, single pass, agent search on both runtimes; the agent is told the type). **Accessibility:** named radio groups with arrow-key behaviour and one tab stop, `aria-expanded` on source panels, Retry when the API is unreachable (gap-page items done in step 6). **Hardening:** HTTPS-only downloads (CELLAR's http redirects upgraded on EU hosts, others refused), reused raw files re-hashed against the lock, self-hosted Geist fonts (`geist` package: the build needs no network). 5 tests; checked in the browser. |
-| 8 | Open: re-measure (needs approval for tokens). |
+| 8 | Planned below: re-measure (needs approval for tokens). |
+
+### Step 8 plan (8 Nov 2026)
+
+Every answer, route and verdict cache is invalid after steps 1–7 (code, corpus and question
+fingerprints), so the numbers are measured afresh. Each run writes a manifest, and every
+published figure will cite its run id.
+
+Estimates use the ledger's recent averages: router 1.2k, quick answer 5.9k, agent answer about
+48k incl. retries, judge 1.75k tokens. The current router sent 42 of 104 in-scope questions to
+the agent.
+
+| Stage | Command | Calls | Tokens |
+|---|---|---|---|
+| a. Retrieval eval | `reglens eval-retrieval` | none | 0 (done: recall@10 0.805) |
+| b. Smoke: route + routed answers + judge, 30 questions (phase0) | `eval-route --set phase0 --yes`, `eval-answers --set phase0 --route --yes`, `judge --run <id> --yes` | ≈ 30 + 30 + 25 | ≈ 0.7M |
+| c. Full routed run, remaining 90 questions (smoke answers reused) | same with `--set all` | ≈ 90 + 90 + 80 | ≈ 2.3M |
+| d. Optional: single-pass baseline, all 120 (for the routed vs single comparison) | `eval-answers --set all --yes`, `judge` | 120 + 104 | ≈ 0.9M |
+| **Total** | | | **≈ 3.0M (b+c), 3.9M with d** |
+
+Order: run (b) and look at it before (c). Stop if the smoke run shows a new failure pattern
+(for example many `partial_read` checks, unresolved citations or invalid outputs).
+
+**Register and gap re-match:** deferred, not part of this step. Rebuilding the 3 un-cached
+register batches is cheap (≈ 22k tokens), but obligation IDs are numbered sequentially, so
+inserting new obligations renumbers the rest and would force a full gap re-match (≈ 0.4M
+tokens). The committed register and gap results stay consistent with each other. Making IDs
+stable (content-derived) comes first, then rebuild.
+
+Afterwards: replace the headline numbers in README, DESIGN, ROADMAP and the results docs,
+each citing its run id, and hand-check the judge verdicts flagged as inconsistent (R2).
 
 ### Additions from the runtime review
 

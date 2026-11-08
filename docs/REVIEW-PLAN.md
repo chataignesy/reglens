@@ -50,6 +50,14 @@ inserting new obligations renumbers the rest and would force a full gap re-match
 tokens). The committed register and gap results stay consistent with each other. Making IDs
 stable (content-derived) comes first, then rebuild.
 
+**Smoke result (b), run `20261108-151941-routed-phase0`, 8 Nov 2026:**
+- **Quality:** correctness 0.90 on 25 in-scope questions (20 fully correct, 5 partly, 0 wrong); multi-hop 0.857; 5/5 out of scope declined; citation recall 0.867; mechanical checks passed 0.973. This is the same correctness as the 0.90 before the review fixes.
+- **Cost:** 1.70M tokens (answers 1.65M, router 47k, judge 54k): about 2.5x the 0.7M estimate.
+- **Why:** agent answers now average about 11 tool calls (4.5 before) and 60–180k tokens each (about 54k before), 87% of them cache reads. The steps 1 / R1 rules (paged articles, read before citing, snippets do not count as read) make the agent read more. More turns re-read the growing context.
+- **Where it went:** 13 agent answers used 1.56M tokens and scored 0.885; 12 quick answers used 0.09M and scored 0.917.
+- **Judge (R2):** flagged 4 verdicts to check by hand: pd-002, mh-002, mh-006, mh-007.
+- **Full run (c):** at this rate the remaining 90 questions would cost about 4M tokens, not 2.3M. Not started; it needs a new decision.
+
 Afterwards: replace the headline numbers in README, DESIGN, ROADMAP and the results docs,
 each citing its run id, and hand-check the judge verdicts flagged as inconsistent (R2).
 

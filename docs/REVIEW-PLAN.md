@@ -21,6 +21,21 @@ Work happens on branch `review-fixes`.
 | 5 | ✅ Done. **D9:** failed and cancelled CLI calls are logged with an `outcome`; usage they did not report is `usage_known: false`, not zero; the agent's cost-cap path counts the failed call's tokens. **F8:** the API agent loop checks the budget before each request (a fifth reserved for the final answer); the final turn uses `tool_choice: none`; no request once the budget is spent. **F5:** per-request cancel token: providers check it before every call, the `claude -p` process is killed on cancel, disconnect detected by an async SSE stream; at most 2 questions at once (HTTP 429 beyond); `/api/ready` reports warm-up and database. Verified live: disconnect during drafting killed the process and logged a cancelled call. **D8:** a standalone MCP server has no process-wide cap; RegLens's per-question server keeps its 10 calls. |
 | 6–8 | Open. |
 
+### Additions from the runtime review
+
+[RUNTIME-REVIEW-2026-11-08.md](RUNTIME-REVIEW-2026-11-08.md) measured the running system. Its
+priorities 1 (cancellation) and 5 (concurrency cap, readiness) are done in step 5. Priority 6
+(filtered vector recall) is done by `hnsw.ef_search = 400` and `iterative_scan`: the forced-HNSW,
+ECB-only case that returned 2 of 30 rows now returns 30 of 30, matching the exact scan.
+
+New items, to go before step 8 (they change answers or how they are graded):
+
+| | Finding | Change |
+|---|---|---|
+| R1 | The agent stops early: mh-003 used 2 of 10 tool calls and said it had not read the passages it needed. | Before the final answer, code checks for truncated passages it relies on that were never read in full, and gives the agent one more turn to read them while budget remains. Otherwise the answer is marked incomplete. |
+| R2 | The judge contradicts itself: pd-002 scored 2 while its rationale said "should be 1". | Flag verdicts whose score disagrees with their own missing facts or rationale. Keep the raw verdict, list the flags in the run report, and hand-check them. |
+| R3 | Scope compliance gets mixed up with claim support. | A separate scope signal in reports and the UI: the answer declined, answered in scope, or answered an out-of-scope question with related material. |
+
 ## Principle
 
 Most findings share one cause: **source identity and completeness are lost between stages**.

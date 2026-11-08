@@ -104,13 +104,42 @@ docker compose up -d                                   # Postgres + pgvector on 
 uv run reglens download                                # sources: EU Publications Office, EBA, ECB
 uv run reglens parse && uv run reglens index
 uv run reglens ask --route "Can a bank use own LGD estimates for a large corporate under A-IRB?"
-
-uv run uvicorn reglens.api.app:app --port 8000         # API for the web UI
-cd web && npm install && npm run dev                   # web UI on http://localhost:3000
 ```
 
-The web UI (Next.js) streams the research steps live while an answer is produced; see
-[web/README.md](web/README.md). The earlier Streamlit UI still works as a fallback
+### Start the web UI
+
+Once the corpus is indexed (the steps above, done once), three processes run the UI. Each
+command goes in its own terminal and starts from the repository root.
+
+1. **Database.** Docker Desktop must be running.
+
+   ```bash
+   docker compose up -d
+   ```
+
+2. **API** on http://localhost:8000. It loads the embedding model and the reranker at startup
+   and is ready once it logs `Application startup complete`.
+
+   ```bash
+   uv run uvicorn reglens.api.app:app --port 8000
+   ```
+
+3. **Web UI** on http://localhost:3000. Run `npm install` only the first time.
+
+   ```bash
+   cd web && npm install && npm run dev
+   ```
+
+Then open http://localhost:3000.
+
+Answers are generated with your **Claude subscription** (the `claude` CLI must be installed and
+logged in), or with your **own Anthropic API key**: choose "Your API key" in the UI. The key
+stays in the page's memory and is sent only to the Anthropic API. Quick answers take a few
+seconds. Research-agent answers take up to a minute or two, with each step shown live.
+
+To stop, press Ctrl+C in both terminals, then run `docker compose stop`.
+
+More on the front end: [web/README.md](web/README.md). The earlier Streamlit UI still works as a fallback
 (`uv sync --extra ui`, then `uv run streamlit run src/reglens/ui/app.py`).
 
 A GPU is recommended for indexing (embeddings and reranker run locally).

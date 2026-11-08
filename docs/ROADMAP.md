@@ -180,6 +180,7 @@ version in force on the as-of date; `reglens download --as-of 2027-01-01` fetche
 - README, architecture doc (draft: [DESIGN.md](DESIGN.md)), published eval report, usage report from the ledger ("built on X tokens").
 - ~~Deploy Streamlit (BYOK)~~ — dropped 2026-11-04: the two local models (~2 GB each) need more memory than free tiers give, Hugging Face Docker Spaces now need a paid plan, and Spaces block outbound Postgres ports. Demo is a video instead.
 - **Recorded demo video** (script: [docs/demo/video-script.md](demo/video-script.md)); visitors can run it locally.
+- ✅ README *Start the web UI*: database (Docker), API (`uvicorn`, port 8000, models warm at startup), Next.js (`npm run dev`, port 3000); subscription or own API key
 - Make the GitHub repo public (after the employer check); consider a noreply commit email.
 - **LinkedIn launch post.**
 

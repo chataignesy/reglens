@@ -127,7 +127,17 @@ consolidated version of each cited source, generated from metadata, never by the
 **4.5 Model tiers and a thin provider layer.** Model IDs live in `config.yaml` only: Haiku 5.5
 for bulk work (judge, router), Sonnet 5.5 for answering and the agent, Opus 5.5 reserved for
 milestone evals. One provider interface runs either the Claude subscription (`claude -p`) for
-development or the **Anthropic SDK** with the visitor's own key for the public demo.
+development, or the **Anthropic SDK** with the user's own key.
+
+**4.6 How the demo runs.** There is no hosted deployment: the two local models (~2 GB each)
+don't fit free hosting tiers. The demo is a recorded video, and anyone can run the app locally.
+Three processes:
+- Postgres + pgvector in Docker;
+- the FastAPI backend (`reglens.api`), which keeps the embedding model and the reranker warm
+  and streams progress over SSE;
+- the Next.js UI in `web/`.
+
+Steps are in the README under *Start the web UI*.
 
 ## 5. Agentic retrieval
 
@@ -144,7 +154,7 @@ the same checker applies to agent answers.
 **5.2a Two runtimes, one agent.** The same prompt, tools and citation keys run in two places:
 - *Development:* Claude Code (`claude -p`) drives the loop over the RegLens MCP server, on the
   Claude subscription; the tool server enforces 10 tool calls and the CLI caps cost.
-- *Public demo (bring your own key):* RegLens runs the loop itself on the **Anthropic Messages
+- *Bring your own key (choose "Your API key" in the web UI):* RegLens runs the loop itself on the **Anthropic Messages
   API** (documented manual tool-use loop, tools executed in-process). Limits are enforced in
   RegLens code: 10 tool calls, 13 model turns as a hard stop, 200k tokens per question; at a
   limit the agent is told to answer with what it has. Each turn adds a cache breakpoint so the

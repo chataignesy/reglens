@@ -40,6 +40,7 @@ class Chunk:
     amended_by: list[str] = field(default_factory=list)
     part: int = 0  # >0 when a long unit was split into windows
     cite: str = ""  # citation key, unique per logical unit (see ingest/cite.py)
+    source_sha256: str = ""  # digest of the raw source file the text was parsed from
 
 
 def _title_case(s: str) -> str:
@@ -96,6 +97,7 @@ def build_chunks(
     chars_per_token: float,
     max_tokens: int = 1200,
     overlap_tokens: int = 100,
+    source_sha256: str = "",
 ) -> list[Chunk]:
     chunks: list[Chunk] = []
     seen: dict[str, int] = {}
@@ -143,6 +145,7 @@ def build_chunks(
                     body=body,
                     amended_by=u.amended_by,
                     part=i + 1 if len(bodies) > 1 else 0,
+                    source_sha256=source_sha256,
                 )
             )
     from reglens.ingest.cite import assign_cites

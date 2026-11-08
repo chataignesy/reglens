@@ -16,7 +16,8 @@ Work happens on branch `review-fixes`.
 |---|---|
 | 1 | ✅ Done. Also: "paragraph N" references inside articles became edges (+411). Retrieval recall@10 0.808 (103 questions). |
 | 2 | ✅ Done. Answer contract in `answer/schema.py`: one retry for single-pass answers, none for the agent (a retry would re-run its tool loop); *unverified* state in API, web UI, Streamlit and CLI. The check is relabelled "mechanical citation checks", with its limits stated. |
-| 3–8 | Open. |
+| 3 | ✅ Done. **D1:** the Docling cache is keyed by PDF SHA-256 (`<id>.meta.json`, the 7 existing caches adopted, no re-conversion); `parse` skips a raw file that differs from `sources.lock.json`; `parse --force`; chunks carry `source_sha256`. **F3:** the extraction cache key covers prompt version, model, effort and passage text; `register/manifest.json` records source digests. 28 of 31 cached batches were adopted with identical text. 3 batches are uncached because step 1 moved passages: rebuilding the register is ≈ 22k tokens, deferred together with the gap re-match (step 6). |
+| 4–8 | Open. |
 
 ## Principle
 

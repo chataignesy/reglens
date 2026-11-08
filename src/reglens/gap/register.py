@@ -6,7 +6,10 @@ obligation keeps a verbatim quote, which code checks against its source passage,
 obligation in the register is traceable to the regulation's own words. Batches are cached
 per prompt version and batch content, so re-running costs nothing and widening the scope only
 extracts the new passages; the register is written to
-`register/obligations.jsonl` (committed: it is the reviewable output).
+`register/obligations.jsonl` (committed: it is the reviewable output), with
+`register/manifest.json` recording the source file digests, model and prompt version it was
+built from. A batch's cache key covers the prompt version, model, effort and the full passage
+text, so a corrected or updated source text is extracted again, never matched to an old reply.
 """
 
 from __future__ import annotations
@@ -31,6 +34,8 @@ BATCH_DIR = PROJECT_ROOT / "data" / "register" / "batches"
 BATCH_TOKENS = 3500  # passage text per call
 CHARS_PER_TOKEN = 3.01
 EXTRACT_TIER = "dev"
+EXTRACT_EFFORT = "medium"
+MANIFEST_FILE = PROJECT_ROOT / "register" / "manifest.json"
 
 ACTORS = (
     "management body", "senior management", "validation function", "credit risk control unit",
@@ -84,6 +89,7 @@ class Passage:
     legal_level: str
     applies_to: str
     text: str
+    source_sha256: str = ""  # raw source file the passage was parsed from
 
 
 @dataclass
@@ -113,16 +119,17 @@ def select_passages(conn) -> list[Passage]:
     for s in load_scope():
         rows = conn.execute(
             "SELECT id, source_id, ref, title, kind, article, hierarchy, legal_level, applies_to, "
-            "text FROM chunks WHERE source_id = %s AND kind NOT IN ('background', 'recital')",
+            "text, source_sha256 FROM chunks "
+            "WHERE source_id = %s AND kind NOT IN ('background', 'recital')",
             (s["source"],),
         ).fetchall()
         rows.sort(key=lambda r: _natural(r[0]))  # Art. 151(2) before 151(10)
-        for cid, src, ref, title, kind, article, hierarchy, level, applies, text in rows:
+        for cid, src, ref, title, kind, article, hierarchy, level, applies, text, sha in rows:
             by_article = article in s.get("articles", [])
             by_section = any(h.startswith(tuple(s.get("sections", []))) for h in hierarchy)
             if by_article or by_section:
                 key = citation_key(src, ref, title, kind)
-                out.append(Passage(cid, src, ref, key, level, applies, text))
+                out.append(Passage(cid, src, ref, key, level, applies, text, sha))
     return out
 
 
@@ -147,8 +154,10 @@ def batches(passages: list[Passage], max_tokens: int = BATCH_TOKENS) -> list[lis
     return out
 
 
-def batch_id(batch: list[Passage]) -> str:
-    return hashlib.sha256(",".join(p.chunk_id for p in batch).encode()).hexdigest()[:12]
+def batch_id(batch: list[Passage], model: str) -> str:
+    """Cache key: prompt version, model and settings, and the exact passage text sent."""
+    raw = "|".join([REGISTER_VERSION, model, EXTRACT_EFFORT, batch_prompt(batch)])
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
 
 
 def batch_prompt(batch: list[Passage]) -> str:
@@ -207,7 +216,7 @@ def assign_ids(obligations: list[Obligation]) -> None:
 
 
 def extract(
-    conn, provider: LLMProvider, *, limit: int | None = None, log=print
+    conn, provider: LLMProvider, *, model: str, limit: int | None = None, log=print
 ) -> tuple[list[Obligation], int]:
     """Extract (or load cached) batches; returns (obligations, new tokens)."""
     out_dir = BATCH_DIR / REGISTER_VERSION
@@ -215,7 +224,7 @@ def extract(
     todo = batches(select_passages(conn))[:limit]
     obligations, new_tokens = [], 0
     for n, batch in enumerate(todo, 1):
-        path = out_dir / f"{batch_id(batch)}.json"
+        path = out_dir / f"{batch_id(batch, model)}.json"
         if path.exists():
             reply = json.loads(path.read_text(encoding="utf-8"))["reply"]
         else:
@@ -224,11 +233,17 @@ def extract(
                 purpose="register",
                 system=EXTRACT_SYSTEM,
                 tier=EXTRACT_TIER,
-                effort="medium",
+                effort=EXTRACT_EFFORT,
             )
             reply = c.text
-            ids = [p.chunk_id for p in batch]
-            path.write_text(json.dumps({"chunks": ids, "reply": reply}, ensure_ascii=False))
+            record = {
+                "model": c.model,
+                "effort": EXTRACT_EFFORT,
+                "chunks": [p.chunk_id for p in batch],
+                "source_sha256": sorted({p.source_sha256 for p in batch}),
+                "reply": reply,
+            }
+            path.write_text(json.dumps(record, ensure_ascii=False))
             new_tokens += c.usage.total_tokens
             log(f"  [{n}/{len(todo)}] {batch[0].key} … {len(batch)} passages: "
                 f"{c.usage.total_tokens:,} tokens")
@@ -245,6 +260,23 @@ def write_register(obligations: list[Obligation], path: Path = REGISTER_FILE) ->
     with path.open("w", encoding="utf-8") as f:
         for o in obligations:
             f.write(json.dumps(asdict(o), ensure_ascii=False) + "\n")
+
+
+def write_manifest(conn, model: str, obligations: list[Obligation]) -> None:
+    """What the register was built from: prompt version, model, and each source's digest."""
+    sources = sorted({o.source_id for o in obligations})
+    rows = conn.execute(
+        "SELECT DISTINCT source_id, source_sha256, version FROM chunks WHERE source_id = ANY(%s)",
+        (sources,),
+    ).fetchall()
+    manifest = {
+        "register_version": REGISTER_VERSION,
+        "model": model,
+        "effort": EXTRACT_EFFORT,
+        "obligations": len(obligations),
+        "sources": {s: {"sha256": sha, "version": v} for s, sha, v in sorted(rows)},
+    }
+    MANIFEST_FILE.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 
 
 def load_register(path: Path = REGISTER_FILE) -> list[Obligation]:

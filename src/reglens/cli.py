@@ -139,15 +139,22 @@ def _cmd_parse(args: argparse.Namespace) -> None:
     from reglens.ingest.chunks import build_chunks, write_chunks
     from reglens.ingest.download import load_lock
     from reglens.ingest.eurlex import parse_xhtml
+    from reglens.ingest.pdf import file_sha256
 
     cfg = load_config(args.config)
     lock = load_lock()
+    failed: list[str] = []
     print(f"{'source':<26}{'units':>7}{'chunks':>8}{'~tokens':>10}{'max':>7}")
     for s in load_sources():
         rec = lock.get(s.id)
         if not rec or (args.source and s.id not in args.source):
             continue
         path = PROJECT_ROOT / rec["file"]
+        digest = file_sha256(path)
+        if digest != rec.get("sha256"):  # text must come from the locked, recorded download
+            print(f"{s.id:<26}SKIPPED: file does not match sources.lock.json (re-download)")
+            failed.append(s.id)
+            continue
         if s.format == "eba-qa":
             from reglens.ingest.eba_qa import load_qas, qa_units
 
@@ -159,14 +166,20 @@ def _cmd_parse(args: argparse.Namespace) -> None:
         else:
             from reglens.ingest.pdf import parse_markdown, pdf_to_markdown
 
-            md = pdf_to_markdown(s.id, path)  # cached Docling output
+            md = pdf_to_markdown(s.id, path, force=args.force)  # cached per PDF digest
             units = parse_markdown(md, parts=s.parts, blocks_include=s.blocks)
         chunks = build_chunks(
-            s, units, version=rec["celex"] or rec["retrieved"], chars_per_token=cfg.chars_per_token
+            s,
+            units,
+            version=rec["celex"] or rec["retrieved"],
+            chars_per_token=cfg.chars_per_token,
+            source_sha256=digest,
         )
         write_chunks(s.id, chunks)
         toks = [len(c.text) / cfg.chars_per_token for c in chunks]
         print(f"{s.id:<26}{len(units):>7}{len(chunks):>8}{int(sum(toks)):>10,}{int(max(toks)):>7}")
+    if failed:
+        raise SystemExit(f"not parsed (raw file differs from the lock): {', '.join(failed)}")
 
 
 def _cmd_index(args: argparse.Namespace) -> None:
@@ -387,8 +400,9 @@ def _cmd_register(args: argparse.Namespace) -> None:
     cfg = load_config(args.config)
     conn = db.connect()
     todo = reg.batches(reg.select_passages(conn))[: args.limit]
+    model = cfg.model(reg.EXTRACT_TIER)
     cached = {p.stem for p in (reg.BATCH_DIR / reg.REGISTER_VERSION).glob("*.json")}
-    new = [b for b in todo if reg.batch_id(b) not in cached]
+    new = [b for b in todo if reg.batch_id(b, model) not in cached]
     text = sum(len(p.text) for b in new for p in b) / reg.CHARS_PER_TOKEN
     est = int(text + len(new) * args.overhead_tokens)
     print(
@@ -405,10 +419,12 @@ def _cmd_register(args: argparse.Namespace) -> None:
     from reglens.llm.provider import get_provider
 
     obligations, tokens = reg.extract(
-        conn, get_provider(cfg), limit=args.limit, log=lambda m: print(m, flush=True)
+        conn, get_provider(cfg), model=model, limit=args.limit, log=lambda m: print(m, flush=True)
     )
     path = reg.REGISTER_FILE if args.limit is None else reg.BATCH_DIR / "sample.jsonl"
     reg.write_register(obligations, path)
+    if args.limit is None:
+        reg.write_manifest(conn, model, obligations)
     bad = [o.id for o in obligations if not o.quote_ok]
     print(f"\n{len(obligations)} obligations, new tokens {tokens:,}; written to {path}")
     print("by source:", dict(Counter(o.source_id for o in obligations)))
@@ -549,6 +565,7 @@ def main(argv: list[str] | None = None) -> None:
 
     prs = sub.add_parser("parse", help="parse downloaded sources into chunks (no LLM calls)")
     prs.add_argument("--source", nargs="*", help="source ids (default: all downloaded)")
+    prs.add_argument("--force", action="store_true", help="re-run PDF conversion (Docling)")
     prs.set_defaults(func=_cmd_parse)
 
     idx = sub.add_parser("index", help="load chunks + edges into Postgres and embed new chunks")

@@ -1,7 +1,7 @@
 """PDF sources (EBA guidelines, ECB guide): Docling -> Markdown -> numbered paragraphs.
 
 Docling output is cached in data/processed/docling/<source id>.md, so the slow,
-GPU-heavy conversion runs once per document version.
+GPU-heavy conversion runs once per document version; the cache is keyed by the PDF's SHA-256.
 
 Paragraph numbering restarts between parts of a document (EBA final report: background,
 then the guidelines; ECB guide: foreword, overarching principles, each risk chapter), so
@@ -12,7 +12,10 @@ blocks become kind "background".
 
 from __future__ import annotations
 
+import hashlib
+import json
 import re
+from importlib import metadata
 from pathlib import Path
 
 from reglens.config import PROJECT_ROOT
@@ -28,16 +31,40 @@ _FOOTER = re.compile(r"^[A-Z][A-Z0-9 ,.\-–&()/’']{12,}\s+\|?\s*\d{1,3}$")  #
 _GUIDELINES_START = re.compile(r"compliance and reporting obligations", re.I)
 
 
+def file_sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def converter_version() -> str:
+    try:
+        return "docling " + metadata.version("docling")
+    except metadata.PackageNotFoundError:
+        return "docling (not installed)"
+
+
 def pdf_to_markdown(source_id: str, pdf: Path, *, force: bool = False) -> str:
+    """Docling Markdown for `pdf`, cached. The cache is valid only for the exact PDF bytes it
+    was converted from: `<id>.meta.json` records the PDF's SHA-256 and the converter version,
+    and a re-downloaded PDF (new bytes) is converted again instead of reusing old text."""
     out = DOCLING_DIR / f"{source_id}.md"
+    meta_path = out.with_suffix(".meta.json")
+    digest = file_sha256(pdf)
     if out.exists() and not force:
-        return out.read_text(encoding="utf-8")
+        meta = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.exists() else None
+        if meta is None and out.stat().st_mtime >= pdf.stat().st_mtime:
+            # cache made before provenance was recorded, and newer than the PDF: adopt it once
+            meta = {"pdf_sha256": digest, "converter": "unknown (adopted cache)"}
+            meta_path.write_text(json.dumps(meta, indent=2), encoding="utf-8")
+        if meta and meta.get("pdf_sha256") == digest:
+            return out.read_text(encoding="utf-8")
     from docling.document_converter import DocumentConverter  # heavy import, ml extra
 
     doc = DocumentConverter().convert(str(pdf)).document
     md = doc.export_to_markdown()
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(md, encoding="utf-8")
+    meta = {"pdf_sha256": digest, "converter": converter_version()}
+    meta_path.write_text(json.dumps(meta, indent=2), encoding="utf-8")
     return md
 
 

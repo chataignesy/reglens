@@ -1,0 +1,21 @@
+{
+  "recorded_at_utc": "2026-11-08T10:44:11.348078+00:00",
+  "retrieval_commit": "9f9d35ea458e87c90f4e6ca62b83aec8ff810ae2",
+  "head_after_runs": "b53f43aa1ded12d0e8c5bbbc981b7b23dc4498b6",
+  "source_changes_during_review": [
+    " M src/reglens/answer/route.py",
+    "?? docs/review/runtime/",
+    "?? docs/review/runtime_checks.py",
+    "?? src/reglens/eval/citations.py"
+  ],
+  "generation_tokens": 49159,
+  "judge_tokens": 8039,
+  "manual_scores_against_reference": {
+    "dod-001": 2,
+    "pd-002": 1,
+    "scope-001": 2,
+    "oos-014": 0,
+    "mh-003": 1
+  },
+  "note": "Manual scores are reference-based review judgments, not independent legal validation. Source changes from other work occurred during this run; not all measurements describe the final working tree."
+}

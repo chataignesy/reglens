@@ -1,0 +1,16 @@
+{
+  "query": "What PD input floors apply to retail exposures under CRR3?",
+  "default_scope_chunks": 2648,
+  "over_1024_tokens": 2,
+  "max_tokens": 1118,
+  "over_limit_examples": [
+    {
+      "id": "ecb-guide-internal-models:section:b0:Document releases:#2",
+      "tokens": 1118
+    },
+    {
+      "id": "ecb-validation-reporting:section:b12:Section 3.2:#1",
+      "tokens": 1025
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+[
+  {
+    "id": "dod-001",
+    "score": 2,
+    "missing": [],
+    "contradictions": [],
+    "rationale": "The answer states both default triggers from Art. 178(1) CRR (unlikeliness to pay without recourse to security, and more than 90 days past due on any material obligation to the institution, parent or subsidiaries) with 'either or both' framing, matching the reference; the extra materiality, retail, and re-default details are additional correct context.",
+    "method": "fresh reference-only LLM judge",
+    "tokens": 2009,
+    "elapsed_s": 4.9605
+  },
+  {
+    "id": "pd-002",
+    "score": 2,
+    "missing": [],
+    "contradictions": [],
+    "rationale": "The answer gives the 0.1% QRRE revolver floor, the 0.05% floor for other retail, and the higher-of-grade-PD-or-floor rule, matching the reference; it omits the defaulted-retail 100% PD point, which is a key fact in the reference, so it should be 1 rather than 2.",
+    "method": "fresh reference-only LLM judge",
+    "tokens": 1736,
+    "elapsed_s": 4.9044
+  },
+  {
+    "id": "scope-001",
+    "score": 2,
+    "missing": [],
+    "contradictions": [],
+    "rationale": "The answer states both prongs of the definition (own consolidated annual sales above EUR 500 million, or belonging to a group with consolidated sales above EUR 500 million), matching the reference, and the extra article citation and distinction from other definitions are correct additional detail.",
+    "method": "fresh reference-only LLM judge",
+    "tokens": 1611,
+    "elapsed_s": 4.523
+  },
+  {
+    "id": "oos-014",
+    "score": 0,
+    "method": "deterministic scope check",
+    "tokens": 0
+  },
+  {
+    "id": "mh-003",
+    "score": 1,
+    "missing": [
+      "Downturn duration basis: Art. 4 RTS based on most severe 12-month values of economic indicators; recital 14 says downturn period should last at least 12 months",
+      "Floor for downturn LGD when no observed or estimated downturn impact is available: final downturn LGD incl. MoC must be at least min(long-run average LGD + 15 pp, 105%)",
+      "Explicit statement that a strictly positive Category A MoC is required in the no-observed-or-estimated-downturn case (answer mentions it only for the estimated-impact route, without the floor)"
+    ],
+    "contradictions": [],
+    "rationale": "The answer correctly covers the Art. 181(1)(b) requirement and the no-visible-downturn fallback with its conditions, but omits the 12-month duration basis and the min(LRA+15pp, 105%) floor for the case where no downturn is observed or estimated, and it hedges on the estimated-impact route that the reference states definitively.",
+    "method": "fresh reference-only LLM judge",
+    "tokens": 2683,
+    "elapsed_s": 5.7786
+  }
+]

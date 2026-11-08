@@ -1,0 +1,680 @@
+[
+  {
+    "id": "dod-001",
+    "mode": "single",
+    "elapsed_s": 30.8659,
+    "check": {
+      "claims": 6,
+      "ok": 6,
+      "supported_rate": 1.0,
+      "problems": {}
+    },
+    "expected_answer": "When either or both apply: (a) the institution considers the obligor unlikely to pay its credit obligations in full without recourse to actions such as realising security; (b) the obligor is more than 90 days past due on any material credit obligation to the institution, its parent or subsidiaries.",
+    "expected_citations": [
+      {
+        "source": "crr3-consolidated",
+        "ref": "Art. 178(1)"
+      }
+    ],
+    "result": {
+      "question": "Under the CRR, when is an obligor considered to be in default?",
+      "abstained": false,
+      "abstain_reason": "",
+      "answer": "Under Art. 178(1) CRR, a default is considered to have occurred for a particular obligor when either or both of the following have taken place [C1]:\n\n- **Unlikeliness to pay:** the institution considers that the obligor is unlikely to pay its credit obligations to the institution, the parent undertaking or any of its subsidiaries in full, without recourse by the institution to actions such as realising security [C1].\n- **Past due:** the obligor is more than 90 days past due on any material credit obligation to the institution, the parent undertaking or any of its subsidiaries [C1].\n\n**Retail exposures:** institutions may apply the definition at the level of an individual credit facility rather than in relation to the total obligations of a borrower [C1].\n\n**Materiality (ECB supervisory view):** the ECB guide, referring to Art. 178(1) and (2)(d) CRR and the ECB Regulation on the materiality threshold, treats a past-due obligation as material when it exceeds \u20ac100 for retail exposures or \u20ac500 for non-retail exposures, and represents more than 1% of the total amount of all on-balance sheet exposures to that obligor, excluding equity exposures [C2]. The ECB guide also phrases the days-past-due criterion as 90 consecutive days [C2].\n\n**Re-default:** if a previously defaulted exposure no longer has any default trigger applying, it is rated as non-defaulted, and if the definition is triggered again, another default is deemed to have occurred [C5].",
+      "claims": [
+        {
+          "text": "A default is considered to have occurred for an obligor when either or both of the following have taken place: unlikeliness to pay or more than 90 days past due on a material credit obligation.",
+          "citations": [
+            "C1"
+          ],
+          "kind": "law",
+          "check": "ok"
+        },
+        {
+          "text": "Unlikeliness to pay means the institution considers the obligor unlikely to pay its credit obligations to the institution, the parent undertaking or any of its subsidiaries in full, without recourse to actions such as realising security.",
+          "citations": [
+            "C1"
+          ],
+          "kind": "law",
+          "check": "ok"
+        },
+        {
+          "text": "The past-due criterion is met when the obligor is more than 90 days past due on any material credit obligation to the institution, the parent undertaking or any of its subsidiaries.",
+          "citations": [
+            "C1"
+          ],
+          "kind": "law",
+          "check": "ok"
+        },
+        {
+          "text": "For retail exposures, institutions may apply the default definition at the level of an individual credit facility rather than the total obligations of a borrower.",
+          "citations": [
+            "C1"
+          ],
+          "kind": "law",
+          "check": "ok"
+        },
+        {
+          "text": "The ECB guide states that a past-due credit obligation is material when it exceeds \u20ac100 for retail or \u20ac500 for non-retail exposures and represents more than 1% of all on-balance sheet exposures to that obligor, excluding equity exposures; it describes the days-past-due criterion as 90 consecutive days.",
+          "citations": [
+            "C2"
+          ],
+          "kind": "supervisory",
+          "check": "ok"
+        },
+        {
+          "text": "If a previously defaulted exposure has no continuing default trigger it is rated as non-defaulted, and a subsequent trigger of the definition is deemed another default.",
+          "citations": [
+            "C5"
+          ],
+          "kind": "law",
+          "check": "ok"
+        }
+      ],
+      "context": [
+        {
+          "id": "crr3-consolidated:article:178:1:",
+          "ref": "Art. 178(1)",
+          "source_id": "crr3-consolidated",
+          "score": 0.9840323328971863
+        },
+        {
+          "id": "ecb-guide-internal-models:paragraph:b2:147:",
+          "ref": "para. 147",
+          "source_id": "ecb-guide-internal-models",
+          "score": 0.95735764503479
+        },
+        {
+          "id": "ecb-guide-internal-models:paragraph:b2:152:",
+          "ref": "para. 152",
+          "source_id": "ecb-guide-internal-models",
+          "score": 0.9240047931671143
+        },
+        {
+          "id": "crr3-consolidated:article:4:1:(78)",
+          "ref": "Art. 4(1)(78)",
+          "source_id": "crr3-consolidated",
+          "score": 0.9219217896461487
+        },
+        {
+          "id": "crr3-consolidated:article:178:5:",
+          "ref": "Art. 178(5)",
+          "source_id": "crr3-consolidated",
+          "score": 0.8682692646980286
+        },
+        {
+          "id": "eba-gl-dod:paragraph:b0:50:",
+          "ref": "para. 50",
+          "source_id": "eba-gl-dod",
+          "score": 0.8663588762283325
+        },
+        {
+          "id": "eba-gl-dod:paragraph:b0:22:",
+          "ref": "para. 22",
+          "source_id": "eba-gl-dod",
+          "score": 0.6750152111053467
+        },
+        {
+          "id": "crr3-consolidated:article:127:1:",
+          "ref": "Art. 127(1)",
+          "source_id": "crr3-consolidated",
+          "score": 0.6573184728622437
+        }
+      ],
+      "as_of": "As of 08 Nov 2026; CRR consolidated version of 26 Jun 2026; other sources retrieved 27 Oct 2026",
+      "model": "claude-sonnet-5-5",
+      "usage_tokens": 6286,
+      "errors": [],
+      "trace": [],
+      "missing_info": false,
+      "unverified": false,
+      "raw_output": ""
+    }
+  },
+  {
+    "id": "pd-002",
+    "mode": "single",
+    "elapsed_s": 8.0803,
+    "check": {
+      "claims": 5,
+      "ok": 5,
+      "supported_rate": 1.0,
+      "problems": {}
+    },
+    "expected_answer": "0.1% for QRRE revolvers and 0.05% for other retail exposures; the PD used is the higher of the grade/pool PD and the floor. PD of defaulted retail exposures is 100%.",
+    "expected_citations": [
+      {
+        "source": "crr3-consolidated",
+        "ref": "Art. 163(1)"
+      },
+      {
+        "source": "crr3-consolidated",
+        "ref": "Art. 163(2)"
+      }
+    ],
+    "result": {
+      "question": "What PD input floors apply to retail exposures under CRR3?",
+      "abstained": false,
+      "abstain_reason": "",
+      "answer": "For retail exposures, the PD used as an input to the risk-weighted exposure amount and expected loss formulae is the higher of the one-year PD associated with the internal borrower grade or pool and the PD input floor [C2]:\n\n- **0,1 %** for QRRE revolvers [C2]\n- **0,05 %** for retail exposures that are not QRRE revolvers [C2]\n\nThe floors apply only for the purpose of calculating risk-weighted exposure amounts and expected loss amounts [C2].\n\n**Exception:** where an exposure is covered by an eligible guarantee from a central government, central bank or the ECB, the PD input floor does not apply to the covered part. The uncovered part remains subject to the floor [C5].",
+      "claims": [
+        {
+          "text": "For retail exposures, the PD used as input to the RWEA and expected loss formulae is the higher of the one-year PD associated with the internal borrower grade or pool and the PD input floor.",
+          "citations": [
+            "C2"
+          ],
+          "kind": "law",
+          "check": "ok"
+        },
+        {
+          "text": "The PD input floor is 0,1 % for QRRE revolvers.",
+          "citations": [
+            "C2"
+          ],
+          "kind": "law",
+          "check": "ok"
+        },
+        {
+          "text": "The PD input floor is 0,05 % for retail exposures which are not QRRE revolvers.",
+          "citations": [
+            "C2"
+          ],
+          "kind": "law",
+          "check": "ok"
+        },
+        {
+          "text": "The PD floors apply for the sole purpose of calculating risk-weighted exposure amounts and expected loss amounts.",
+          "citations": [
+            "C2"
+          ],
+          "kind": "law",
+          "check": "ok"
+        },
+        {
+          "text": "Where an exposure is covered by an eligible guarantee from a central government, central bank or the ECB, the PD input floor does not apply to the covered part, while the uncovered part remains subject to the floor.",
+          "citations": [
+            "C5"
+          ],
+          "kind": "law",
+          "check": "ok"
+        }
+      ],
+      "context": [
+        {
+          "id": "crr3-consolidated:article:164:4a:",
+          "ref": "Art. 164(4a)",
+          "source_id": "crr3-consolidated",
+          "score": 0.9605836272239685
+        },
+        {
+          "id": "crr3-consolidated:article:163:1:",
+          "ref": "Art. 163(1)",
+          "source_id": "crr3-consolidated",
+          "score": 0.939024806022644
+        },
+        {
+          "id": "crr3-consolidated:article:164:6:",
+          "ref": "Art. 164(6)",
+          "source_id": "crr3-consolidated",
+          "score": 0.9370958209037781
+        },
+        {
+          "id": "crr3-consolidated:article:164:7:",
+          "ref": "Art. 164(7)",
+          "source_id": "crr3-consolidated",
+          "score": 0.9092645049095154
+        },
+        {
+          "id": "crr3-consolidated:article:159a::",
+          "ref": "Art. 159a",
+          "source_id": "crr3-consolidated",
+          "score": 0.8992984294891357
+        },
+        {
+          "id": "crr3-consolidated:article:164:4:",
+          "ref": "Art. 164(4)",
+          "source_id": "crr3-consolidated",
+          "score": 0.8820220232009888
+        },
+        {
+          "id": "crr3-consolidated:article:161:6:",
+          "ref": "Art. 161(6)",
+          "source_id": "crr3-consolidated",
+          "score": 0.8128673434257507
+        },
+        {
+          "id": "crr3-consolidated:article:160:1:",
+          "ref": "Art. 160(1)",
+          "source_id": "crr3-consolidated",
+          "score": 0.8033281564712524
+        }
+      ],
+      "as_of": "As of 08 Nov 2026; CRR consolidated version of 26 Jun 2026",
+      "model": "claude-sonnet-5-5",
+      "usage_tokens": 6005,
+      "errors": [],
+      "trace": [],
+      "missing_info": false,
+      "unverified": false,
+      "raw_output": ""
+    }
+  },
+  {
+    "id": "scope-001",
+    "mode": "single",
+    "elapsed_s": 6.6398,
+    "check": {
+      "claims": 2,
+      "ok": 2,
+      "supported_rate": 1.0,
+      "problems": {}
+    },
+    "expected_answer": "A corporate undertaking with consolidated annual sales of more than EUR 500 million, or belonging to a group whose total consolidated annual sales exceed EUR 500 million.",
+    "expected_citations": [
+      {
+        "source": "crr3-consolidated",
+        "ref": "Art. 142(1)(5a)"
+      }
+    ],
+    "result": {
+      "question": "How does the CRR define a 'large corporate'?",
+      "abstained": false,
+      "abstain_reason": "",
+      "answer": "Under Art. 142(1)(5a) CRR, a 'large corporate' is any corporate undertaking that either has consolidated annual sales of more than EUR 500 million, or belongs to a group whose total annual sales for the consolidated group are more than EUR 500 million [C1].\n\nThis is distinct from the definitions of 'large institution' [C3] and 'large regulated financial sector entity' [C4], which apply to other types of entity.",
+      "claims": [
+        {
+          "text": "A 'large corporate' is any corporate undertaking having consolidated annual sales of more than EUR 500 million.",
+          "citations": [
+            "C1"
+          ],
+          "kind": "law",
+          "check": "ok"
+        },
+        {
+          "text": "A corporate undertaking also qualifies as a 'large corporate' if it belongs to a group where the total annual sales for the consolidated group is more than EUR 500 million.",
+          "citations": [
+            "C1"
+          ],
+          "kind": "law",
+          "check": "ok"
+        }
+      ],
+      "context": [
+        {
+          "id": "crr3-consolidated:article:142:1:(5a)",
+          "ref": "Art. 142(1)(5a)",
+          "source_id": "crr3-consolidated",
+          "score": 0.9839708209037781
+        },
+        {
+          "id": "crr3-consolidated:article:4:1:(147)",
+          "ref": "Art. 4(1)(147)",
+          "source_id": "crr3-consolidated",
+          "score": 0.5354020595550537
+        },
+        {
+          "id": "crr3-consolidated:article:4:1:(146)",
+          "ref": "Art. 4(1)(146)",
+          "source_id": "crr3-consolidated",
+          "score": 0.4401383697986603
+        },
+        {
+          "id": "crr3-consolidated:article:142:1:(4)",
+          "ref": "Art. 142(1)(4)",
+          "source_id": "crr3-consolidated",
+          "score": 0.4130627512931824
+        },
+        {
+          "id": "ecb-guide-internal-models:paragraph:b2:204:",
+          "ref": "para. 204",
+          "source_id": "ecb-guide-internal-models",
+          "score": 0.23633992671966553
+        },
+        {
+          "id": "crr3-consolidated:article:182:1a:",
+          "ref": "Art. 182(1a)",
+          "source_id": "crr3-consolidated",
+          "score": 0.12940272688865662
+        },
+        {
+          "id": "crr3-consolidated:article:162:4:",
+          "ref": "Art. 162(4)",
+          "source_id": "crr3-consolidated",
+          "score": 0.11899801343679428
+        },
+        {
+          "id": "crr3-consolidated:article:4:1:(145)",
+          "ref": "Art. 4(1)(145)",
+          "source_id": "crr3-consolidated",
+          "score": 0.11027936637401581
+        }
+      ],
+      "as_of": "As of 08 Nov 2026; CRR consolidated version of 26 Jun 2026; other sources retrieved 27 Oct 2026",
+      "model": "claude-sonnet-5-5",
+      "usage_tokens": 5659,
+      "errors": [],
+      "trace": [],
+      "missing_info": false,
+      "unverified": false,
+      "raw_output": ""
+    }
+  },
+  {
+    "id": "oos-014",
+    "mode": "single",
+    "elapsed_s": 9.3094,
+    "check": {
+      "claims": 5,
+      "ok": 5,
+      "supported_rate": 1.0,
+      "problems": {}
+    },
+    "expected_answer": "",
+    "expected_citations": [],
+    "result": {
+      "question": "How should a bank assess credit concentration risk in its ICAAP?",
+      "abstained": false,
+      "abstain_reason": "",
+      "answer": "The passages contain nothing on ICAAP, so they do not say how concentration risk should be assessed within an ICAAP (methodology, capital quantification, or supervisory expectations). They do cover two related points:\n\n- **Credit risk limits for concentration risk (EBA GL on loan origination):** For the purposes of managing concentration risk, institutions should set quantitative internal credit risk limits for aggregate credit risk, portfolios with shared credit risk characteristics, sub-portfolios and individual borrowers. For group entities and connected clients, the limits should also reflect the consolidated and sub-consolidated position and the position of individual entities at those levels [C1].\n- **Rating-grade concentration in IRB rating systems:** Institutions with portfolios concentrated in a particular market segment and range of default risk must have enough obligor grades within that range to avoid undue concentrations in a particular grade. Significant concentrations within a single grade must be supported by convincing empirical evidence that the grade covers a reasonably narrow PD band [C2]. Competent authorities verify that the concentration of exposures or obligors in any grade or pool is not excessive, unless supported by convincing empirical evidence of risk homogeneity [C5]. This concerns rating-system structure, not ICAAP concentration risk.",
+      "claims": [
+        {
+          "text": "Institutions should set quantitative internal credit risk limits for aggregate credit risk, portfolios with shared credit risk characteristics, sub-portfolios and individual borrowers for the purposes of managing concentration risk.",
+          "citations": [
+            "C1"
+          ],
+          "kind": "supervisory",
+          "check": "ok"
+        },
+        {
+          "text": "For group entities and connected clients, the internal credit risk limits should also account for the consolidated and sub-consolidated position and the position of individual entities at the consolidated and sub-consolidated levels.",
+          "citations": [
+            "C1"
+          ],
+          "kind": "supervisory",
+          "check": "ok"
+        },
+        {
+          "text": "Institutions with portfolios concentrated in a particular market segment and range of default risk must have enough obligor grades within that range to avoid undue concentrations of obligors in a particular grade.",
+          "citations": [
+            "C2"
+          ],
+          "kind": "law",
+          "check": "ok"
+        },
+        {
+          "text": "Significant concentrations within a single obligor grade must be supported by convincing empirical evidence that the grade covers a reasonably narrow PD band and that the default risk of all obligors in the grade falls within that band.",
+          "citations": [
+            "C2"
+          ],
+          "kind": "law",
+          "check": "ok"
+        },
+        {
+          "text": "Competent authorities must verify that the concentration of exposures or obligors is not excessive in any grade or pool, unless supported by convincing empirical evidence of homogeneity of risk.",
+          "citations": [
+            "C5"
+          ],
+          "kind": "law",
+          "check": "ok"
+        }
+      ],
+      "context": [
+        {
+          "id": "eba-gl-lom:paragraph:b1:33:",
+          "ref": "para. 33",
+          "source_id": "eba-gl-lom",
+          "score": 0.38416096568107605
+        },
+        {
+          "id": "crr3-consolidated:article:170:1:",
+          "ref": "Art. 170(1)",
+          "source_id": "crr3-consolidated",
+          "score": 0.02838212065398693
+        },
+        {
+          "id": "crr3-consolidated:article:122a:3:(c)#1",
+          "ref": "Art. 122a(3)(c)",
+          "source_id": "crr3-consolidated",
+          "score": 0.014503579586744308
+        },
+        {
+          "id": "crr3-consolidated:article:141:2:",
+          "ref": "Art. 141(2)",
+          "source_id": "crr3-consolidated",
+          "score": 0.008711384609341621
+        },
+        {
+          "id": "rts-irb-assessment:article:34:1:",
+          "ref": "Art. 34(1)",
+          "source_id": "rts-irb-assessment",
+          "score": 0.008187909610569477
+        },
+        {
+          "id": "crr3-consolidated:article:117:1:",
+          "ref": "Art. 117(1)",
+          "source_id": "crr3-consolidated",
+          "score": 0.005957154091447592
+        },
+        {
+          "id": "crr3-consolidated:article:117:2:",
+          "ref": "Art. 117(2)",
+          "source_id": "crr3-consolidated",
+          "score": 0.005343256052583456
+        },
+        {
+          "id": "crr3-consolidated:article:153:8:",
+          "ref": "Art. 153(8)",
+          "source_id": "crr3-consolidated",
+          "score": 0.004962942097336054
+        }
+      ],
+      "as_of": "As of 08 Nov 2026; CRR consolidated version of 26 Jun 2026; other sources retrieved 27 Oct 2026",
+      "model": "claude-sonnet-5-5",
+      "usage_tokens": 7406,
+      "errors": [],
+      "trace": [],
+      "missing_info": true,
+      "unverified": false,
+      "raw_output": ""
+    }
+  },
+  {
+    "id": "mh-003",
+    "mode": "routed",
+    "elapsed_s": 53.168,
+    "check": {
+      "claims": 7,
+      "ok": 7,
+      "supported_rate": 1.0,
+      "problems": {}
+    },
+    "expected_answer": "Institutions must use LGD estimates appropriate for an economic downturn where more conservative than the long-run average (Art. 181(1)(b)). The RTS specifies how the downturn period is identified; its duration (Art. 4) is based on the most severe 12-month values of the economic indicators, and recital 14 states a downturn period should last at least 12 months. Where neither observed nor estimated downturn impact is available, the institution must include a strictly positive Category A MoC, and the final downturn LGD including MoC must be at least min(long-run average LGD + 15 percentage points, 105%).",
+    "expected_citations": [
+      {
+        "source": "crr3-consolidated",
+        "ref": "Art. 181(1)(b)"
+      },
+      {
+        "source": "rts-economic-downturn",
+        "ref": "Art. 4"
+      },
+      {
+        "source": "rts-economic-downturn",
+        "ref": "recital 14"
+      },
+      {
+        "source": "eba-gl-downturn-lgd",
+        "ref": "para. 36"
+      }
+    ],
+    "result": {
+      "question": "What does the regulatory framework require for downturn LGD, and what applies if no downturn can be observed in the bank's data?",
+      "abstained": false,
+      "abstain_reason": "",
+      "answer": "**What is required**\n- Under CRR Art. 181(1)(b), institutions must use LGD estimates appropriate for an economic downturn if those are more conservative than the long-run average [C1].\n- If a rating system is expected to deliver realised LGDs at a constant level by grade or pool over time, institutions must adjust their risk parameter estimates by grade or pool to limit the capital impact of an economic downturn [C1].\n- The EBA downturn LGD guidelines specify how to do this under Art. 181 and the RTS on economic downturn [C3].\n- The RTS bases the specification of an economic downturn on historically observed economic conditions. It does not equate downturn conditions with stress-testing conditions [C2].\n- Whichever calibration approach is used, aggregation of intermediate parameters should start with the parameter showing the highest impact, and other impacts are added where necessary [C4].\n- Downturn LGD estimates should also not be biased by cash flows received with a significantly longer time lag, which may reflect an upturn [C4].\n\n**If no downturn impact is visible in the bank's data**\n- If the impact analysis shows no impact of the downturn period on the relevant loss data, the institution may use the long-run average LGD as downturn LGD. This applies where average observed realised losses in the downturn period do not differ from those under other economic conditions [C5].\n- Two conditions apply to this option [C5]:\n  - The institution must ensure and document that the deficiencies identified and the margin of conservatism (MoC) applied incorporate all additional uncertainty related to the identified downturn periods.\n  - The institution must verify that no Category A MoC deficiencies are of higher severity for that period. It must also verify that no additional Category B deficiencies or adjustments apply.\n\n**Gap in the passages I retrieved**\n- Where a downturn cannot be observed in the data because the data are insufficient, the guidelines point to an estimated-impact approach. This uses a haircut approach, an extrapolation approach or a combination of the two [C6].\n- Under these approaches the institution must apply a strictly positive Category A MoC to reflect the lack of sufficient loss data [C7].\n- Para. 30 was truncated and I did not retrieve paragraph 24, which triggers it. I also did not read the RTS articles that identify downturn periods. So I cannot give the exact conditions for the estimated-impact route.\n- My reading (interpretation) is that the observed-impact route is the default. The long-run-average fallback applies when data show no downturn effect. The estimated-impact route applies where the data cannot show the impact.",
+      "claims": [
+        {
+          "text": "Institutions must use LGD estimates appropriate for an economic downturn if these are more conservative than the long-run average.",
+          "citations": [
+            "C1"
+          ],
+          "kind": "law",
+          "check": "ok"
+        },
+        {
+          "text": "Where a rating system is expected to deliver constant realised LGDs by grade or pool over time, institutions must adjust risk parameter estimates to limit the capital impact of a downturn.",
+          "citations": [
+            "C1"
+          ],
+          "kind": "law",
+          "check": "ok"
+        },
+        {
+          "text": "The RTS bases the specification of an economic downturn on historically observed economic conditions, not on stress-testing conditions.",
+          "citations": [
+            "C2"
+          ],
+          "kind": "law",
+          "check": "ok"
+        },
+        {
+          "text": "The EBA downturn LGD guidelines specify the LGD estimation requirements for an economic downturn under Art. 181 CRR and the RTS on economic downturn.",
+          "citations": [
+            "C3"
+          ],
+          "kind": "supervisory",
+          "check": "ok"
+        },
+        {
+          "text": "Whatever the calibration approach, aggregation starts with the parameter showing the highest impact, and estimates should not be biased by cash flows received with a significantly longer time lag that may reflect an upturn.",
+          "citations": [
+            "C4"
+          ],
+          "kind": "supervisory",
+          "check": "ok"
+        },
+        {
+          "text": "If the impact analysis shows no downturn impact on loss data, the institution may use the long-run average LGD as downturn LGD. It must document that the MoC incorporates all additional uncertainty for the downturn periods. It must also verify that no Category A deficiencies are more severe and that no additional Category B deficiencies or adjustments apply.",
+          "citations": [
+            "C5"
+          ],
+          "kind": "supervisory",
+          "check": "ok"
+        },
+        {
+          "text": "Where the impact is estimated rather than observed, institutions use a haircut approach, an extrapolation approach or a combination, and must quantify a strictly positive Category A MoC to reflect the lack of sufficient loss data.",
+          "citations": [
+            "C6",
+            "C7"
+          ],
+          "kind": "supervisory",
+          "check": "ok"
+        }
+      ],
+      "context": [
+        {
+          "id": "crr3-consolidated:article:181:1:(b)",
+          "ref": "Art. 181(1)(b)",
+          "source_id": "crr3-consolidated",
+          "score": 1.0
+        },
+        {
+          "id": "rts-economic-downturn:recital:4::",
+          "ref": "recital 4",
+          "source_id": "rts-economic-downturn",
+          "score": 1.0
+        },
+        {
+          "id": "eba-gl-downturn-lgd:paragraph:b1:5:",
+          "ref": "para. 5",
+          "source_id": "eba-gl-downturn-lgd",
+          "score": 1.0
+        },
+        {
+          "id": "eba-gl-downturn-lgd:paragraph:b1:26:",
+          "ref": "para. 26",
+          "source_id": "eba-gl-downturn-lgd",
+          "score": 1.0
+        },
+        {
+          "id": "eba-gl-downturn-lgd:paragraph:b1:29:",
+          "ref": "para. 29",
+          "source_id": "eba-gl-downturn-lgd",
+          "score": 1.0
+        },
+        {
+          "id": "eba-gl-downturn-lgd:paragraph:b1:30:#1",
+          "ref": "para. 30",
+          "source_id": "eba-gl-downturn-lgd",
+          "score": 1.0
+        },
+        {
+          "id": "eba-gl-downturn-lgd:paragraph:b1:35:",
+          "ref": "para. 35",
+          "source_id": "eba-gl-downturn-lgd",
+          "score": 1.0
+        }
+      ],
+      "as_of": "As of 08 Nov 2026; CRR consolidated version of 26 Jun 2026; other sources retrieved 27 Oct 2026",
+      "model": "claude-sonnet-5-5",
+      "usage_tokens": 23803,
+      "errors": [],
+      "trace": [
+        {
+          "tool": "route",
+          "route": "agent",
+          "reason": "needs CRR downturn rule plus EBA LGD guidelines and the no-downturn fallback chained together",
+          "tokens": 1522
+        },
+        {
+          "call": 2,
+          "tool": "get_article",
+          "args": [
+            "CRR",
+            "181",
+            "1",
+            0
+          ],
+          "keys": [
+            "CRR Art. 181(1)",
+            "CRR Art. 181(1)",
+            "CRR Art. 181(1)(a)",
+            "CRR Art. 181(1)(b)",
+            "CRR Art. 181(1)(c)",
+            "CRR Art. 181(1)(d)",
+            "CRR Art. 181(1)(e)",
+            "CRR Art. 181(1)(f)",
+            "CRR Art. 181(1)(g)",
+            "CRR Art. 181(1)(h)",
+            "CRR Art. 181(1)(i)",
+            "CRR Art. 181(1)(j)"
+          ],
+          "chars": 7938
+        },
+        {
+          "call": 2,
+          "tool": "search",
+          "args": [
+            "downturn LGD requirements; no economic downturn observed in data",
+            8,
+            null
+          ],
+          "keys": [
+            "EBA GL downturn LGD (GL/2019/03) para. 29",
+            "EBA GL downturn LGD (GL/2019/03) para. 26",
+            "RTS economic downturn (Reg. 2021/930) recital 4",
+            "EBA GL downturn LGD (GL/2019/03) para. 30",
+            "EBA GL downturn LGD (GL/2019/03) para. 35",
+            "EBA GL downturn LGD (GL/2019/03) para. 30",
+            "EBA GL PD/LGD estimation (GL/2017/16) para. 32",
+            "EBA GL downturn LGD (GL/2019/03) para. 5"
+          ],
+          "chars": 9477
+        }
+      ],
+      "missing_info": false,
+      "unverified": false,
+      "raw_output": ""
+    }
+  }
+]

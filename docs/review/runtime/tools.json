@@ -1,0 +1,57 @@
+{
+  "empty_cite_rows": 0,
+  "ambiguous_legacy_ecb_key_rows": 0,
+  "article4_pages": [
+    {
+      "offset": 0,
+      "shown": 32,
+      "chars": 14110,
+      "incomplete": true,
+      "keys": 32
+    },
+    {
+      "offset": 32,
+      "shown": 28,
+      "chars": 13848,
+      "incomplete": true,
+      "keys": 28
+    },
+    {
+      "offset": 60,
+      "shown": 25,
+      "chars": 14054,
+      "incomplete": true,
+      "keys": 25
+    },
+    {
+      "offset": 85,
+      "shown": 28,
+      "chars": 13082,
+      "incomplete": true,
+      "keys": 28
+    },
+    {
+      "offset": 113,
+      "shown": 31,
+      "chars": 14108,
+      "incomplete": true,
+      "keys": 31
+    },
+    {
+      "offset": 144,
+      "shown": 32,
+      "chars": 13905,
+      "incomplete": true,
+      "keys": 32
+    },
+    {
+      "offset": 176,
+      "shown": 9,
+      "chars": 4260,
+      "incomplete": false,
+      "keys": 9
+    }
+  ],
+  "total_shown": 185,
+  "actual_total": 185
+}

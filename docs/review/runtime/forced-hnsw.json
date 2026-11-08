@@ -1,0 +1,50 @@
+[
+  {
+    "filter": "default",
+    "returned": 30,
+    "exact_count": 30,
+    "overlap": 1.0,
+    "plan": [
+      {
+        "node": "Limit",
+        "index": null
+      },
+      {
+        "node": "Index Scan",
+        "index": "chunks_embedding"
+      }
+    ]
+  },
+  {
+    "filter": "LSI",
+    "returned": 30,
+    "exact_count": 30,
+    "overlap": 1.0,
+    "plan": [
+      {
+        "node": "Limit",
+        "index": null
+      },
+      {
+        "node": "Index Scan",
+        "index": "chunks_embedding"
+      }
+    ]
+  },
+  {
+    "filter": "ECB",
+    "returned": 2,
+    "exact_count": 30,
+    "overlap": 0.06666666666666667,
+    "plan": [
+      {
+        "node": "Limit",
+        "index": null
+      },
+      {
+        "node": "Index Scan",
+        "index": "chunks_embedding"
+      }
+    ]
+  }
+]

@@ -1,0 +1,66 @@
+{
+  "health": {
+    "status": 200,
+    "elapsed_s": 0.041,
+    "bytes": 11
+  },
+  "meta": {
+    "status": 200,
+    "elapsed_s": 0.0062,
+    "bytes": 570
+  },
+  "gap": {
+    "status": 200,
+    "elapsed_s": 0.0306,
+    "bytes": 467581,
+    "rows": 720
+  },
+  "gap/export?format=csv": {
+    "status": 200,
+    "elapsed_s": 0.5816,
+    "bytes": 324105
+  },
+  "gap/export?format=xlsx": {
+    "status": 200,
+    "elapsed_s": 0.1714,
+    "bytes": 89289,
+    "worksheet_rows": 721
+  },
+  "missing_key": {
+    "status": 400
+  },
+  "short_question": {
+    "status": 422
+  },
+  "invalid_mode": {
+    "status": 422
+  },
+  "oversized_question": {
+    "status": 422
+  },
+  "valid": {
+    "status": 200,
+    "elapsed_s": 22.4999,
+    "provider_calls": 1,
+    "stream": ": keep-alive\n\nevent: progress\ndata: {\"stage\": \"retrieved\", \"passages\": 8, \"refs\": [\"Art. 178(1)\", \"para. 147\", \"para. 152\"]}\n\nevent: progress\ndata: {\"stage\": \"drafting\"}\n\nevent: result\ndata: {\"question\": \"Under the CRR, when is an obligor considered to be in default?\", \"abstained\": false, \"abstain_reason\": \"\", \"answer\": \"Consult the passage [C1].\", \"as_of\": \"As of 08 Nov 2026; CRR consolidated version of 26 Jun 2026; other sources retrieved 27 Oct 2026\", \"claims\": [{\"text\": \"Consult the passage.\", \"kind\": \"interpretation\", \"citations\": [\"C1\"], \"check\": \"ok\"}], \"sources\": [{\"id\": \"C1\", \"label\": \"CRR\", \"ref\": \"Art. 178(1)\", \"level\": \"law\", \"level_key\": \"L1\", \"text\": \"CRR \u203a Part Three Capital requirements \u203a Title II Capital requirements for credit risk \u203a Chapter 3 Internal Ratings Based Approach \u203a Section 6 Requirements for the IRB approach \u203a Sub-Section 2 Risk quantification \u203a Art. 178 Default of an obligor or credit facility \u203a Art. 178(1)\\nA default shall be considered to have occurred with regard to a particular obligor when either or both of the following have taken place: (a) the institution considers that the obligor is unlikely to pay its credit obligations to the institution, the parent undertaking or any of its subsidiaries in full, without recourse by the institution to actions such as realising security; (b) the obligor is more than 90 days past due on any material credit obligation to the institution, the parent undertaking or any of its subsidiaries.\\nIn the case of retail exposures, institutions may apply the definition of default laid down in points (a) and (b) of the first subparagraph at the level of an individual credit facility rather than in relation to the total obligations of a borrower.\"}], \"check\": {\"ok\": 1, \"claims\": 1}, \"route\": null, \"steps\": [], \"model\": \"offline-review-fake\", \"tokens\": 0, \"errors\": [], \"unverified\": false, \"raw_output\": \"\", \"unresolved\": []}\n\n"
+  },
+  "malformed": {
+    "status": 200,
+    "elapsed_s": 0.3329,
+    "provider_calls": 2,
+    "stream": "event: progress\ndata: {\"stage\": \"retrieved\", \"passages\": 8, \"refs\": [\"Art. 178(1)\", \"para. 147\", \"para. 152\"]}\n\nevent: progress\ndata: {\"stage\": \"drafting\"}\n\nevent: progress\ndata: {\"stage\": \"invalid_reply\", \"problems\": [\"unparseable model output: no JSON object in model output\"], \"retry\": true}\n\nevent: progress\ndata: {\"stage\": \"invalid_reply\", \"problems\": [\"unparseable model output: no JSON object in model output\"], \"retry\": false}\n\nevent: result\ndata: {\"question\": \"Under the CRR, when is an obligor considered to be in default?\", \"abstained\": false, \"abstain_reason\": \"\", \"answer\": \"\", \"as_of\": \"As of 08 Nov 2026; CRR consolidated version of 26 Jun 2026; other sources retrieved 27 Oct 2026\", \"claims\": [], \"sources\": [], \"check\": {\"ok\": 0, \"claims\": 0}, \"route\": null, \"steps\": [], \"model\": \"offline-review-fake\", \"tokens\": 0, \"errors\": [\"invalid model output after one retry: unparseable model output: no JSON object in model output\"], \"unverified\": true, \"raw_output\": \"not JSON\", \"unresolved\": []}\n\n"
+  },
+  "provider_error": {
+    "status": 200,
+    "elapsed_s": 0.343,
+    "provider_calls": 1,
+    "stream": "event: progress\ndata: {\"stage\": \"retrieved\", \"passages\": 8, \"refs\": [\"Art. 178(1)\", \"para. 147\", \"para. 152\"]}\n\nevent: progress\ndata: {\"stage\": \"drafting\"}\n\nevent: error\ndata: {\"message\": \"Controlled provider failure\"}\n\n"
+  },
+  "disconnect": {
+    "first_line": "event: progress",
+    "worker_finished": true,
+    "provider_calls": 2,
+    "calls_started_after_disconnect": 1,
+    "seconds_until_worker_finished": 2.0006451999070123
+  }
+}

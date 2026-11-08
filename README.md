@@ -88,6 +88,14 @@ source texts by a credit risk practitioner, graded by an LLM judge against the e
 passage, and that claims labelled law cite law. It does not check that the passage supports the
 meaning of the claim; correctness above is graded separately against expert answers.
 
+These 120-question figures were measured before the 8 November 2026 review fixes (stricter
+citation rules, structured citation metrics, reproducible run manifests). After the fixes, the
+30-question smoke set was re-measured from a run manifest (`20261108-151941-routed-phase0`):
+correctness **0.90** on 25 in-scope questions (20 fully / 5 partly / **0** wrong), 5/5 out of
+scope declined, citation recall 0.87, mechanical checks passed 0.97. The research agent now
+reads more before answering, so a deep answer costs 60–180k tokens; a full 120-question
+re-measure is pending a cost reduction ([review plan](docs/REVIEW-PLAN.md)).
+
 Multi-step questions are where the research agent earns its cost. On the 11 newest multi-hop
 questions, a single retrieval pass scores 0.59 and the routed agent 0.86. See
 [the agent results](docs/results/agent-phase3.md).

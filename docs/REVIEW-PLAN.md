@@ -56,7 +56,12 @@ stable (content-derived) comes first, then rebuild.
 - **Why:** agent answers now average about 11 tool calls (4.5 before) and 60–180k tokens each (about 54k before), 87% of them cache reads. The steps 1 / R1 rules (paged articles, read before citing, snippets do not count as read) make the agent read more. More turns re-read the growing context.
 - **Where it went:** 13 agent answers used 1.56M tokens and scored 0.885; 12 quick answers used 0.09M and scored 0.917.
 - **Judge (R2):** flagged 4 verdicts to check by hand: pd-002, mh-002, mh-006, mh-007.
-- **Full run (c):** at this rate the remaining 90 questions would cost about 4M tokens, not 2.3M. Not started; it needs a new decision.
+- **Full run (c):** at this rate the remaining 90 questions would cost about 4M tokens, not 2.3M.
+
+**Decision (8 Nov 2026): step 8 stops at the smoke run.** The full re-measure (c, d) is not run. The 120-question figures in README / DESIGN / results docs predate the review fixes and are labelled so; the smoke run is the post-fix measurement. Open follow-ups:
+- cut agent cost (batch calls in one turn, fewer re-reads, call cap 8), then re-measure;
+- hand-check the 4 flagged judge verdicts;
+- stable obligation IDs, then rebuild the register and re-match the gap analysis.
 
 Afterwards: replace the headline numbers in README, DESIGN, ROADMAP and the results docs,
 each citing its run id, and hand-check the judge verdicts flagged as inconsistent (R2).

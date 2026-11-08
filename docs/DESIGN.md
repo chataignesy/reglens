@@ -208,6 +208,13 @@ answers, 15/16 out-of-scope declined ([results](results/golden-120.md)).
 0.90**, multi-hop **0.43 → 0.71** (0.64–0.86 across the agent designs tried), citation
 recall **0.62 → 0.80**.
 
+*After the review fixes (8 Nov 2026):* the 30-question smoke set re-measured from run manifest
+`20261108-151941-routed-phase0`: correctness **0.90** (20 / 5 / 0 wrong), multi-hop 0.86, 5/5
+out of scope declined. Quality held while the guarantees got stricter (only passages the agent
+read can be cited; snippet-only reads are flagged). The cost rose, though: agents average about
+11 tool calls and 60–180k tokens per answer (about 54k before), so the full 120-question
+re-measure waits for a cost reduction. The figures above predate the fixes.
+
 ## 5b. Policy gap analysis
 
 **Obligation register from the regulation itself.** 322 passages chosen in

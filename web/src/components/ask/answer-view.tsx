@@ -84,6 +84,35 @@ export function AnswerView({ result }: { result: AnswerPayload }) {
   };
   const allOk = result.check.ok === result.check.claims;
 
+  if (result.unverified) {
+    return (
+      <Card className="border-amber-300 dark:border-amber-800">
+        <CardContent className="flex gap-3 text-sm">
+          <CircleAlert className="size-5 shrink-0 text-amber-600" />
+          <div className="min-w-0 flex-1">
+            <p className="font-medium">No verified answer</p>
+            <p className="text-muted-foreground">
+              The model&apos;s reply did not follow the required answer format, even after one retry, so
+              its claims and citations could not be checked. Try asking again or rephrasing.
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">{result.errors.join("; ")}</p>
+            {result.raw_output && (
+              <details className="mt-2">
+                <summary className="cursor-pointer text-xs font-medium">
+                  Show the unverified raw output (for diagnosis only, not an answer)
+                </summary>
+                <pre className="mt-1 max-h-64 overflow-auto whitespace-pre-wrap rounded bg-muted p-2 text-xs">
+                  {result.raw_output}
+                </pre>
+              </details>
+            )}
+            <p className="mt-2 text-xs text-muted-foreground">{result.as_of}</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (result.abstained || (result.errors.length > 0 && !result.answer)) {
     return (
       <Card className="border-amber-300 dark:border-amber-800">
@@ -128,6 +157,15 @@ export function AnswerView({ result }: { result: AnswerPayload }) {
             </ReactMarkdown>
           </div>
           <p className="mt-4 text-xs text-muted-foreground">{result.as_of}</p>
+          {result.errors.length > 0 && (
+            <ul className="mt-2 space-y-1 text-xs text-amber-700 dark:text-amber-400">
+              {result.errors.map((e, i) => (
+                <li key={i} className="flex gap-1.5">
+                  <CircleAlert className="mt-0.5 size-3.5 shrink-0" /> {e}
+                </li>
+              ))}
+            </ul>
+          )}
         </CardContent>
       </Card>
 
@@ -150,9 +188,14 @@ export function AnswerView({ result }: { result: AnswerPayload }) {
             ) : (
               <CircleAlert className="size-4 text-amber-600" />
             )}
-            Citation check: {result.check.ok}/{result.check.claims} claims supported by their sources
+            Mechanical citation checks: {result.check.ok}/{result.check.claims} claims passed
           </summary>
-          <ul className="space-y-2 border-t px-3 py-2 text-sm">
+          <p className="border-t px-3 pt-2 text-xs text-muted-foreground">
+            Code checks that each claim cites a passage it was given, that its numbers appear in that
+            passage, and that claims labelled law cite law. It does not check that the passage supports
+            the meaning of the claim (conditions, negation, scope): read the sources.
+          </p>
+          <ul className="space-y-2 px-3 py-2 text-sm">
             {result.claims.map((c, i) => (
               <li key={i} className="flex items-start gap-2">
                 {c.check === "ok" ? (

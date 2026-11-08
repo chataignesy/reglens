@@ -8,6 +8,16 @@ This plan responds to [REVIEW-2026-11-08.md](REVIEW-2026-11-08.md) (F1–F10) an
 - F1 (`_lookup` resolves against the whole database), F6 (`ok = not quote or …`) and F8 (token
   limit checked only after a call) were confirmed by reading the code.
 
+## Status
+
+Work happens on branch `review-fixes`.
+
+| Step | Status |
+|---|---|
+| 1 | ✅ Done. Also: "paragraph N" references inside articles became edges (+411). Retrieval recall@10 0.808 (103 questions). |
+| 2 | ✅ Done. Answer contract in `answer/schema.py`: one retry for single-pass answers, none for the agent (a retry would re-run its tool loop); *unverified* state in API, web UI, Streamlit and CLI. The check is relabelled "mechanical citation checks", with its limits stated. |
+| 3–8 | Open. |
+
 ## Principle
 
 Most findings share one cause: **source identity and completeness are lost between stages**.

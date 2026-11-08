@@ -21,8 +21,9 @@ from datetime import date
 from pathlib import Path
 
 from reglens.agent.tools import key_of, resolve_key
-from reglens.answer.pipeline import Answer, Claim, Progress, _parse_json, as_of_statement
+from reglens.answer.pipeline import Answer, Claim, Progress, as_of_statement
 from reglens.answer.prompts import SCOPE
+from reglens.answer.schema import parse_reply
 from reglens.config import Config
 from reglens.llm.provider import AnthropicAPIProvider, ClaudeCLIProvider, LLMError
 from reglens.retrieve.search import Hit, search
@@ -304,11 +305,12 @@ def answer_agentic(
     ans.errors += errors
     if not text:
         return ans
-    try:
-        data = _parse_json(text)
-    except (ValueError, json.JSONDecodeError) as e:
-        ans.errors.append(f"unparseable model output: {e}")
-        ans.answer = text
+    # No retry here: it would re-run the whole tool loop. An invalid reply is unverified and
+    # has no answer text, so routing falls back to a single-pass answer.
+    data, found = parse_reply(text)
+    if found:
+        ans.unverified, ans.raw_output = True, text
+        ans.errors.append("invalid model output: " + "; ".join(found))
         return ans
 
     claims_raw = data.get("claims") or []

@@ -48,6 +48,10 @@ class Answer:
     errors: list[str] = field(default_factory=list)
     trace: list[dict] = field(default_factory=list)  # agent tool calls (empty for single-pass)
     missing_info: bool = False  # the passages lacked information needed for a complete answer
+    # The model's reply broke the answer contract (answer/schema.py) even after a retry: no
+    # answer is shown; `raw_output` keeps the reply for diagnosis, clearly labelled unverified.
+    unverified: bool = False
+    raw_output: str = ""
 
     def cited_hits(self) -> list[Hit]:
         ids = {c for cl in self.claims for c in cl.citations}
@@ -162,30 +166,29 @@ def answer_question(
             as_of,
         )
 
+    from reglens.answer.schema import parse_reply, retry_note
+
     emit({"stage": "drafting"})
-    completion = provider.complete(
-        user_prompt(question, format_context(hits)),
-        purpose="answer",
-        system=SYSTEM,
-        tier=opts.get("tier", "dev"),
-        effort=opts.get("effort"),
-    )
-    ans = Answer(
-        question,
-        False,
-        "",
-        "",
-        [],
-        hits,
-        as_of,
-        model=completion.model,
-        usage_tokens=completion.usage.total_tokens,
-    )
-    try:
-        data = _parse_json(completion.text)
-    except (ValueError, json.JSONDecodeError) as e:
-        ans.errors.append(f"unparseable model output: {e}")
-        ans.answer = completion.text
+    prompt = user_prompt(question, format_context(hits))
+    ans = Answer(question, False, "", "", [], hits, as_of)
+    found: list[str] = []
+    for attempt in range(2):  # one retry when the reply breaks the answer contract
+        completion = provider.complete(
+            prompt if attempt == 0 else prompt + retry_note(found),
+            purpose="answer" if attempt == 0 else "answer_retry",
+            system=SYSTEM,
+            tier=opts.get("tier", "dev"),
+            effort=opts.get("effort"),
+        )
+        ans.model = completion.model
+        ans.usage_tokens += completion.usage.total_tokens
+        data, found = parse_reply(completion.text)
+        if not found:
+            break
+        emit({"stage": "invalid_reply", "problems": found, "retry": attempt == 0})
+    if found:
+        ans.unverified, ans.raw_output = True, completion.text
+        ans.errors.append("invalid model output after one retry: " + "; ".join(found))
         return ans
     ans.abstained = bool(data.get("abstain"))
     ans.abstain_reason = str(data.get("abstain_reason") or "")
@@ -202,7 +205,12 @@ def answer_question(
 
 def render(ans: Answer) -> str:
     """Markdown for the CLI / UI: answer, sources with legal level, as-of line, disclaimer."""
-    if ans.abstained:
+    if ans.unverified:
+        body = (
+            "**No verified answer.** The model's reply did not follow the answer format, even "
+            "after one retry, so its claims could not be checked. " + "; ".join(ans.errors)
+        )
+    elif ans.abstained:
         body = f"**Not answered from the RegLens corpus.** {ans.abstain_reason}".strip()
     else:
         body = ans.answer
@@ -217,7 +225,7 @@ def render(ans: Answer) -> str:
                 lines.append(f"- [C{i}] {source} {h.ref} — {level}")
     problems = [c for c in ans.claims if c.check and c.check != "ok"]
     if problems:
-        lines += ["", "**Citation check**"]
+        lines += ["", "**Mechanical citation checks** (citation, numbers, legal level)"]
         lines += [f"- ⚠ {c.check}: {c.text}" for c in problems]
     lines += [
         "",

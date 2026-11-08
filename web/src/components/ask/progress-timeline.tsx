@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bot, BookOpen, FileSearch, GitBranch, Loader2, PenLine, Search, Undo2 } from "lucide-react";
+import { Bot, BookOpen, CircleAlert, FileSearch, GitBranch, Loader2, PenLine, Search, Undo2 } from "lucide-react";
 import type { ProgressEvent } from "@/lib/api";
 
 const short = (v: unknown, n = 60) => {
@@ -56,7 +56,14 @@ function describe(e: ProgressEvent): { icon: React.ReactNode; text: string } {
     case "agent_failed":
       return {
         icon: <Undo2 className="size-4" />,
-        text: "The research agent reached its cost cap without an answer: answering in a single pass instead",
+        text: `The research agent stopped without a usable answer (${short(String(e.reason ?? ""), 90)}): answering in a single pass instead`,
+      };
+    case "invalid_reply":
+      return {
+        icon: <CircleAlert className="size-4" />,
+        text: e.retry
+          ? "The reply did not follow the answer format: asking once more"
+          : "The reply did not follow the answer format again",
       };
     case "fallback":
       return {

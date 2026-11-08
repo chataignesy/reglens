@@ -29,7 +29,7 @@ There is no hosted demo: watch the demo video (link to follow) or run it locally
 >
 > *As of 31 Oct 2026; CRR consolidated version of 26 Jun 2026*
 >
-> [1] CRR Art. 163(1) — law · [2] CRR Art. 159a — law · Citation check: 4/4 claims supported
+> [1] CRR Art. 163(1) — law · [2] CRR Art. 159a — law · Mechanical citation checks: 4/4 claims passed
 
 Try questions like:
 
@@ -81,8 +81,12 @@ source texts by a credit risk practitioner, graded by an LLM judge against the e
 |---|---|
 | Correctness (fully / partly / wrong) | **0.89** (82 / 22 / **0**) |
 | Citation recall (expected sources cited) | 0.89 |
-| Claims passing the citation check | 0.99 |
+| Claims passing the mechanical citation checks¹ | 0.99 |
 | Out-of-scope questions declined | 15 / 16 |
+
+¹ Code checks that each claim cites a passage it was given, that its numbers appear in that
+passage, and that claims labelled law cite law. It does not check that the passage supports the
+meaning of the claim; correctness above is graded separately against expert answers.
 
 Multi-step questions are where the research agent earns its cost. On the 11 newest multi-hop
 questions, a single retrieval pass scores 0.59 and the routed agent 0.86. See

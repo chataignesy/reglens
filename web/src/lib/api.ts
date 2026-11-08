@@ -51,10 +51,12 @@ export interface AnswerPayload {
   tokens: number;
   errors: string[];
   unresolved: string[]; // citation keys the agent used that matched no passage
+  unverified: boolean; // the model's reply broke the answer format even after a retry
+  raw_output: string; // that reply, for diagnosis only (empty unless unverified)
 }
 
 export interface ProgressEvent {
-  stage: "retrieved" | "routing" | "routed" | "drafting" | "agent" | "tool" | "fallback" | "agent_failed";
+  stage: "retrieved" | "routing" | "routed" | "drafting" | "agent" | "tool" | "fallback" | "agent_failed" | "invalid_reply";
   [key: string]: unknown;
 }
 

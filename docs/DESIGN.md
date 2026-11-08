@@ -115,6 +115,10 @@ which is which.
 passage that was actually provided, numbers in the claim must appear in that passage
 (normalised: "0,05 %" = "0.05%", period words like "ninety days"), and law claims must cite law.
 *Evidence:* **0.99** of claims pass on the smoke set; failures are shown to the user.
+It is a *mechanical* check, and the UI labels it so: it does not test whether the passage
+supports the claim's meaning (conditions, negation, scope). That is what the judged correctness
+measures. A reply that breaks the JSON answer contract (`answer/schema.py`) is retried once,
+then shown as *unverified output*, never as an ordinary answer.
 
 **4.3 Abstention in two layers.** A free retrieval gate (no LLM call if the best rerank score is
 below 0.05) plus a scope rule in the prompt, which also covers off-topic provisions that are in

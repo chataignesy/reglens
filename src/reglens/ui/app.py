@@ -88,12 +88,22 @@ def _answer(depth, provider, cfg, question, applies):
 
 
 def _show(ans, check):
-    if ans.abstained:
+    if ans.unverified:
+        st.warning(
+            "**No verified answer.** The model's reply did not follow the required answer format, "
+            "even after one retry, so its claims and citations could not be checked."
+        )
+        st.caption("; ".join(ans.errors))
+        with st.expander("Unverified raw output (for diagnosis only, not an answer)"):
+            st.text(ans.raw_output)
+    elif ans.abstained:
         st.warning(f"**Not answered from the RegLens corpus.** {ans.abstain_reason}")
-    elif ans.errors:
+    elif not ans.answer and ans.errors:
         st.error("; ".join(ans.errors))
     else:
         st.markdown(ans.answer)
+        for e in ans.errors:
+            st.caption(f"⚠ {e}")
     st.caption(ans.as_of)
 
     cited = ans.cited_hits()
@@ -107,8 +117,13 @@ def _show(ans, check):
                     st.text(h.text)
     if ans.claims:
         ok, n = check["ok"], check["claims"]
-        label = f"Citation check: {ok}/{n} claims supported"
+        label = f"Mechanical citation checks: {ok}/{n} claims passed"
         with st.expander(label, expanded=ok < n):
+            st.caption(
+                "Code checks that each claim cites a passage it was given, that its numbers "
+                "appear in that passage, and that claims labelled law cite law. It does not "
+                "check that the passage supports the meaning of the claim: read the sources."
+            )
             for c in ans.claims:
                 icon = "✅" if c.check == "ok" else "⚠️"
                 st.markdown(f"{icon} *{c.kind}* — {c.text} `{', '.join(c.citations)}`"

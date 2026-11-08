@@ -154,6 +154,8 @@ def answer_payload(ans: Answer, check: dict) -> dict:
         "model": ans.model,
         "tokens": ans.usage_tokens,
         "errors": ans.errors,
+        "unverified": ans.unverified,
+        "raw_output": ans.raw_output if ans.unverified else "",
         "unresolved": [k for t in ans.trace for k in t.get("unresolved_keys", [])],
     }
 

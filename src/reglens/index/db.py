@@ -15,6 +15,7 @@ from reglens.ingest.xrefs import Edge
 
 DEFAULT_URL = "postgresql://reglens:reglens-local@127.0.0.1:5433/reglens"
 DIM = 1024  # BGE-M3
+HNSW_EF_SEARCH = 400
 
 SCHEMA = f"""
 CREATE EXTENSION IF NOT EXISTS vector;
@@ -89,6 +90,12 @@ def connect(url: str | None = None) -> psycopg.Connection:
     conn = psycopg.connect(url or os.environ.get("REGLENS_DATABASE_URL") or DEFAULT_URL)
     conn.execute("CREATE EXTENSION IF NOT EXISTS vector")
     register_vector(conn)
+    # HNSW is approximate: at the default ef_search (40) it missed real top-10 hits (e.g. CRR
+    # Art. 185(b) ranked 2nd by an exact scan). With ~5k vectors a wide search costs
+    # milliseconds and matches the exact scan; iterative scans keep filtered queries
+    # (source, applies_to) from returning too few rows. Needs pgvector >= 0.8.
+    conn.execute(f"SET hnsw.ef_search = {HNSW_EF_SEARCH}")
+    conn.execute("SET hnsw.iterative_scan = relaxed_order")
     return conn
 
 

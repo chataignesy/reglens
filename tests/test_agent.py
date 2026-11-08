@@ -63,7 +63,7 @@ def test_agent_resolves_keys_and_bounds(monkeypatch):
     assert [c.citations for c in ans.claims] == [["C1"], ["C2"], ["C?"]]
     check_answer(ans)
     assert [c.check for c in ans.claims] == ["ok", "ok", "unknown_citation"]
-    assert ans.as_of.startswith("As of 29 Oct 2026; CRR consolidated version of 26 Jun 2026")
+    assert ans.as_of.startswith("Answered 29 Oct 2026 from: CRR consolidated version of 26 Jun 2026")
 
 
 def test_agent_gate_skips_llm(monkeypatch):

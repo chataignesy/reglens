@@ -10,28 +10,50 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
+/** A radio group (WAI-ARIA pattern): one tab stop, arrow keys move and select. */
 function Segmented<T extends string>({
   value,
   options,
   onChange,
   disabled,
+  label,
 }: {
   value: T;
   options: { value: T; label: string; hint?: string }[];
   onChange: (v: T) => void;
   disabled?: boolean;
+  label: string;
 }) {
+  const refs = useRef<(HTMLButtonElement | null)[]>([]);
+  const move = (from: number, step: number) => {
+    const next = (from + step + options.length) % options.length;
+    onChange(options[next].value);
+    refs.current[next]?.focus();
+  };
   return (
-    <div className="inline-flex rounded-lg bg-muted p-[3px]" role="radiogroup">
-      {options.map((o) => (
+    <div className="inline-flex rounded-lg bg-muted p-[3px]" role="radiogroup" aria-label={label}>
+      {options.map((o, i) => (
         <button
           key={o.value}
+          ref={(el) => {
+            refs.current[i] = el;
+          }}
           role="radio"
           aria-checked={value === o.value}
           aria-label={o.label}
+          tabIndex={value === o.value ? 0 : -1}
           title={o.hint}
           disabled={disabled}
           onClick={() => onChange(o.value)}
+          onKeyDown={(e) => {
+            if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+              e.preventDefault();
+              move(i, 1);
+            } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+              e.preventDefault();
+              move(i, -1);
+            }
+          }}
           className={`rounded-md px-3 py-1 text-sm transition-colors disabled:opacity-50 ${
             value === o.value ? "bg-background font-medium shadow-sm" : "text-muted-foreground hover:text-foreground"
           }`}
@@ -65,14 +87,16 @@ export function AskView() {
   const [error, setError] = useState<string | null>(null);
   const abort = useRef<AbortController | null>(null);
 
+  const [metaTry, setMetaTry] = useState(0);
   useEffect(() => {
     getMeta()
       .then((m) => {
         setMeta(m);
+        setMetaError(null);
         if (m.access.includes("subscription")) setAccess("subscription");
       })
       .catch(() => setMetaError("The RegLens API is not reachable. Start it with: uv run uvicorn reglens.api.app:app --port 8000"));
-  }, []);
+  }, [metaTry]);
 
   const canAsk = question.trim().length >= 3 && !running && (access === "subscription" || apiKey.trim());
 
@@ -87,7 +111,7 @@ export function AskView() {
     setAsked(question.trim());
     try {
       const r = await ask(
-        { question: question.trim(), mode, access, applies_to: mode === "single" && applies !== "any" ? applies : null },
+        { question: question.trim(), mode, access, applies_to: applies !== "any" ? applies : null },
         access === "api" ? apiKey.trim() : null,
         (e) => setEvents((prev) => [...prev, e]),
         abort.current.signal,
@@ -110,12 +134,20 @@ export function AskView() {
         </p>
       </section>
 
-      {metaError && <p className="rounded-lg border border-destructive/40 px-3 py-2 text-sm text-destructive">{metaError}</p>}
+      {metaError && (
+        <p className="flex flex-wrap items-center gap-2 rounded-lg border border-destructive/40 px-3 py-2 text-sm text-destructive" role="alert">
+          {metaError}
+          <Button size="sm" variant="outline" onClick={() => setMetaTry((n) => n + 1)}>
+            Retry
+          </Button>
+        </p>
+      )}
 
       <section className="grid gap-4 rounded-lg border p-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label>Call Claude with</Label>
           <Segmented
+            label="Call Claude with"
             value={access}
             onChange={setAccess}
             disabled={running}
@@ -139,19 +171,19 @@ export function AskView() {
                 aria-label="Anthropic API key"
               />
               <p className="mt-1 text-xs text-muted-foreground">
-                Kept in this tab&apos;s memory only and sent only to the Anthropic API. Never stored.
+                Kept in this tab&apos;s memory only. Sent with each question to your local RegLens API, which passes it to the Anthropic API and nowhere else. Never stored or logged.
               </p>
             </div>
           )}
         </div>
         <div className="space-y-2">
           <Label>Answering</Label>
-          <Segmented value={mode} onChange={setMode} options={MODES} disabled={running} />
+          <Segmented label="Answering" value={mode} onChange={setMode} options={MODES} disabled={running} />
           <p className="text-xs text-muted-foreground">{MODES.find((m) => m.value === mode)?.hint}</p>
-          {mode === "single" && (
-            <div className="flex items-center gap-2 pt-1">
+          <div className="flex items-center gap-2 pt-1">
               <Label className="text-xs">Institution type</Label>
               <Segmented
+                label="Institution type"
                 value={applies}
                 onChange={setApplies}
                 disabled={running}
@@ -162,7 +194,6 @@ export function AskView() {
                 ]}
               />
             </div>
-          )}
         </div>
       </section>
 

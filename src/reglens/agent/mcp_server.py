@@ -37,7 +37,8 @@ def box() -> Toolbox:
         from reglens.index import db
 
         cap = os.environ.get("REGLENS_MAX_TOOL_CALLS")
-        _box = Toolbox(db.connect(), max_calls=int(cap) if cap else None)
+        applies = os.environ.get("REGLENS_APPLIES_TO") or None  # "SI" / "LSI"
+        _box = Toolbox(db.connect(), max_calls=int(cap) if cap else None, applies_to=applies)
     return _box
 
 

@@ -175,6 +175,7 @@ def run_api_agent(
     max_turns: int,
     max_tokens: int,
     progress=None,
+    applies_to: str | None = None,
 ) -> tuple[str, list[dict], int, str, list[str]]:
     """Run the loop. Returns (final text, tool trace, total tokens, model, errors).
 
@@ -187,7 +188,7 @@ def run_api_agent(
     - once `max_tokens` is spent, no request is sent at all.
     The only overshoot possible is the final answer request itself exceeding its reserve.
     """
-    box = Toolbox(conn, max_calls=max_calls)
+    box = Toolbox(conn, max_calls=max_calls, applies_to=applies_to)
     messages: list[dict] = [{"role": "user", "content": question}]
     trace: list[dict] = []
     tokens, model, errors = 0, "", []

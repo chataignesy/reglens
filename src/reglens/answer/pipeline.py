@@ -87,8 +87,13 @@ def format_context(hits: list[Hit]) -> str:
 
 
 def as_of_statement(hits: list[Hit], today: date) -> str:
-    """'As of 28 Oct 2026; CRR consolidated version of 26 Jun 2026; ...' from chunk versions."""
-    parts = [f"As of {today:%d %b %Y}"]
+    """'Answered 28 Oct 2026 from: CRR consolidated version of 26 Jun 2026; ...'.
+
+    The date the answer was generated is kept apart from the versions of the sources it used:
+    the corpus is a snapshot (consolidated text, download dates), not a legal point-in-time
+    model, so the answer is not "as of" today's law, only as of those versions.
+    """
+    parts = [f"Answered {today:%d %b %Y} from"]
     seen = set()
     for h in hits:
         v = h.version or ""
@@ -101,8 +106,10 @@ def as_of_statement(hits: list[Hit], today: date) -> str:
         {h.version for h in hits if h.version and re.match(r"\d{4}-\d{2}-\d{2}$", h.version)}
     )
     if retrieved:
-        parts.append(f"other sources retrieved {date.fromisoformat(retrieved[-1]):%d %b %Y}")
-    return "; ".join(parts)
+        parts.append(f"other sources as downloaded {date.fromisoformat(retrieved[-1]):%d %b %Y}")
+    if len(parts) == 1:
+        return f"Answered {today:%d %b %Y}"
+    return parts[0] + ": " + "; ".join(parts[1:])
 
 
 def _parse_json(text: str) -> dict:

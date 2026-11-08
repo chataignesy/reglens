@@ -1,6 +1,6 @@
 # RegLens — plan & roadmap
 
-Project rules and budget policy: [../CLAUDE.md](../CLAUDE.md). Last updated: 2026-10-27.
+Project rules and budget policy: [../CLAUDE.md](../CLAUDE.md). Last updated: 2026-11-08.
 
 ## Goal
 
@@ -21,10 +21,10 @@ Dates are targets; phase exit criteria matter more than dates.
 |---|---|---|
 | 0 — Foundations | 26 Oct – 8 Nov 2026 | ✅ Done |
 | 1 — Ingestion & retrieval | 9 – 29 Nov 2026 | ✅ Done early (27 Oct) — single-answer recall@10 0.89 on 80 questions; see [results](results/retrieval-phase1.md) |
-| 2 — Grounded Q&A | 30 Nov – 20 Dec 2026 | **In progress** (started early) — pipeline, verifier and smoke eval done; see [results](results/answers-phase2.md) |
-| 3 — Agentic retrieval & MCP | 4 – 24 Jan 2027 | **In progress** (started early) — tools, MCP server, bounded agent; multi-hop correctness 0.43 → 0.71 ([results](results/agent-phase3.md)) |
-| 4 — Policy gap analysis | 25 Jan – 21 Feb 2027 | Not started |
-| 5 — Polish & launch | 22 Feb – 7 Mar 2027 | Not started |
+| 2 — Grounded Q&A | 30 Nov – 20 Dec 2026 | ✅ Done early — pipeline, verifier, LLM judge ([results](results/answers-phase2.md)) |
+| 3 — Agentic retrieval & MCP | 4 – 24 Jan 2027 | ✅ Done early — router, bounded agent, MCP server; routed correctness 0.89 on 104 in-scope questions ([results](results/golden-120.md)) |
+| 4 — Policy gap analysis | 25 Jan – 21 Feb 2027 | ✅ Done early — register, synthetic policy, 15/15 planted gaps (tuned; [results](results/gap-phase4.md)) |
+| 5 — Polish & launch | 22 Feb – 7 Mar 2027 | **In progress** — Next.js UI done; review fixes on branch `review-fixes` ([plan](REVIEW-PLAN.md)); headline numbers to be re-measured from run manifests |
 
 ## Success metrics (MVP targets, calibrate after Phase 1)
 

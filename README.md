@@ -27,7 +27,7 @@ There is no hosted demo: watch the demo video (link to follow) or run it locally
 > Where an exposure is covered by an eligible guarantee from a central government, central bank
 > or the ECB, the floor does not apply to the covered part [2].
 >
-> *As of 31 Oct 2026; CRR consolidated version of 26 Jun 2026*
+> *Answered 31 Oct 2026 from: CRR consolidated version of 26 Jun 2026*
 >
 > [1] CRR Art. 163(1) — law · [2] CRR Art. 159a — law · Mechanical citation checks: 4/4 claims passed
 
@@ -58,7 +58,7 @@ operational risk, securitisation, liquidity, leverage, IFRS 9, national rules.
    version in force), guidelines and the ECB guide via Docling. Every chunk is one legal unit
    (article paragraph, point, guideline paragraph, Q&A) labelled with its place in the
    hierarchy, e.g. `CRR › Part Three › Title II › Chapter 3 › Art. 178(1)`.
-2. **Retrieval:** keyword (BM25) + embeddings (BGE-M3) fused, reranked by a cross-encoder, with
+2. **Retrieval:** keyword (Postgres full-text) + embeddings (BGE-M3) fused, reranked by a cross-encoder, with
    a practitioner glossary ("A-IRB", "DoD", "MoC" → the regulation's own wording). All local.
 3. **Routing:** a small model decides whether the question needs one lookup or several
    provisions. Simple questions get a single grounded answer; multi-step questions go to an
@@ -138,7 +138,8 @@ Then open http://localhost:3000.
 
 Answers are generated with your **Claude subscription** (the `claude` CLI must be installed and
 logged in), or with your **own Anthropic API key**: choose "Your API key" in the UI. The key
-stays in the page's memory and is sent only to the Anthropic API. Quick answers take a few
+stays in the page's memory and goes, via your local RegLens API, only to the Anthropic API.
+Quick answers take a few
 seconds. Research-agent answers take up to a minute or two, with each step shown live.
 
 To stop, press Ctrl+C in both terminals, then run `docker compose stop`.
@@ -148,14 +149,15 @@ More on the front end: [web/README.md](web/README.md). The earlier Streamlit UI 
 
 A GPU is recommended for indexing (embeddings and reranker run locally).
 
-**API key:** the web UI takes your own Anthropic API key. It stays in your browser session, goes
-only to the Anthropic API and is never logged or stored. A quick answer costs about 6k tokens;
+**API key:** the web UI takes your own Anthropic API key. It stays in the page's memory (gone on
+reload); with each question it goes from your browser to your local RegLens API, which passes it
+to the Anthropic API and nowhere else. It is never logged or stored. A quick answer costs about 6k tokens;
 an agent answer 40–90k.
 
 **Evaluation:** `reglens eval-retrieval` (no LLM calls), `reglens eval-answers` and
 `reglens judge` (dry run unless `--yes`; cached). Every LLM call is logged; `reglens usage`
 reports tokens per phase, model and purpose. The whole project so far, development and
-evaluation, used about 7M tokens.
+evaluation, used about 10.6M tokens (≈ €19 at API prices; 8 Nov 2026).
 
 ## Licence
 

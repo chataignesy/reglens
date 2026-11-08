@@ -129,6 +129,28 @@ def _provider(cfg, access: Access, key: str | None):
     return AnthropicAPIProvider(replace(cfg, billing="api"), api_key=key)
 
 
+_CONSOLIDATED = re.compile(r"0\d{4}R\d{4}-(\d{4})(\d{2})(\d{2})$")
+
+
+def official_source(source_id: str, version: str | None) -> dict:
+    """Link to the official text and the version the passage was taken from. A consolidated
+    regulation links to that exact consolidated version on EUR-Lex; other sources link to the
+    registered document (no guessed deep links)."""
+    from reglens.sources import load_sources
+
+    src = next((s for s in load_sources() if s.id == source_id), None)
+    url = src.url if src else None
+    v = version or ""
+    if m := _CONSOLIDATED.match(v):
+        url = f"https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:{v}"
+        label = f"consolidated version of {m.group(3)}.{m.group(2)}.{m.group(1)}"
+    elif re.fullmatch(r"\d{4}-\d{2}-\d{2}", v):
+        label = f"as downloaded {v}"
+    else:
+        label = f"CELEX {v}" if v else ""
+    return {"url": url, "version": label}
+
+
 def answer_payload(ans: Answer, check: dict) -> dict:
     """The answer as the UI renders it: text with [C#] markers, the cited sources, the checks.
     Cited sources are renumbered 1, 2, ... in order of first mention (the pipeline numbers them
@@ -155,6 +177,7 @@ def answer_payload(ans: Answer, check: dict) -> dict:
                 "level_key": h.legal_level,
                 "text": h.text,
             }
+            | official_source(h.source_id, h.version)
         )
     text = re.sub(r"\[(C\d+)\]", lambda m: f"[{renumber.get(m.group(1), m.group(1))}]", ans.answer)
     route = next((t for t in ans.trace if t.get("tool") == "route"), None)
@@ -198,19 +221,21 @@ def _run(req: AskRequest, provider, emit) -> dict:
 
     cfg = load_config()
     conn = db.connect()
+    filters = Filters(applies_to=req.applies_to)  # SI / LSI applies in every mode
     try:
         if req.mode == "agent":
             from reglens.agent.run import answer_agentic
 
-            ans = answer_agentic(conn, provider, cfg, req.question, progress=emit)
+            ans = answer_agentic(conn, provider, cfg, req.question, progress=emit,
+                                 filters=filters)
         elif req.mode == "auto":
             from reglens.answer.route import answer_routed
 
-            ans = answer_routed(conn, provider, cfg, req.question, progress=emit)
+            ans = answer_routed(conn, provider, cfg, req.question, progress=emit,
+                                filters=filters)
         else:
             from reglens.answer.pipeline import answer_question
 
-            filters = Filters(applies_to=req.applies_to)
             ans = answer_question(conn, provider, cfg, req.question, filters=filters,
                                   progress=emit)
     finally:

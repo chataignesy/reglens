@@ -74,8 +74,9 @@ def test_citation_recall_with_alternatives():
 
 def test_as_of_from_versions():
     s = as_of_statement([CRR_HIT, GL_HIT], date(2026, 10, 28))
-    assert s == ("As of 28 Oct 2026; CRR consolidated version of 26 Jun 2026; "
-                 "other sources retrieved 27 Oct 2026")
+    assert s == ("Answered 28 Oct 2026 from: CRR consolidated version of 26 Jun 2026; "
+                 "other sources as downloaded 27 Oct 2026")
+    assert as_of_statement([], date(2026, 10, 28)) == "Answered 28 Oct 2026"
 
 
 class FakeProvider:

@@ -32,7 +32,7 @@ Every answer has to show where it comes from."
 **Answering:** Quick. **Ask:** *What PD input floors apply to retail exposures under CRR3?*
 **Show:** the live steps (searched the corpus, drafting) → the answer (0,05 % and 0,1 % for
 QRRE revolvers) → click a citation badge to open its source (CRR Art. 163(1), labelled *law*)
-→ the "As of" line → "Citation check: all claims supported".
+→ the "Answered … from" line (source versions) → "Mechanical citation checks: all claims passed" (say what it does not check).
 **Say:** "Each claim cites the exact article, is labelled law, supervisory expectation or
 interpretation, and the as-of line says which consolidated version the answer is based on.
 Before I see the answer, code checks that every claim cites a passage it was given and that

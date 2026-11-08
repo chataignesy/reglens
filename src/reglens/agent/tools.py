@@ -148,8 +148,10 @@ class Toolbox:
         snippet_chars: int = 2000,
         passage_chars: int = 4000,
         result_chars: int = 14000,
+        applies_to: str | None = None,
     ):
         self.conn = conn
+        self.applies_to = applies_to  # "SI" / "LSI": search only texts that apply (or apply to all)
         self.max_calls = max_calls
         self.snippet_chars = snippet_chars
         self.passage_chars = passage_chars
@@ -192,12 +194,12 @@ class Toolbox:
         """Hybrid search (BM25 + embeddings + reranker) over the corpus."""
         if msg := self._budget():
             return msg
-        filters = Filters()
+        filters = Filters(applies_to=self.applies_to)
         if source:
             s = source_by_name(source)
             if not s:
                 return f"Unknown source '{source}'."
-            filters = Filters(source_ids=[s.id])
+            filters = Filters(source_ids=[s.id], applies_to=self.applies_to)
         hits = search(self.conn, query, mode="rerank", k=min(int(k), 8), filters=filters)
         ids = [h.id for h in hits]
         rows = {r.id: r for r in _rows(self.conn, "id = ANY(%s)", [ids])}

@@ -14,7 +14,7 @@ from datetime import date
 from reglens.answer.pipeline import Answer, Progress, _parse_json, answer_question
 from reglens.config import Config
 from reglens.llm.provider import LLMError, LLMProvider
-from reglens.retrieve.search import search
+from reglens.retrieve.search import Filters, search
 
 ROUTER_SYSTEM = """\
 You route questions about EU credit risk regulation (CRR, RTS, EBA guidelines and Q&A, ECB guide
@@ -51,9 +51,9 @@ def route_question(provider: LLMProvider, question: str) -> tuple[str, str, int]
     return (route if route in ROUTES else "single"), reason, c.usage.total_tokens
 
 
-def gate_abstains(conn, config: Config, question: str) -> bool:
+def gate_abstains(conn, config: Config, question: str, filters: Filters | None = None) -> bool:
     """The free retrieval gate: no relevant passage at all, so no router or answer call."""
-    top = search(conn, question, mode="rerank", k=1)
+    top = search(conn, question, mode="rerank", k=1, filters=filters)
     return not top or top[0].score < float((config.answer or {}).get("abstain_below", 0.05))
 
 
@@ -65,10 +65,13 @@ def answer_routed(
     *,
     today: date | None = None,
     progress: Progress | None = None,
+    filters: Filters | None = None,
 ) -> Answer:
+    """`filters.applies_to` ("SI" / "LSI") holds in every route: gate, single pass, agent."""
     emit = progress or (lambda event: None)
-    if gate_abstains(conn, config, question):  # no router call: the pipeline abstains for free
-        return answer_question(conn, provider, config, question, today=today, progress=progress)
+    if gate_abstains(conn, config, question, filters):  # no router call: abstains for free
+        return answer_question(conn, provider, config, question, today=today, progress=progress,
+                               filters=filters)
 
     emit({"stage": "routing"})
     try:
@@ -83,10 +86,10 @@ def answer_routed(
         reason,
         tokens,
         single=lambda: answer_question(
-            conn, provider, config, question, today=today, progress=progress
+            conn, provider, config, question, today=today, progress=progress, filters=filters
         ),
         agent=lambda: answer_agentic(
-            conn, provider, config, question, today=today, progress=progress
+            conn, provider, config, question, today=today, progress=progress, filters=filters
         ),
         emit=emit,
     )

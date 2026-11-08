@@ -96,9 +96,20 @@ def test_answer_payload_lists_only_cited_sources():
     assert [s["id"] for s in p["sources"]] == ["C1"]  # [C2] renumbered to the first source
     assert p["answer"] == "The floor is 0,05 % [C1]." and p["claims"][0]["citations"] == ["C1"]
     assert p["sources"][0] == {"id": "C1", "label": "CRR", "ref": "Art. 160(1)", "level": "law",
-                               "level_key": "L1", "text": "CRR › Art. 160(1)\nPD floor 0,05 %"}
+                               "level_key": "L1", "text": "CRR › Art. 160(1)\nPD floor 0,05 %",
+                               "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/"
+                                      "?uri=CELEX:32013R0575", "version": ""}
     assert p["route"] == {"route": "single", "reason": "one lookup"}
     assert p["steps"] == [{"tool": "search", "args": ["pd"], "passages": 1}]
+
+
+def test_official_source_links_the_exact_consolidated_version():
+    s = api.official_source("crr3-consolidated", "02013R0575-20260626")
+    assert s == {"url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:"
+                        "02013R0575-20260626", "version": "consolidated version of 26.06.2026"}
+    g = api.official_source("eba-gl-dod", "2026-10-27")
+    assert g["url"].startswith("https://www.eba.europa.eu/") and g["version"] == (
+        "as downloaded 2026-10-27")
 
 
 def test_gap_endpoints(client, monkeypatch, tmp_path):

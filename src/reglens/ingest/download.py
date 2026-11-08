@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import date
@@ -22,19 +23,48 @@ from reglens.sources import Source
 
 truststore.inject_into_ssl()
 
-CELLAR = "http://publications.europa.eu/resource/celex/"
+CELLAR = "https://publications.europa.eu/resource/celex/"
 SPARQL = "https://publications.europa.eu/webapi/rdf/sparql"
 USER_AGENT = "RegLens/0.1 (open-source research project)"
 RAW_DIR = PROJECT_ROOT / "data" / "raw"
 LOCK_FILE = PROJECT_ROOT / "sources.lock.json"
 
 
+# Official hosts whose redirects may point to plain HTTP (CELLAR's 303 does): upgraded to HTTPS.
+_UPGRADE_HOSTS = (".europa.eu",)
+
+
+class _HttpsOnly(urllib.request.HTTPRedirectHandler):
+    """Follow redirects only over HTTPS: an http:// target on an official EU host is upgraded
+    to https://, any other non-HTTPS target is refused (the text must come over TLS)."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        parts = urllib.parse.urlsplit(newurl)
+        if parts.scheme == "http" and (parts.hostname or "").endswith(_UPGRADE_HOSTS):
+            newurl = urllib.parse.urlunsplit(("https", *parts[1:]))
+        elif parts.scheme != "https":
+            raise urllib.error.URLError(f"refusing a non-HTTPS redirect to {newurl}")
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+_OPENER = urllib.request.build_opener(_HttpsOnly)
+
+
 def _get(url: str, *, accept: str, timeout: int = 180) -> bytes:
+    if not url.startswith("https://"):
+        raise ValueError(f"refusing a non-HTTPS source URL: {url}")
     req = urllib.request.Request(
         url, headers={"User-Agent": USER_AGENT, "Accept": accept, "Accept-Language": "eng"}
     )
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
+    with _OPENER.open(req, timeout=timeout) as resp:
+        if not resp.geturl().startswith("https://"):
+            raise ValueError(f"download did not end on HTTPS: {resp.geturl()}")
         return resp.read()
+
+
+def _same_url(a: str, b: str) -> bool:
+    """Same resource, ignoring http/https (older lock records used http:// for CELLAR)."""
+    return a.split("://", 1)[-1] == b.split("://", 1)[-1]
 
 
 def consolidated_versions(base_celex: str) -> list[str]:
@@ -117,8 +147,10 @@ def download(source: Source, *, as_of: date, force: bool = False) -> dict:
     path = RAW_DIR / source.id / f"{version or source.id}.{ext}"
     lock = load_lock()
     record = lock.get(source.id)
-    if not force and record and record["url"] == url and path.exists():
-        return record
+    if not force and record and _same_url(record["url"], url) and path.exists():
+        # reuse only the exact bytes the lock recorded; anything else is downloaded again
+        if hashlib.sha256(path.read_bytes()).hexdigest() == record.get("sha256"):
+            return record
 
     body = _get(url, accept=accept)
     if ext == "pdf" and not body.startswith(b"%PDF"):

@@ -21,6 +21,8 @@ export interface Source {
   level: string; // "law", "EBA guideline", ...
   level_key: string; // "L1", "L2", "L3", "qa", "supervisory"
   text: string;
+  url: string | null; // official text (for a consolidated regulation: that exact version)
+  version: string; // e.g. "consolidated version of 26.06.2026" or "as downloaded 2026-10-27"
 }
 
 export interface Claim {

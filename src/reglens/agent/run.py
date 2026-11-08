@@ -26,7 +26,7 @@ from reglens.answer.prompts import SCOPE
 from reglens.answer.schema import parse_reply
 from reglens.config import Config
 from reglens.llm.provider import AnthropicAPIProvider, ClaudeCLIProvider, LLMError
-from reglens.retrieve.search import Hit, search
+from reglens.retrieve.search import Filters, Hit, search
 
 AGENT_CAP_ERROR = "the research agent reached its cost cap before answering"
 TOOLS = ["search", "get_article", "get_passage", "follow_reference", "get_definition", "get_qa"]
@@ -79,7 +79,7 @@ Final reply: ONE JSON object and nothing else:
 """
 
 
-def _mcp_config(max_calls: int, trace_path: str) -> str:
+def _mcp_config(max_calls: int, trace_path: str, applies_to: str | None = None) -> str:
     cfg = {
         "mcpServers": {
             "reglens": {
@@ -89,6 +89,7 @@ def _mcp_config(max_calls: int, trace_path: str) -> str:
                     "REGLENS_MAX_TOOL_CALLS": str(max_calls),
                     "REGLENS_TRACE_FILE": trace_path,
                     "PYTHONIOENCODING": "utf-8",
+                    **({"REGLENS_APPLIES_TO": applies_to} if applies_to else {}),
                     **(
                         {"REGLENS_DATABASE_URL": os.environ["REGLENS_DATABASE_URL"]}
                         if "REGLENS_DATABASE_URL" in os.environ
@@ -208,11 +209,13 @@ def _watch_trace(path: str, emit, stop: threading.Event) -> None:
             return
 
 
-def _run_once(provider, question, max_calls, opts, extra, progress=None) -> tuple:
+def _run_once(
+    provider, question, max_calls, opts, extra, progress=None, applies_to=None
+) -> tuple:
     """One `claude -p` agent run with a fresh MCP server; returns (completion, tool trace)."""
     with tempfile.NamedTemporaryFile(suffix=".jsonl", delete=False) as f:
         trace_file = f.name
-    mcp_file = _mcp_config(max_calls, trace_file)
+    mcp_file = _mcp_config(max_calls, trace_file, applies_to)
     stop = threading.Event()
     watcher = None
     if progress:
@@ -245,18 +248,26 @@ def answer_agentic(
     *,
     today: date | None = None,
     progress: Progress | None = None,
+    filters: Filters | None = None,
 ) -> Answer:
-    """`progress`, if given, receives stage events, including one per tool call."""
+    """`progress`, if given, receives stage events, including one per tool call. `filters`:
+    only `applies_to` ("SI" / "LSI") is used: the search tool then only finds texts that apply
+    to that institution type (or to all), and the agent is told which type was asked about."""
     opts = (config.answer or {}) | (config.agent or {})
     today = today or date.today()
     max_calls = int(opts.get("max_calls", 10))
+    applies = filters.applies_to if filters else None
+    asked = question
+    if applies:
+        question = (f"{question}\n\n(Institution type: {applies}. Search results are limited to "
+                    f"texts that apply to {applies} institutions or to all; say which applies.)")
 
     # Same retrieval gate as the single-pass pipeline: no LLM call for clearly unrelated questions.
-    top = search(conn, question, mode="rerank", k=1)
+    top = search(conn, asked, mode="rerank", k=1, filters=Filters(applies_to=applies))
     best = top[0].score if top else 0.0
     if best < float(opts.get("abstain_below", 0.05)):
         return Answer(
-            question,
+            asked,
             True,
             f"no relevant passage found (best score {best:.3f})",
             "",
@@ -282,6 +293,7 @@ def answer_agentic(
             max_turns=int(opts.get("max_turns", max_calls + 3)),
             max_tokens=int(opts.get("max_tokens_per_question", 200_000)),
             progress=progress,
+            applies_to=applies,
         )
     else:
         allowed = ",".join(f"mcp__reglens__{t}" for t in TOOLS)
@@ -290,7 +302,9 @@ def answer_agentic(
         tokens, errors = 0, []
         try:
             for _attempt in range(2):  # a run without any tool call: the tools were unavailable
-                completion, trace = _run_once(provider, question, max_calls, opts, extra, progress)
+                completion, trace = _run_once(
+                    provider, question, max_calls, opts, extra, progress, applies
+                )
                 tokens += completion.usage.total_tokens
                 if trace:
                     break
@@ -308,7 +322,7 @@ def answer_agentic(
             errors.append(AGENT_CAP_ERROR + ("" if e.tokens is not None else " (usage unknown)"))
 
     ans = Answer(
-        question, False, "", "", [], [], "", model=model, usage_tokens=tokens, trace=trace
+        asked, False, "", "", [], [], "", model=model, usage_tokens=tokens, trace=trace
     )
     ans.errors += errors
     if not text:

@@ -45,6 +45,8 @@ function SourceItem({ source, open, onToggle }: { source: Source; open: boolean;
     <li id={`src-${source.id}`} className="rounded-lg border">
       <button
         onClick={onToggle}
+        aria-expanded={open}
+        aria-controls={`src-body-${source.id}`}
         className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-muted/50"
       >
         <ChevronRight className={`size-4 shrink-0 transition-transform ${open ? "rotate-90" : ""}`} />
@@ -57,9 +59,18 @@ function SourceItem({ source, open, onToggle }: { source: Source; open: boolean;
         </span>
       </button>
       {open && (
-        <div className="border-t px-3 py-2 text-sm">
+        <div id={`src-body-${source.id}`} className="border-t px-3 py-2 text-sm">
           <p className="mb-1 text-xs text-muted-foreground">{prefix}</p>
           <p className="whitespace-pre-line leading-relaxed">{body.join("\n")}</p>
+          <p className="mt-2 flex flex-wrap gap-x-3 text-xs text-muted-foreground">
+            {source.version && <span>Text from the {source.version}.</span>}
+            {source.url && (
+              <a href={source.url} target="_blank" rel="noreferrer" className="text-primary underline-offset-4 hover:underline">
+                Official text ↗
+              </a>
+            )}
+            <span>RegLens shows extracted text: check the official source.</span>
+          </p>
         </div>
       )}
     </li>

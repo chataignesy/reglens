@@ -16,12 +16,12 @@ them, take the top-k by cosine similarity, and ask an LLM to answer from them.
 | Sources | PDFs scraped from websites | Official EU publications API (CELLAR + SPARQL) for law, consolidated version in force on the as-of date; Docling for EBA/ECB PDFs; every source registered with URL, date, legal level, licence | 13 sources, 4,631 chunks |
 | Chunking | Fixed 500-token windows | Structure-aware: Part › Title › Chapter › Article › paragraph › point, with a deterministic hierarchy prefix on every chunk | — |
 | Metadata | None | Legal level (law / supervisory / Q&A), version, `applies_to` (SI / LSI), amending act | Answers label each claim |
-| Links between texts | None | Cross-reference graph: 10,274 edges (`refers_to`, `amends`, `uses_definition`, `answers_on`) | Used by the agent |
-| Retrieval | Dense top-k | Hybrid BM25 + dense (RRF) → cross-encoder reranker → practitioner glossary expansion | recall@10 0.59 (BM25) / 0.74 (dense) → **0.84** |
-| Grounding | "Answer from the context" | JSON claims, each citing passages; a deterministic checker verifies citations and numbers; abstention gate; "as of" line built by code | **0.99** of claims pass the check; 5/5 out-of-scope questions declined |
+| Links between texts | None | Cross-reference graph: 10,685 edges (`refers_to` incl. paragraph references inside an article, `amends`, `uses_definition`, `answers_on`) | Used by the agent |
+| Retrieval | Dense top-k | Hybrid lexical (Postgres `ts_rank` on rare terms) + dense (RRF) → cross-encoder reranker → practitioner glossary expansion | recall@10 0.59 (lexical) / 0.76 (dense) → **0.81** reranked (103 questions, 8 Nov 2026) |
+| Grounding | "Answer from the context" | JSON claims, each citing passages the model actually received; a deterministic checker verifies citations, numbers and legal level; abstention gate; dates built by code | **0.99** of claims pass the mechanical checks (a mechanical pass rate, not semantic support) |
 | Multi-step questions | Same single pass | Router → bounded agent with 6 corpus tools over the graph, agent fallback when a quick answer has gaps; runs on the Messages API or as an MCP server | Correctness 0.86 → **0.91**, no wrong answers (70 questions) |
 | Evaluation | Eyeballing answers | 120-question expert golden set, retrieval metrics, deterministic citation metrics, LLM judge, router eval, repeat runs for variance | — |
-| Cost | Unknown | Token ledger on every call, model tiers, prompt caching, estimates before every run | 3.1M tokens, ≈ €3.6 API-equivalent so far |
+| Cost | Unknown | Token ledger on every call (failed and cancelled calls included), model tiers, prompt caching, estimates before every run | 10.6M tokens, ≈ €19 API-equivalent so far (8 Nov 2026) |
 
 ## 1. Sources and ingestion
 
@@ -75,12 +75,12 @@ so indexing costs no API tokens and re-indexing is free.
 
 ## 3. Retrieval
 
-**3.1 Hybrid search with rank fusion.** BM25 (Postgres full-text) and dense search are fused with
+**3.1 Hybrid search with rank fusion.** Lexical search (Postgres full-text, `ts_rank`; BM25-like in spirit, not the BM25 formula) and dense search are fused with
 Reciprocal Rank Fusion (k = 60). Legal text needs both: exact terms ("Article 178", "ELBE") and
 paraphrase ("when is a borrower in default").
 
-**3.2 A BM25 fix that matters for legal text.** OR-ing every question word let common words
-dominate. The BM25 query keeps only rare terms (document frequency ≤ 10 %).
+**3.2 A lexical-search fix that matters for legal text.** OR-ing every question word let common
+words dominate. The lexical query keeps only rare terms (document frequency ≤ 10 %).
 *Evidence:* overall recall@10 0.57 → 0.65 together with the scope fix below.
 
 **3.3 Cross-encoder reranking.** The top 30 candidates are reranked with **bge-reranker-v2-m3**
@@ -88,7 +88,7 @@ dominate. The BM25 query keeps only rare terms (document frequency ≤ 10 %).
 
 | Mode | recall@10 | MRR@10 | Single-answer recall |
 |---|---|---|---|
-| BM25 | 0.59 | 0.40 | 0.66 |
+| Lexical (`ts_rank`) | 0.59 | 0.40 | 0.66 |
 | Dense (BGE-M3) | 0.74 | 0.65 | 0.81 |
 | Hybrid (RRF) | 0.76 | 0.58 | 0.84 |
 | **Hybrid + rerank** | **0.79** | **0.69** | **0.89** |
@@ -270,7 +270,7 @@ exactly what it affects.
   summaries; deterministic checks before LLM judging.
 - **Prompt caching:** stable system prompts and tool definitions first; most agent tokens are
   cache reads.
-- *So far:* 3.1M tokens, ≈ **€3.6** API-equivalent, through Phase 3.
+- *So far:* 10.6M tokens, ≈ **€19** API-equivalent, through the review fixes (8 Nov 2026).
 
 ## 8. Scope, safety and trust
 
@@ -288,14 +288,17 @@ calls a paid API — the CLI and the SDK client are faked), Docker for the datab
 **Web UI:** **Next.js** (App Router, TypeScript) with Tailwind and shadcn/ui, over a small
 **FastAPI** backend. Answers stream as **Server-Sent Events**: retrieval, the routing decision
 and every agent tool call appear live, then the answer with citation badges that open their
-sources. The bring-your-own key is held in page memory only and forwarded per request. The
+sources. The bring-your-own key is held in page memory only; with each request it goes from
+the browser to the local RegLens API, which passes it to the Anthropic SDK and nowhere else. The
 earlier Streamlit UI remains as a fallback.
 
 ## Roadmap items not built yet
 
 - **Gap analysis:** a second synthetic policy for an untuned recall test; precision calibration.
 - **Batch API** for offline jobs (obligation extraction, bulk judging).
-- National regulators (DNB first), point-in-time version switching, a Next.js UI.
+- National regulators (DNB first), point-in-time version switching (effective-date intervals),
+  staged corpus generations with rollback, a frozen holdout set, semantic citation-support
+  checks (see [the review plan](REVIEW-PLAN.md)).
 
 Details and full results: [ROADMAP](ROADMAP.md) · [retrieval](results/retrieval-phase1.md) ·
 [answers](results/answers-phase2.md) · [agent](results/agent-phase3.md).

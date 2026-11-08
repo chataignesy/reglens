@@ -284,28 +284,40 @@ def ask(
     return StreamingResponse(stream(), media_type="text/event-stream", headers=headers)
 
 
-def _gap_data() -> dict:
-    from reglens.gap.evaluate import latest_result
+def _gap_data(run: str | None = None) -> dict:
+    from reglens.gap.evaluate import find_run
 
-    path = latest_result()
-    if path is None:
+    found = find_run(run)
+    if found is None:
+        if run:
+            raise HTTPException(404, f"No gap analysis run '{run}'.")
         raise HTTPException(404, "No gap analysis run yet. Run `reglens gap --yes` first.")
-    data = json.loads(path.read_text(encoding="utf-8"))
-    return data | {"file": path.name}
+    data = json.loads(found["path"].read_text(encoding="utf-8"))
+    return data | {"file": found["path"].name, "run_id": found["id"],
+                   "run_label": found["label"], "is_demo": found["is_demo"]}
+
+
+@app.get("/api/gap/runs")
+def gap_runs() -> list[dict]:
+    """Saved runs, newest local run first, then the committed demo run."""
+    from reglens.gap.evaluate import list_runs
+
+    return [{k: r[k] for k in ("id", "label", "is_demo")} for r in list_runs()]
 
 
 @app.get("/api/gap")
-def gap() -> dict:
-    return _gap_data()
+def gap(run: str | None = None) -> dict:
+    """One saved run: `run` from /api/gap/runs; default the newest local run, else the demo."""
+    return _gap_data(run)
 
 
 @app.get("/api/gap/export")
-def gap_export(format: Literal["csv", "xlsx"] = "xlsx") -> Response:
+def gap_export(format: Literal["csv", "xlsx"] = "xlsx", run: str | None = None) -> Response:
     import pandas as pd
 
     from reglens.gap.evaluate import EXPORT_COLUMNS
 
-    df = pd.DataFrame(_gap_data()["rows"])
+    df = pd.DataFrame(_gap_data(run)["rows"])
     df["clauses"] = df["clauses"].map(lambda c: ", ".join(c) if isinstance(c, list) else c)
     df = df[EXPORT_COLUMNS]
     if format == "csv":

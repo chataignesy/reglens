@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import argparse
-from datetime import date
+from datetime import date, datetime
 
 from reglens.config import PROJECT_ROOT, load_config
 from reglens.llm.ledger import Ledger, Usage
@@ -447,6 +447,9 @@ def _cmd_gap(args: argparse.Namespace) -> None:
     cfg = load_config(args.config)
     obligations = load_register()
     clauses = load_policy(Path(args.policy) if args.policy else POLICY_FILE)
+    if args.rescore:
+        _rescore_gap_run(args.rescore, obligations, clauses)
+        return
     system = m.system_prompt(clauses)
     todo = m.batches(obligations)[: args.limit]
     cached = {p.stem for p in (m.MATCH_DIR / m.MATCH_VERSION).glob("*.json")}
@@ -481,6 +484,36 @@ def _cmd_gap(args: argparse.Namespace) -> None:
         if r["assessed"] and not r["found"]:
             print(f"  missed {r['id']} ({r['type']}): {r['statuses']}")
     print(f"details: {js}\ncoverage matrix: {cs}")
+
+
+def _rescore_gap_run(run_id: str, obligations, clauses) -> None:
+    """Re-validate a saved run's verdicts under the current rules; rewrites it (no LLM)."""
+    import json
+
+    from reglens.gap import match as m
+    from reglens.gap.evaluate import evaluate, find_run
+    from reglens.gap.gaps import load_gaps
+
+    run = find_run(None if run_id == "latest" else run_id)
+    if run is None:
+        raise SystemExit(f"no gap run '{run_id}'")
+    data = json.loads(run["path"].read_text(encoding="utf-8"))
+    by_id = {r["obligation_id"]: r for r in data["rows"]}
+    verdicts = m.rescore(data["rows"], clauses)
+    rows = m.to_rows(verdicts, obligations)
+    for r in rows:  # keep any reviewer columns already filled in
+        old = by_id.get(r["obligation_id"], {})
+        r["reviewer_status"] = old.get("reviewer_status", "")
+        r["reviewer_comment"] = old.get("reviewer_comment", "")
+    before = {k: data.get(k) for k in ("recall", "statuses", "quotes_not_verbatim")}
+    s = evaluate(load_gaps(obligations), verdicts)
+    out = s | {"rows": rows, "rescored": f"{datetime.now():%Y-%m-%d}", "before_rescore": before}
+    run["path"].write_text(json.dumps(out, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(f"{run['label']}: recall {before['recall']} -> {s['recall']} "
+          f"({s['gaps_assessed']}/{s['gaps']} gaps assessed)")
+    print(f"statuses before {before['statuses']}\nstatuses after  {s['statuses']}")
+    print(f"invalid verdicts {s['invalid_verdicts']}, quotes not verbatim "
+          f"{s['quotes_not_verbatim']}; written to {run['path']}")
 
 
 def _cmd_judge(args: argparse.Namespace) -> None:
@@ -652,6 +685,11 @@ def main(argv: list[str] | None = None) -> None:
     gp.add_argument("--limit", type=int, help="first N batches only (a sample)")
     gp.add_argument("--tokens-per-call", type=int, default=8500, help="for the estimate")
     gp.add_argument("--yes", action="store_true", help="actually call the model")
+    gp.add_argument(
+        "--rescore", metavar="RUN",
+        help="re-validate a saved run ('demo', a gap-… id, or 'latest') under the current "
+        "rules and rewrite it (no LLM calls)",
+    )
     gp.set_defaults(func=_cmd_gap)
 
     gold = sub.add_parser("golden", help="validate the golden eval set and show its mix")

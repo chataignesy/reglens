@@ -78,3 +78,46 @@ def test_gap_links_must_exist_under_refs(tmp_path):
     path.write_text('- {id: G1, type: missing, section: "15", finding: x, '
                     'refs: ["CRR Art. 191"]}\n', encoding="utf-8")
     assert load_gaps([ob("OB-1"), ob("OB-2", relevant=False)], path)[0].obligations == ["OB-1"]
+
+
+# review 2026-11-08: F6 (conservative verdicts), F9 (recall over all gaps)
+
+
+def test_verdicts_without_evidence_or_with_invalid_status_are_unassessed():
+    clauses = parse_policy(POLICY)
+    batch = [ob("OB-1"), ob("OB-2"), ob("OB-3"), ob("OB-4"), ob("OB-5")]
+    reply = json.dumps({"verdicts": [
+        {"id": "OB-1", "status": "covered"},  # no clause, no quote
+        {"id": "OB-2", "status": "partial", "clauses": ["§99"], "quote": "x"},  # unknown clause
+        {"id": "OB-3", "status": "covered", "clauses": ["§15.1"], "quote": ""},  # no quote
+        {"id": "OB-4", "status": "mostly fine", "clauses": ["§15.1"]},  # invented status
+        {"id": "OB-5", "status": "missing", "rationale": "not addressed"},  # needs no evidence
+    ]})
+    v = {x.obligation_id: x for x in m.parse_verdicts(batch, reply, clauses)}
+    for oid in ("OB-1", "OB-2", "OB-3", "OB-4"):
+        assert v[oid].status == "unassessed" and v[oid].evidence == "invalid", oid
+        assert v[oid].rationale.startswith("invalid output")
+    assert "§99" in v["OB-2"].rationale
+    assert v["OB-5"].status == "missing" and v["OB-5"].evidence == "none_required"
+
+
+def test_rescore_applies_current_rules_to_a_saved_run():
+    clauses = parse_policy(POLICY)
+    rows = [
+        {"obligation_id": "OB-1", "status": "covered", "clauses": [], "quote": "",
+         "rationale": "old lenient verdict"},
+        {"obligation_id": "OB-2", "status": "contradicted", "clauses": ["§15.1"],
+         "quote": "every three years", "rationale": "3y"},
+    ]
+    v1, v2 = m.rescore(rows, clauses)
+    assert v1.status == "unassessed" and v2.status == "contradicted" and v2.evidence == "verified"
+
+
+def test_recall_counts_unassessed_gaps_as_not_found():
+    gaps = [Gap("G1", "contradicted", "15", "audit", ["CRR Art. 191"], ["OB-1"]),
+            Gap("G2", "missing", "9", "floors", ["CRR Art. 164(4)"], ["OB-2"])]
+    partial_run = [m.Verdict("OB-1", "contradicted", ["§15.1"], "q", True, "")]  # G2 not run
+    s = evaluate(gaps, partial_run)
+    assert s["recall"] == 0.5 and s["recall_of_assessed"] == 1.0
+    assert s["complete"] is False and s["gaps_assessed"] == 1
+    assert s["by_type"]["missing"] == "0/1"

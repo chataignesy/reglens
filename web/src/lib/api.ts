@@ -119,10 +119,20 @@ export interface GapRow {
   quote: string;
   quote_ok: boolean;
   rationale: string;
+  // "verified" | "not_verbatim" | "none_required" | "invalid" (older runs: absent)
+  evidence?: string;
+}
+
+export interface GapRun {
+  id: string;
+  label: string;
+  is_demo: boolean;
 }
 
 export interface GapResult {
   gaps: number;
+  gaps_assessed?: number;
+  complete?: boolean; // false: some planted gaps were not assessed in this run
   recall: number | null;
   type_accuracy: number | null;
   by_type: Record<string, string>;
@@ -130,12 +140,24 @@ export interface GapResult {
   per_gap: { id: string; type: string; found: boolean; statuses: Record<string, string> }[];
   rows: GapRow[];
   file: string;
+  run_id: string;
+  run_label: string;
+  is_demo: boolean;
 }
 
-export async function getGap(): Promise<GapResult> {
-  const r = await fetch(`${API_URL}/api/gap`);
+const runQuery = (run?: string) => (run ? `run=${encodeURIComponent(run)}` : "");
+
+export async function getGapRuns(): Promise<GapRun[]> {
+  const r = await fetch(`${API_URL}/api/gap/runs`);
+  if (!r.ok) throw new Error(`API error ${r.status}`);
+  return r.json();
+}
+
+export async function getGap(run?: string): Promise<GapResult> {
+  const r = await fetch(`${API_URL}/api/gap?${runQuery(run)}`);
   if (!r.ok) throw new Error((await r.json().catch(() => null))?.detail ?? `API error ${r.status}`);
   return r.json();
 }
 
-export const exportUrl = (format: "csv" | "xlsx") => `${API_URL}/api/gap/export?format=${format}`;
+export const exportUrl = (format: "csv" | "xlsx", run?: string) =>
+  `${API_URL}/api/gap/export?format=${format}${run ? `&${runQuery(run)}` : ""}`;

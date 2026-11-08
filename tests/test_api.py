@@ -107,9 +107,15 @@ def test_gap_endpoints(client, monkeypatch, tmp_path):
         "obligation_id": "OB-1", "status": "contradicted", "clauses": ["§15.1"], "rationale": "r",
         "source": "CRR Art. 191", "obligation": "o", "topic": "internal-audit", "quote": "q",
         "reviewer_status": "", "reviewer_comment": ""}]}), encoding="utf-8")
-    monkeypatch.setattr("reglens.gap.evaluate.latest_result", lambda: result)
+    run = {"id": "gap-20261101-151330", "label": "Local run", "is_demo": False, "path": result}
+    demo = {"id": "demo", "label": "Committed demo run", "is_demo": True, "path": result}
+    monkeypatch.setattr("reglens.gap.evaluate.list_runs", lambda: [run, demo])
     g = client.get("/api/gap").json()
-    assert g["recall"] == 1.0 and g["file"] == "gap.json"
+    assert g["recall"] == 1.0 and g["file"] == "gap.json" and g["run_id"] == run["id"]
+    assert g["is_demo"] is False  # a local run comes first; the demo is chosen explicitly
+    assert client.get("/api/gap?run=demo").json()["is_demo"] is True
+    assert client.get("/api/gap?run=nope").status_code == 404
+    assert [r["id"] for r in client.get("/api/gap/runs").json()] == [run["id"], "demo"]
     csv = client.get("/api/gap/export?format=csv")
     assert "OB-1" in csv.content.decode("utf-8-sig") and "§15.1" in csv.text
     xlsx = client.get("/api/gap/export?format=xlsx")

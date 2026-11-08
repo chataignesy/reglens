@@ -22,6 +22,8 @@ from reglens.llm.provider import LLMProvider
 
 STATUSES = ("covered", "partial", "missing", "contradicted", "not_applicable", "other_document")
 FINDINGS = ("partial", "missing", "contradicted")
+# statuses that make a claim about what the policy says: they need a cited clause and a quote
+NEEDS_EVIDENCE = ("covered", "partial", "contradicted")
 MATCH_DIR = PROJECT_ROOT / "data" / "gap" / "batches"
 MATCH_TIER = "dev"
 BATCH_SIZE = 15
@@ -74,8 +76,12 @@ class Verdict:
     status: str
     clauses: list[str]
     quote: str
-    quote_ok: bool  # empty quote for missing counts as ok
+    quote_ok: bool  # the evidence holds: verbatim quote in a cited clause, or none needed
     rationale: str
+    # "verified" (quote found in a cited clause), "not_verbatim" (quote not found: shown,
+    # counted, for review), "none_required" (missing / not applicable / other document),
+    # "invalid" (unusable model output: the status is "unassessed")
+    evidence: str = "verified"
 
 
 def system_prompt(clauses: list[Clause]) -> str:
@@ -102,26 +108,67 @@ def batch_id(batch: list[Obligation], policy: str) -> str:
     return hashlib.sha256(raw.encode()).hexdigest()[:12]
 
 
+def validate(oid: str, raw: dict, by_clause: dict[str, Clause]) -> Verdict:
+    """One model verdict -> a Verdict, conservatively (review F6):
+    - an unknown status is "unassessed (invalid output)", never turned into "missing";
+    - covered / partial / contradicted assert what the policy says, so they need at least one
+      existing clause and a non-empty quote; without them the verdict is "unassessed";
+    - a quote not found verbatim in its clauses keeps the status, flagged "not_verbatim".
+    """
+    status = str(raw.get("status", "")).strip().lower()
+    named = [str(c) for c in raw.get("clauses") or []]
+    cited = [c for c in named if c in by_clause]
+    quote = str(raw.get("quote") or "").strip()
+    rationale = str(raw.get("rationale", ""))
+
+    def invalid(why: str) -> Verdict:
+        return Verdict(oid, "unassessed", cited, quote, False,
+                       f"invalid output: {why}" + (f" ({rationale})" if rationale else ""),
+                       "invalid")
+
+    if status not in STATUSES:
+        return invalid(f"status {status!r}")
+    if status not in NEEDS_EVIDENCE:
+        return Verdict(oid, status, cited, quote, True, rationale, "none_required")
+    if not cited:
+        unknown = sorted(set(named) - set(cited))
+        return invalid(f"'{status}' without an existing policy clause"
+                       + (f" (unknown: {', '.join(unknown)})" if unknown else ""))
+    if not quote:
+        return invalid(f"'{status}' without a quote from the policy")
+    if any(quote_in(quote, by_clause[c].text) for c in cited):
+        return Verdict(oid, status, cited, quote, True, rationale, "verified")
+    return Verdict(oid, status, cited, quote, False, rationale, "not_verbatim")
+
+
 def parse_verdicts(batch: list[Obligation], reply: str, clauses: list[Clause]) -> list[Verdict]:
     by_clause = {c.id: c for c in clauses}
     wanted = {o.id for o in batch}
     out: dict[str, Verdict] = {}
     for v in _parse_json(reply).get("verdicts") or []:
         oid = str(v.get("id", ""))
-        if oid not in wanted or oid in out:
+        if oid not in wanted or oid in out or not isinstance(v, dict):
             continue
-        status = str(v.get("status", "")).strip().lower()
-        cited = [str(c) for c in v.get("clauses") or [] if str(c) in by_clause]
-        quote = str(v.get("quote", ""))
-        ok = not quote or any(quote_in(quote, by_clause[c].text) for c in cited)
-        out[oid] = Verdict(
-            oid, status if status in STATUSES else "missing", cited, quote, ok,
-            str(v.get("rationale", "")),
-        )
+        out[oid] = validate(oid, v, by_clause)
     # an obligation the model skipped is reported, not silently treated as covered
     for o in batch:
-        out.setdefault(o.id, Verdict(o.id, "unassessed", [], "", True, "no verdict returned"))
+        out.setdefault(
+            o.id, Verdict(o.id, "unassessed", [], "", False, "no verdict returned", "invalid")
+        )
     return [out[o.id] for o in batch]
+
+
+def rescore(rows: list[dict], clauses: list[Clause]) -> list[Verdict]:
+    """Re-validate the verdicts of a saved run under the current rules (no model calls)."""
+    by_clause = {c.id: c for c in clauses}
+    out = []
+    for r in rows:
+        if r["status"] == "unassessed" and r.get("evidence") != "invalid":
+            out.append(Verdict(r["obligation_id"], "unassessed", [], "", False,
+                               r.get("rationale", ""), "invalid"))
+            continue
+        out.append(validate(r["obligation_id"], r, by_clause))
+    return out
 
 
 def match(

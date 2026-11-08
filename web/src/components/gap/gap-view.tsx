@@ -1,8 +1,8 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { CheckCircle2, ChevronRight, Download, XCircle } from "lucide-react";
-import { exportUrl, getGap, type GapResult } from "@/lib/api";
+import { CheckCircle2, ChevronRight, CircleAlert, Download, XCircle } from "lucide-react";
+import { exportUrl, getGap, getGapRuns, type GapResult, type GapRun } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -33,10 +33,21 @@ export function GapView() {
   const [text, setText] = useState("");
   const [open, setOpen] = useState<string | null>(null);
   const [limit, setLimit] = useState(PAGE);
+  const [runs, setRuns] = useState<GapRun[]>([]);
+  const [run, setRun] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    getGap().then(setData).catch((e) => setError((e as Error).message));
+    getGapRuns().then(setRuns).catch(() => setRuns([]));
   }, []);
+
+  useEffect(() => {
+    getGap(run)
+      .then((d) => {
+        setData(d);
+        setError(null);
+      })
+      .catch((e) => setError((e as Error).message));
+  }, [run]);
 
   const rows = useMemo(() => {
     if (!data) return [];
@@ -72,10 +83,28 @@ export function GapView() {
           the policy clause and quotes it; quotes are verified in code. A starting point for a reviewer, not a final
           judgement.
         </p>
+        <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
+          <label htmlFor="gap-run" className="text-muted-foreground">
+            Run
+          </label>
+          <select
+            id="gap-run"
+            value={data.run_id}
+            onChange={(e) => setRun(e.target.value)}
+            className="h-7 rounded-md border bg-background px-2 text-xs"
+          >
+            {(runs.length ? runs : [{ id: data.run_id, label: data.run_label, is_demo: data.is_demo }]).map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.label}
+              </option>
+            ))}
+          </select>
+          {data.is_demo && <Badge variant="outline">demo data committed with the project</Badge>}
+        </div>
       </section>
 
-      <section className="grid grid-cols-3 gap-3 sm:grid-cols-6">
-        {["covered", "partial", "missing", "contradicted", "other_document", "not_applicable"].map((s) => (
+      <section className="grid grid-cols-3 gap-3 sm:grid-cols-7">
+        {["covered", "partial", "missing", "contradicted", "other_document", "not_applicable", "unassessed"].map((s) => (
           <button
             key={s}
             onClick={() => toggleStatus(s)}
@@ -96,6 +125,17 @@ export function GapView() {
               <strong>Planted gaps found: {Math.round(data.recall * 100)}%</strong> of {data.gaps} deliberately planted
               deficiencies ({Object.entries(data.by_type).map(([k, v]) => `${k} ${v}`).join(" · ")}); flag type correct{" "}
               {data.type_accuracy !== null ? `${Math.round(data.type_accuracy * 100)}%` : "–"}.
+            </p>
+            {data.complete === false && (
+              <p className="flex items-center gap-1.5 text-sm text-amber-700 dark:text-amber-400">
+                <CircleAlert className="size-4" /> Incomplete run: only {data.gaps_assessed} of {data.gaps} planted gaps
+                were assessed. Unassessed gaps count as not found.
+              </p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Caveat: the planted gaps were found after one prompt revision on this same policy, so this is a tuned
+              result, not an independent test. Of a 20-finding sample beyond the planted gaps, all were factually correct
+              but about 11 belong in a validation policy.
             </p>
             <div className="flex flex-wrap gap-2">
               {data.per_gap.map((g) => (
@@ -128,16 +168,17 @@ export function GapView() {
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Search obligations, e.g. internal audit"
+          aria-label="Search obligations"
           className="h-8 w-64"
         />
         <span className="text-xs text-muted-foreground">
           {rows.length} of {data.rows.length} obligations
         </span>
         <span className="ml-auto flex gap-2">
-          <a href={exportUrl("csv")} className="inline-flex h-8 items-center gap-1 rounded-lg border px-2.5 text-sm hover:bg-muted">
+          <a href={exportUrl("csv", data.run_id)} className="inline-flex h-8 items-center gap-1 rounded-lg border px-2.5 text-sm hover:bg-muted">
             <Download className="size-4" /> CSV
           </a>
-          <a href={exportUrl("xlsx")} className="inline-flex h-8 items-center gap-1 rounded-lg border px-2.5 text-sm hover:bg-muted">
+          <a href={exportUrl("xlsx", data.run_id)} className="inline-flex h-8 items-center gap-1 rounded-lg border px-2.5 text-sm hover:bg-muted">
             <Download className="size-4" /> Excel (with reviewer columns)
           </a>
         </span>
@@ -190,7 +231,8 @@ export function GapView() {
                       {r.quote && (
                         <p className="text-muted-foreground">
                           <span className="font-medium text-foreground">Policy text: </span>“{r.quote}”
-                          {!r.quote_ok && " (quote not found verbatim)"}
+                          {(r.evidence === "not_verbatim" || (!r.evidence && !r.quote_ok)) &&
+                            " (quote not found verbatim in the cited clauses: check it)"}
                         </p>
                       )}
                       <p className="text-xs text-muted-foreground">
@@ -201,6 +243,13 @@ export function GapView() {
                 )}
               </Fragment>
             ))}
+            {rows.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={5} className="py-6 text-center text-sm text-muted-foreground">
+                  No obligations match these filters.
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>
@@ -209,7 +258,9 @@ export function GapView() {
           Show {Math.min(PAGE, rows.length - limit)} more
         </button>
       )}
-      <p className="text-xs text-muted-foreground">Results: {data.file}</p>
+      <p className="text-xs text-muted-foreground">
+        Results: {data.run_label} ({data.file})
+      </p>
     </div>
   );
 }

@@ -8,7 +8,7 @@ import json
 
 import streamlit as st
 
-from reglens.gap.evaluate import EXPORT_COLUMNS, latest_result
+from reglens.gap.evaluate import EXPORT_COLUMNS, list_runs
 from reglens.gap.match import FINDINGS
 
 POLICY_URL = "docs/synthetic-policy/model-validation-policy.md"
@@ -29,6 +29,13 @@ def _xlsx(df) -> bytes | None:
         return None
 
 
+CAVEAT = (
+    "The planted gaps were found after one prompt revision on this same policy, so this is a "
+    "tuned result, not an independent test. Of a 20-finding sample beyond the planted gaps, all "
+    "were factually correct but about 11 belong in a validation policy."
+)
+
+
 def gap_tab() -> None:
     import pandas as pd
 
@@ -38,10 +45,12 @@ def gap_tab() -> None:
         "against an obligation register extracted from the CRR, RTS, EBA guidelines and the ECB "
         "guide. Each verdict cites the policy clause and quotes it; quotes are verified in code."
     )
-    path = latest_result()
-    if path is None:
+    runs = list_runs()
+    if not runs:
         st.info("No gap analysis run yet. Run `reglens gap --yes` first.")
         return
+    run = st.selectbox("Run", runs, format_func=lambda r: r["label"])
+    path = run["path"]
     data = json.loads(path.read_text(encoding="utf-8"))
     rows = data["rows"]
     df = pd.DataFrame(rows)
@@ -53,10 +62,15 @@ def gap_tab() -> None:
                                   "other_document", "not_applicable"], strict=True):
         col.metric(LABELS[status], int(counts.get(status, 0)))
     if data.get("recall") is not None:
+        incomplete = "" if data.get("complete", True) else (
+            f" **Incomplete run:** only {data.get('gaps_assessed')} of {data['gaps']} "
+            "gaps assessed."
+        )
         st.markdown(
             f"**Planted gaps found:** {data['recall']:.0%} of {data['gaps']} "
-            f"(by type: {data['by_type']}); type accuracy {data['type_accuracy']:.0%}."
+            f"(by type: {data['by_type']}).{incomplete}"
         )
+        st.caption(CAVEAT)
 
     with st.expander("Planted gaps (answer key)"):
         for g in data.get("per_gap", []):

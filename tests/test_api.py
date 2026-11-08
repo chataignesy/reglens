@@ -19,6 +19,12 @@ def client():
     return TestClient(api.app)
 
 
+class FakeProvider:
+    def with_cancel(self, token):
+        self.cancel = token
+        return self
+
+
 def events(body: str) -> list[tuple[str, dict]]:
     out = []
     for block in body.strip().split("\n\n"):
@@ -44,7 +50,7 @@ def test_ask_streams_progress_then_result(client, monkeypatch):
 
     def fake_provider(cfg, access, key):
         seen_key["key"] = key
-        return object()
+        return FakeProvider()
 
     def fake_run(req, provider, emit):
         emit({"stage": "retrieved", "passages": 8})
@@ -64,7 +70,7 @@ def test_ask_streams_progress_then_result(client, monkeypatch):
 
 
 def test_ask_reports_errors_without_details(client, monkeypatch):
-    monkeypatch.setattr(api, "_provider", lambda *a: object())
+    monkeypatch.setattr(api, "_provider", lambda *a: FakeProvider())
 
     def boom(req, provider, emit):
         raise RuntimeError("secret sk-test-not-real in a message")
@@ -108,3 +114,29 @@ def test_gap_endpoints(client, monkeypatch, tmp_path):
     assert "OB-1" in csv.content.decode("utf-8-sig") and "§15.1" in csv.text
     xlsx = client.get("/api/gap/export?format=xlsx")
     assert xlsx.content[:2] == b"PK"  # a zip container, i.e. a real .xlsx
+
+
+def test_busy_server_refuses_more_questions(client, monkeypatch):
+    monkeypatch.setattr(api, "_provider", lambda *a: FakeProvider())
+    monkeypatch.setattr(api, "_run", lambda req, provider, emit: {"answer": "ok"})
+    held = [api._slots.acquire(blocking=False) for _ in range(api.MAX_CONCURRENT)]
+    try:
+        r = client.post("/api/ask", json={"question": "What is the PD floor?"},
+                        headers={"X-Anthropic-Key": "sk-test-not-real"})
+        assert r.status_code == 429 and "Busy" in r.json()["detail"]
+    finally:
+        for ok in held:
+            if ok:
+                api._slots.release()
+    r = client.post("/api/ask", json={"question": "What is the PD floor?"},
+                    headers={"X-Anthropic-Key": "sk-test-not-real"})
+    assert events(r.text)[-1] == ("result", {"answer": "ok"})  # the slot came back
+
+
+def test_liveness_and_readiness(client, monkeypatch):
+    assert client.get("/api/health").json() == {"ok": True}
+    monkeypatch.setitem(api.WARMUP, "state", "failed")
+    monkeypatch.setitem(api.WARMUP, "error", "OSError: no GPU")
+    r = client.get("/api/ready")
+    assert r.status_code == 503 and r.json()["models"] == "failed"
+    assert r.json()["error"]

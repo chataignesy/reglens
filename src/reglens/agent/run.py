@@ -295,9 +295,11 @@ def answer_agentic(
         except LLMError as e:
             if "max_budget" not in str(e):
                 raise
-            # claude -p stops without an answer at --max-budget-usd: report it, don't crash
+            # claude -p stops without an answer at --max-budget-usd: report it, don't crash;
+            # the tokens it spent are counted (and were logged to the ledger by the provider)
             text, model, trace = "", None, []
-            errors.append(AGENT_CAP_ERROR)
+            tokens += e.tokens or 0
+            errors.append(AGENT_CAP_ERROR + ("" if e.tokens is not None else " (usage unknown)"))
 
     ans = Answer(
         question, False, "", "", [], [], "", model=model, usage_tokens=tokens, trace=trace

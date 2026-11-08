@@ -11,28 +11,32 @@ or returned. Local runs can use the Claude subscription instead (`billing: subsc
 
 from __future__ import annotations
 
+import asyncio
 import io
 import json
 import os
 import queue
 import re
 import threading
-from collections.abc import Iterator
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import replace
 from typing import Literal
 
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response, StreamingResponse
 from pydantic import BaseModel, Field
 
 from reglens.answer.pipeline import LEVEL_LABEL, Answer
 from reglens.answer.verify import check_answer
+from reglens.cancel import Cancelled, CancelToken
 from reglens.config import load_config
 from reglens.llm.provider import AnthropicAPIProvider, ClaudeCLIProvider, LLMError
 from reglens.retrieve.search import Filters
 from reglens.ui.content import DISCLAIMER, EXAMPLES
+
+WARMUP: dict = {"state": "not started", "error": None}
 
 
 @asynccontextmanager
@@ -44,10 +48,17 @@ async def lifespan(_app: FastAPI):
         def load() -> None:
             from reglens.index.embed import embedder, reranker
 
-            embedder()
-            reranker()
+            WARMUP.update(state="loading", error=None)
+            try:
+                embedder()
+                reranker()
+                WARMUP["state"] = "ready"
+            except Exception as e:  # reported by /api/ready, not lost in a background thread
+                WARMUP.update(state="failed", error=f"{type(e).__name__}: {e}"[:300])
 
         threading.Thread(target=load, daemon=True).start()
+    else:
+        WARMUP["state"] = "skipped"
     yield
 
 
@@ -74,7 +85,26 @@ class AskRequest(BaseModel):
 
 @app.get("/api/health")
 def health() -> dict:
+    """Liveness: the process answers HTTP."""
     return {"ok": True}
+
+
+@app.get("/api/ready")
+def ready() -> Response:
+    """Readiness: models loaded and the database reachable (503 until then)."""
+    db_ok, db_error = True, None
+    try:
+        from reglens.index import db
+
+        with db.connect() as conn:
+            conn.execute("SELECT 1 FROM chunks LIMIT 1")
+    except Exception as e:
+        db_ok, db_error = False, type(e).__name__
+    models_ok = WARMUP["state"] in ("ready", "skipped")
+    body = {"ready": db_ok and models_ok, "models": WARMUP["state"], "database": db_ok,
+            "error": WARMUP.get("error") or db_error, "busy": MAX_CONCURRENT - _slots._value}
+    return Response(json.dumps(body), status_code=200 if body["ready"] else 503,
+                    media_type="application/json")
 
 
 @app.get("/api/meta")
@@ -189,31 +219,66 @@ def _sse(event: str, data: dict) -> str:
     return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
 
 
+MAX_CONCURRENT = 2  # questions answered at once: they share the GPU models and provider quota
+_slots = threading.BoundedSemaphore(MAX_CONCURRENT)
+
+
 @app.post("/api/ask")
-def ask(req: AskRequest, x_anthropic_key: str | None = Header(default=None)) -> StreamingResponse:
-    provider = _provider(load_config(), req.access, x_anthropic_key)
+def ask(
+    req: AskRequest, request: Request, x_anthropic_key: str | None = Header(default=None)
+) -> StreamingResponse:
+    """Streams progress and the answer. When the client disconnects (Stop, closed tab), the
+    question is cancelled: no further model call or tool call starts and a running
+    `claude -p` process is killed (see reglens/cancel.py)."""
+    if not _slots.acquire(blocking=False):
+        raise HTTPException(429, f"Busy: {MAX_CONCURRENT} questions are being answered. "
+                                 "Try again shortly.")
+    token = CancelToken()
+    try:
+        provider = _provider(load_config(), req.access, x_anthropic_key).with_cancel(token)
+    except BaseException:
+        _slots.release()
+        raise
     events: queue.Queue = queue.Queue()
+
+    def emit(event: dict) -> None:
+        if not token.cancelled:
+            events.put(("progress", event))
 
     def work() -> None:
         try:
-            events.put(("result", _run(req, provider, lambda e: events.put(("progress", e)))))
+            events.put(("result", _run(req, provider, emit)))
+        except Cancelled:
+            pass  # nobody is listening any more
         except LLMError as e:
             events.put(("error", {"message": str(e)}))
         except Exception as e:  # never leak the request (or its key) into the message
             events.put(("error", {"message": f"Internal error ({type(e).__name__})."}))
+        finally:
+            _slots.release()
 
     threading.Thread(target=work, daemon=True).start()
 
-    def stream() -> Iterator[str]:
-        while True:
-            try:
-                kind, data = events.get(timeout=15)
-            except queue.Empty:
-                yield ": keep-alive\n\n"  # long agent runs: keep proxies from closing the stream
-                continue
-            yield _sse(kind, data)
-            if kind in ("result", "error"):
-                return
+    async def stream() -> AsyncIterator[str]:
+        idle = 0.0
+        try:
+            while True:
+                if await request.is_disconnected():
+                    return
+                try:
+                    kind, data = await asyncio.to_thread(events.get, timeout=1)
+                except queue.Empty:
+                    idle += 1
+                    if idle >= 15:  # long agent runs: keep proxies from closing the stream
+                        idle = 0
+                        yield ": keep-alive\n\n"
+                    continue
+                idle = 0
+                yield _sse(kind, data)
+                if kind in ("result", "error"):
+                    return
+        finally:
+            token.cancel()  # a no-op once the work is done; stops it if the client left
 
     headers = {"Cache-Control": "no-cache", "X-Accel-Buffering": "no"}
     return StreamingResponse(stream(), media_type="text/event-stream", headers=headers)

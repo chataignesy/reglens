@@ -17,6 +17,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Protocol
 
+from reglens.cancel import Cancelled
 from reglens.config import Config
 from reglens.llm.ledger import Ledger, Usage
 
@@ -24,7 +25,11 @@ DEFAULT_SYSTEM = "You are a precise assistant for EU credit risk regulation."
 
 
 class LLMError(RuntimeError):
-    pass
+    """A failed call. `tokens` is what the failed call reported spending (None: unknown)."""
+
+    def __init__(self, message: str, *, tokens: int | None = None):
+        super().__init__(message)
+        self.tokens = tokens
 
 
 @dataclass(frozen=True)
@@ -72,6 +77,16 @@ class ClaudeCLIProvider:
         self.executable = executable
         self.timeout_s = timeout_s
         self.runner = runner
+        self.cancel = None  # a reglens.cancel.CancelToken: checked before every call
+
+    def with_cancel(self, token) -> ClaudeCLIProvider:
+        """Same settings, but the subprocess is killed when `token` is cancelled."""
+        from reglens.cancel import cancellable_runner
+
+        clone = ClaudeCLIProvider(self.config, self.ledger, executable=self.executable,
+                                  timeout_s=self.timeout_s, runner=cancellable_runner(token))
+        clone.cancel = token
+        return clone
 
     def complete(
         self,
@@ -84,6 +99,8 @@ class ClaudeCLIProvider:
         extra_args: list[str] | None = None,
     ) -> Completion:
         """`extra_args` are appended to the `claude -p` command (e.g. --mcp-config)."""
+        if self.cancel is not None:
+            self.cancel.check()
         model = self.config.model(tier)
         # System prompt goes via a file to stay clear of Windows command-line length limits.
         with tempfile.NamedTemporaryFile("w", suffix=".txt", encoding="utf-8", delete=False) as f:
@@ -120,7 +137,14 @@ class ClaudeCLIProvider:
                 # behind ToolSearch, which `--tools ""` removes, so the agent sees no tools.
                 env=os.environ | {"ENABLE_TOOL_SEARCH": "false"},
             )
+        except Cancelled:
+            # killed mid-call: it may have spent tokens, but reported none (unknown, not zero)
+            self.ledger.record(model, Usage(0, 0), purpose=purpose, outcome="cancelled",
+                               usage_known=False)
+            raise
         except subprocess.TimeoutExpired as e:
+            self.ledger.record(model, Usage(0, 0), purpose=purpose, outcome="timeout",
+                               usage_known=False)
             raise LLMError(f"claude -p timed out after {self.timeout_s}s") from e
         finally:
             os.unlink(system_file)
@@ -128,11 +152,16 @@ class ClaudeCLIProvider:
         try:
             out = json.loads(proc.stdout)
         except json.JSONDecodeError as e:
+            self.ledger.record(model, Usage(0, 0), purpose=purpose, outcome="no_result",
+                               usage_known=False)
             raise LLMError(
                 f"claude -p returned non-JSON (exit {proc.returncode}): {proc.stderr[-500:]}"
             ) from e
         if out.get("is_error") or out.get("subtype") != "success":
-            raise LLMError(f"claude -p failed: {out.get('subtype')}: {out.get('result')}")
+            # a failed call (e.g. the --max-budget-usd cap) still spent tokens: log them
+            outcome = str(out.get("subtype") or "error")
+            tokens = self._log(out, model, purpose, outcome=outcome)
+            raise LLMError(f"claude -p failed: {outcome}: {out.get('result')}", tokens=tokens)
 
         self._log(out, model, purpose)
         return Completion(
@@ -142,24 +171,34 @@ class ClaudeCLIProvider:
             stop_reason=out.get("stop_reason"),
         )
 
-    def _log(self, out: dict, model: str, purpose: str) -> None:
-        # One ledger entry per model actually used (Claude Code may call helper models).
+    def _log(self, out: dict, model: str, purpose: str, *, outcome: str = "ok") -> int | None:
+        """One ledger entry per model actually used (Claude Code may call helper models).
+        Returns the tokens logged, or None when the reply carried no usage (unknown)."""
         model_usage = out.get("modelUsage") or {}
         if not model_usage:
+            known = bool(out.get("usage"))
+            usage = Usage.from_response(out.get("usage") or {})
             self.ledger.record(
                 model,
-                Usage.from_response(out.get("usage") or {}),
+                usage,
                 purpose=purpose,
                 reported_cost_usd=out.get("total_cost_usd"),
+                outcome=outcome,
+                usage_known=known,
             )
-            return
+            return usage.total_tokens if known else None
+        total = 0
         for name, raw in model_usage.items():
+            usage = _usage_from_model_usage(raw)
+            total += usage.total_tokens
             self.ledger.record(
                 name,
-                _usage_from_model_usage(raw),
+                usage,
                 purpose=purpose,
                 reported_cost_usd=raw.get("costUSD"),
+                outcome=outcome,
             )
+        return total
 
 
 FALLBACK_BETA = "server-side-fallback-2026-07-01"  # with fallbacks="default"
@@ -190,6 +229,11 @@ class AnthropicAPIProvider:
             # api_key=None lets the SDK resolve ANTHROPIC_API_KEY or an `ant auth login` profile
             client = anthropic.Anthropic(api_key=api_key) if api_key else anthropic.Anthropic()
         self.client = client
+        self.cancel = None  # a reglens.cancel.CancelToken: no new request once it is set
+
+    def with_cancel(self, token) -> AnthropicAPIProvider:
+        self.cancel = token
+        return self
 
     def complete(
         self,
@@ -219,11 +263,16 @@ class AnthropicAPIProvider:
         tier: str | None = None,
         effort: str | None = None,
         tools: list[dict] | None = None,
+        tool_choice: dict | None = None,
     ) -> tuple:
         """One Messages API call (any number of turns, optional tools), logged to the ledger.
-        Returns (response, Usage, served model). Raises LLMError on API errors and refusals."""
+        `tool_choice={"type": "none"}` keeps the tools defined but forbids calling them (a
+        final turn). Returns (response, Usage, served model). Raises LLMError on API errors
+        and refusals."""
         import anthropic
 
+        if self.cancel is not None:
+            self.cancel.check()
         model = self.config.model(tier)
         kwargs: dict = {
             "model": model,
@@ -240,6 +289,8 @@ class AnthropicAPIProvider:
         }
         if tools:
             kwargs["tools"] = tools
+        if tool_choice:
+            kwargs["tool_choice"] = tool_choice
         if effort:
             kwargs["output_config"] = {"effort": effort}
         try:

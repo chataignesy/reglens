@@ -99,6 +99,8 @@ class Ledger:
         batch: bool = False,
         phase: int | None = None,
         reported_cost_usd: float | None = None,
+        outcome: str = "ok",
+        usage_known: bool = True,
     ) -> dict:
         """Append one call to the ledger and return the stored entry.
 
@@ -119,7 +121,10 @@ class Ledger:
             "total_tokens": usage.total_tokens,
             "cost_eur": None if eur is None else round(eur, 6),
             "reported_cost_usd": reported_cost_usd,
+            "outcome": outcome,  # "ok", or why the call failed (it may still have spent tokens)
         }
+        if not usage_known:
+            entry["usage_known"] = False  # the failed call reported no usage: not zero, unknown
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self.path.open("a", encoding="utf-8") as f:
             f.write(json.dumps(entry) + "\n")

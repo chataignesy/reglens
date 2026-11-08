@@ -84,28 +84,52 @@ def test_loop_runs_tools_and_answers(setup):
     assert len(Ledger(setup).entries()) == 2  # every model call is logged
 
 
-def test_loop_enforces_tool_and_turn_limits(setup):
+def test_call_limit_makes_the_next_turn_final_without_tools(setup):
     client = FakeClient([_response("tool_use", [_tool_use(1)])])  # never stops calling tools
     provider = AnthropicAPIProvider(setup, client=client)
     text, trace, tokens, model, errors = loop.run_api_agent(
         None, provider, "q", system="SYS", tier="dev", effort=None,
-        max_calls=2, max_turns=4, max_tokens=200_000,
+        max_calls=2, max_turns=13, max_tokens=200_000,
     )
-    assert len(client.calls) == 4  # hard stop on turns
-    assert len(trace) == 2  # no tool runs after the limit
-    assert text == "" and errors == ["agent did not finish within 4 turns"]
-    last_user = client.calls[-1]["messages"][-1]["content"]
-    assert last_user[-1]["text"] == loop.STOP_NOTE
-    assert any(b.get("content") == loop.STOP_NOTE for b in last_user if b["type"] == "tool_result")
+    assert len(trace) == 2 and len(client.calls) == 3  # 2 tool rounds, then one final turn
+    assert "tool_choice" not in client.calls[1]
+    final = client.calls[2]
+    assert final["tool_choice"] == {"type": "none"}  # tools forbidden on the final turn
+    assert final["messages"][-1]["content"][-1]["text"] == loop.STOP_NOTE
+    assert text == "" and errors == ["agent asked for tools on its final turn"]
 
 
-def test_loop_stops_on_token_cap(setup):
+def test_reserve_forces_the_final_turn_before_the_budget(setup):
+    """Review F8: the budget is checked before a request, not after it."""
+    client = FakeClient([_response("tool_use", [_tool_use(1)]),
+                         _response("end_turn", [_Obj(type="text", text=json.dumps(FINAL))])])
+    provider = AnthropicAPIProvider(setup, client=client)
+    text, _, tokens, _, errors = loop.run_api_agent(
+        None, provider, "q", system="SYS", tier="dev", effort=None,
+        max_calls=10, max_turns=13, max_tokens=4000)
+    # after 1,600 tokens another tool round (~2,080) would eat the 800-token final reserve
+    assert client.calls[1]["tool_choice"] == {"type": "none"}
+    assert client.calls[1]["messages"][-1]["content"][-1]["text"] == loop.STOP_NOTE
+    assert json.loads(text) == FINAL and tokens == 3200 and errors == []
+
+
+def test_no_request_once_the_budget_is_spent(setup):
+    client = FakeClient([_response("tool_use", [_tool_use(1)])])
+    provider = AnthropicAPIProvider(setup, client=client)
+    text, _, tokens, _, errors = loop.run_api_agent(
+        None, provider, "q", system="SYS", tier="dev", effort=None,
+        max_calls=10, max_turns=13, max_tokens=1000)
+    assert len(client.calls) == 1 and tokens == 1600 and text == ""
+    assert errors == ["token budget (1,000) spent before the final answer"]
+
+
+def test_last_turn_is_final(setup):
     client = FakeClient([_response("tool_use", [_tool_use(1)]),
                          _response("end_turn", [_Obj(type="text", text=json.dumps(FINAL))])])
     provider = AnthropicAPIProvider(setup, client=client)
     loop.run_api_agent(None, provider, "q", system="SYS", tier="dev", effort=None,
-                       max_calls=10, max_turns=13, max_tokens=1000)
-    assert client.calls[1]["messages"][-1]["content"][-1]["text"] == loop.STOP_NOTE
+                       max_calls=10, max_turns=2, max_tokens=200_000)
+    assert client.calls[1]["tool_choice"] == {"type": "none"}
 
 
 def test_bad_tool_arguments_become_error_results(setup):

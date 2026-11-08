@@ -157,16 +157,25 @@ the same checker applies to agent answers.
 
 **5.2a Two runtimes, one agent.** The same prompt, tools and citation keys run in two places:
 - *Development:* Claude Code (`claude -p`) drives the loop over the RegLens MCP server, on the
-  Claude subscription; the tool server enforces 10 tool calls and the CLI caps cost.
-- *Bring your own key (choose "Your API key" in the web UI):* RegLens runs the loop itself on the **Anthropic Messages
-  API** (documented manual tool-use loop, tools executed in-process). Limits are enforced in
-  RegLens code: 10 tool calls, 13 model turns as a hard stop, 200k tokens per question; at a
-  limit the agent is told to answer with what it has. Each turn adds a cache breakpoint so the
-  growing conversation is read from cache, and every call is logged to the ledger.
+  Claude subscription. A fresh tool server per question enforces 10 tool calls, and the CLI's
+  `--max-budget-usd` caps the cost (a dollar cap, not a token cap). A run stopped at the cap
+  still has its tokens logged, and the question is answered single-pass instead.
+- *Bring your own key (choose "Your API key" in the web UI):* RegLens runs the loop itself on
+  the **Anthropic Messages API** (documented manual tool-use loop, tools executed in-process).
+  Limits are checked *before* each request: 10 tool calls, 13 turns, 200k tokens per agent
+  run with a fifth kept for the final answer. The final turn is sent with
+  `tool_choice: none`, so the model must answer and cannot keep calling tools, and no request
+  starts once the budget is spent. Routed questions also count the router and any single-pass
+  attempt. Each turn adds a cache breakpoint so the growing conversation is read from cache,
+  and every call is logged to the ledger.
+- *Stop means stop:* when the browser disconnects (the Stop button, a closed tab), no new model
+  or tool call starts and a running `claude -p` process is killed. At most two questions run
+  at once. `/api/health` is liveness; `/api/ready` reports the model warm-up and the database.
 
 **5.3 Tools exposed as an MCP server.** The same tools run as a **Model Context Protocol**
 server (stdio), so any MCP client — Claude Desktop, Claude Code, other agents — can query the
-corpus. *Tools:* `mcp` Python SDK.
+corpus. A long-lived server has no process-wide call cap: question budgets belong to the agent
+runtime. *Tools:* `mcp` Python SDK.
 
 **5.4 A stopping rule: check the legal basis.** Before answering, the agent must read the CRR or
 RTS provisions its passages cite, and search for the law when it only has guidelines.

@@ -137,7 +137,7 @@ class Toolbox:
         self,
         conn,
         *,
-        max_calls: int = 10,
+        max_calls: int | None = 10,
         snippet_chars: int = 2000,
         passage_chars: int = 4000,
         result_chars: int = 14000,
@@ -152,8 +152,9 @@ class Toolbox:
         self.last_shown = 0
 
     def _budget(self) -> str | None:
+        """None while calls remain (or without a cap: `max_calls=None`), else the stop note."""
         self.calls += 1
-        if self.calls > self.max_calls:
+        if self.max_calls is not None and self.calls > self.max_calls:
             return (
                 f"Tool budget exhausted ({self.max_calls} calls). Answer now with the "
                 "passages you already have, and say what is missing."

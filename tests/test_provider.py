@@ -79,11 +79,24 @@ def test_one_ledger_entry_per_model_used(cfg):
     assert {e["model"] for e in Ledger(cfg).entries()} == {"claude-sonnet-5-5", "claude-haiku-5-5"}
 
 
-def test_error_result_raises_and_logs_nothing(cfg):
-    bad = dict(SAMPLE, is_error=True, subtype="error_during_execution")
-    with pytest.raises(LLMError):
+def test_failed_call_still_logs_its_usage(cfg):
+    """Review D9: a call stopped at its budget cap spent tokens; the ledger must show them."""
+    bad = {"is_error": True, "subtype": "error_max_budget_usd",
+           "usage": {"input_tokens": 1000, "output_tokens": 100}}
+    with pytest.raises(LLMError) as err:
         ClaudeCLIProvider(cfg, runner=fake_runner(json.dumps(bad))).complete("q", purpose="p")
-    assert Ledger(cfg).entries() == []
+    assert err.value.tokens == 1100
+    [entry] = Ledger(cfg).entries()
+    assert entry["outcome"] == "error_max_budget_usd" and entry["total_tokens"] == 1100
+
+
+def test_failed_call_without_usage_is_unknown_not_zero(cfg):
+    bad = {"is_error": True, "subtype": "error_during_execution"}
+    with pytest.raises(LLMError) as err:
+        ClaudeCLIProvider(cfg, runner=fake_runner(json.dumps(bad))).complete("q", purpose="p")
+    assert err.value.tokens is None
+    [entry] = Ledger(cfg).entries()
+    assert entry["usage_known"] is False and entry["outcome"] == "error_during_execution"
 
 
 def test_non_json_output_raises(cfg):
@@ -91,6 +104,7 @@ def test_non_json_output_raises(cfg):
         ClaudeCLIProvider(cfg, runner=fake_runner("not json", returncode=1)).complete(
             "q", purpose="p"
         )
+    assert Ledger(cfg).entries()[0]["usage_known"] is False
 
 
 def test_get_provider_by_billing(cfg):

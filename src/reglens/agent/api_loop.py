@@ -154,13 +154,34 @@ def run_api_agent(
     max_tokens: int,
     progress=None,
 ) -> tuple[str, list[dict], int, str, list[str]]:
-    """Run the loop. Returns (final text, tool trace, total tokens, model, errors)."""
+    """Run the loop. Returns (final text, tool trace, total tokens, model, errors).
+
+    Limits are enforced BEFORE each request (review F8):
+    - a request is sent only if the tokens spent so far plus the expected size of that request
+      (the previous request grows by its tool results; 1.3x as margin) stay within
+      `max_tokens` minus a reserve for the final answer; otherwise that turn is the final one;
+    - the final turn (call budget used, reserve reached, or last turn) is sent with
+      `tool_choice: none`, so the model must answer and cannot keep calling tools;
+    - once `max_tokens` is spent, no request is sent at all.
+    The only overshoot possible is the final answer request itself exceeding its reserve.
+    """
     box = Toolbox(conn, max_calls=max_calls)
     messages: list[dict] = [{"role": "user", "content": question}]
     trace: list[dict] = []
     tokens, model, errors = 0, "", []
+    reserve = max(max_tokens // 5, 1)  # kept for the final answer
+    last = 0  # tokens of the previous request: the next one is at least that big
     stop = False  # set once a limit is reached: the next turn must answer
     for turn in range(max_turns):
+        if tokens >= max_tokens:
+            errors.append(f"token budget ({max_tokens:,}) spent before the final answer")
+            return "", trace, tokens, model, errors
+        if not stop and (
+            tokens + int(last * 1.3) > max_tokens - reserve or turn + 1 >= max_turns
+        ):
+            stop = True  # no room for another tool round: this turn answers
+            if turn:
+                messages[-1]["content"].append({"type": "text", "text": STOP_NOTE})
         response, usage, model = provider.create(
             _with_cache(messages),
             purpose="agent",
@@ -168,32 +189,29 @@ def run_api_agent(
             tier=tier,
             effort=effort,
             tools=TOOL_SCHEMAS,
+            tool_choice={"type": "none"} if stop else None,
         )
         tokens += usage.total_tokens
+        last = usage.total_tokens
         if response.stop_reason != "tool_use":
             text = "".join(b.text for b in response.content if getattr(b, "type", "") == "text")
             return text, trace, tokens, model, errors
+        if stop:  # tools were forbidden on this turn
+            errors.append("agent asked for tools on its final turn")
+            return "", trace, tokens, model, errors
 
         messages.append({"role": "assistant", "content": response.content})
         results: list[dict] = []
         for block in (b for b in response.content if getattr(b, "type", "") == "tool_use"):
-            if stop:
-                out, err = STOP_NOTE, True
-            else:
-                out, values = _run_tool(box, block.name, dict(block.input or {}))
-                err = out.startswith(("Tool error", "Unknown tool"))
-                trace.append(trace_entry(box.calls, block.name, values, out))
-                if progress:
-                    progress({"stage": "tool"} | trace[-1])
+            out, values = _run_tool(box, block.name, dict(block.input or {}))
+            err = out.startswith(("Tool error", "Unknown tool"))
+            trace.append(trace_entry(box.calls, block.name, values, out))
+            if progress:
+                progress({"stage": "tool"} | trace[-1])
             results.append(
                 {"type": "tool_result", "tool_use_id": block.id, "content": out, "is_error": err}
             )
-        stop = (
-            stop
-            or box.calls >= max_calls
-            or tokens >= max_tokens
-            or turn + 2 >= max_turns  # the next turn is the last one
-        )
+        stop = box.calls >= max_calls
         if stop:
             results.append({"type": "text", "text": STOP_NOTE})
         messages.append({"role": "user", "content": results})

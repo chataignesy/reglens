@@ -227,10 +227,19 @@ say the same thing.
 
 **6.2 Evaluation in tiers, cheapest first.**
 1. Retrieval metrics (recall@k, hit@k, MRR) — no LLM, run on every change.
-2. Deterministic answer metrics: citation recall, claims passing the checker, abstention.
+2. Deterministic answer metrics: citation recall (a range needs every paragraph, document parts
+   must match), mechanical check pass rate, abstention.
 3. An LLM judge (Haiku, low effort, ~2k tokens per answer) scoring correctness 0 / 1 / 2 against
-   the expert answer, cached by answer, judge and reference version.
+   the expert answer, cached by the exact question, reference and answer text.
 4. Router accuracy against question types.
+
+**6.2a Reproducible runs.** An eval run goes through the same routing code as the app
+(`answer.route.dispatch`) and writes a manifest: for every question, the exact answer file
+(with its SHA-256), the route plan, every attempt and all tokens, including the router and
+failed attempts. The judge grades one manifest (`reglens judge --run <id>`), so a headline
+score points to an immutable run. Answers are cached under a fingerprint of the code, model,
+settings, corpus generation and question text, so a changed input is answered again rather
+than mixed with old results.
 
 **6.3 Variance is measured, not assumed.** `--repeat N` re-runs the agent into a separate cache.
 Two identical runs differed by a point on individual questions, so conclusions are drawn on

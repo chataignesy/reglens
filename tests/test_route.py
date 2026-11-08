@@ -1,4 +1,5 @@
 import json
+from dataclasses import replace
 
 import reglens.agent.run as agent_run
 import reglens.answer.route as route
@@ -60,15 +61,32 @@ def test_router_eval_metrics(monkeypatch, tmp_path):
 
     items = [item("f1", "factual"), item("m1", "multi_hop"), item("m2", "multi_hop"),
              item("o1", "out_of_scope")]
-    fake = FakeRouter(['{"route": "single"}', '{"route": "agent"}', '{"route": "single"}'])
-    s = eval_route.run(fake, items, log=lambda m: None)
+    fake = FakeRouter(['{"route": "single"}', '{"route": "agent"}', '{"route": "single"}',
+                       '{"route": "single"}'])
+    s = eval_route.run(fake, items, log=lambda m: None)  # out-of-scope routed too, not scored
     assert s["items"] == 3 and s["accuracy"] == 0.667
     assert s["agent_recall"] == 0.5 and s["agent_precision"] == 1.0
     assert [m["id"] for m in s["misrouted"]] == ["m2"]
-    assert eval_route.cached_routes() == {"f1": "single", "m1": "agent", "m2": "single"}
+    routes = {k: v["route"] for k, v in eval_route.cached_routes(items).items()}
+    assert routes == {"f1": "single", "m1": "agent", "m2": "single", "o1": "single"}
     assert json.loads((tmp_path / "routes" / "m1.json").read_text())["route"] == "agent"
     eval_route.run(fake, items, log=lambda m: None)  # cached: no further calls
-    assert len(fake.calls) == 3
+    assert len(fake.calls) == 4
+    edited = [replace(items[1], question="A reworded question?")]
+    assert eval_route.cached_routes(edited) == {}  # an edited question is routed again
+
+
+def test_dispatch_is_shared_and_keeps_single_pass_when_fallback_fails():
+    single = {"answer": "partial", "errors": [], "missing_info": True, "usage_tokens": 100}
+    failed = {"answer": "", "errors": ["cost cap"], "usage_tokens": 9000}
+    final, out = route.dispatch("single", "one lookup", 900, single=lambda: single,
+                                agent=lambda: failed)
+    assert final is single and out["route"] == "single"
+    assert out["attempts"] == ["single", "agent"] and out["tokens"] == 100 + 9000 + 900
+    good = {"answer": "full", "errors": [], "usage_tokens": 5000}
+    final, out = route.dispatch("agent", "chain", 900, single=lambda: single,
+                                agent=lambda: good)
+    assert final is good and out["attempts"] == ["agent"] and out["tokens"] == 5900
 
 
 def test_single_pass_gap_falls_back_to_agent(monkeypatch):

@@ -61,7 +61,8 @@ class Answer:
     def to_dict(self) -> dict:
         d = asdict(self)
         d["context"] = [
-            {"id": h.id, "ref": h.ref, "source_id": h.source_id, "score": h.score}
+            {"id": h.id, "ref": h.ref, "source_id": h.source_id, "title": h.title,
+             "score": h.score}
             for h in self.context
         ]
         return d

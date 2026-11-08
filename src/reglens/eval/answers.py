@@ -1,13 +1,20 @@
-"""Answer-level evaluation on the golden set (deterministic metrics, no LLM judge yet).
+"""Answer-level evaluation on the golden set (deterministic metrics; the LLM judge is separate).
 
 Metrics per run:
 - abstention accuracy: out-of-scope items abstain, in-scope items answer
-- citation recall: share of expected citations (or accepted alternatives) the answer cites
-- supported rate: share of claims passing the deterministic citation check
-- tokens: from the provider usage of each call
+- citation recall: credit per expected citation (ranges need all members, parts must match;
+  see eval/citations.py)
+- mechanical check pass rate: share of claims passing the deterministic citation checks
+- tokens: every call, including the router and failed attempts
 
-Answers are cached in data/evals/answers/<prompt version>/<item id>.json, so re-running an
-unchanged set costs no tokens; delete the folder (or bump PROMPT_VERSION) to re-ask.
+Caching (F4): answers live in data/evals/answers/<namespace>/<item id>-<question hash>.json,
+where the namespace fingerprints the code, model, settings and corpus generation (see
+eval/fingerprint.py), so a changed question, prompt, model or corpus is answered again.
+
+Run manifests (D7): every run writes data/evals/runs/<run id>.json listing, per item, the exact
+answer artifact (path + SHA-256), the route plan and every attempt. `reglens judge --run <id>`
+grades exactly that manifest. Routed runs go through `answer.route.dispatch`, the same
+fallback logic the app uses.
 """
 
 from __future__ import annotations
@@ -18,55 +25,53 @@ import os
 from datetime import datetime
 
 from reglens.answer.pipeline import Answer, answer_question
-from reglens.answer.prompts import SYSTEM
+from reglens.answer.route import ROUTER_VERSION, dispatch, gate_abstains
 from reglens.answer.verify import check_answer
 from reglens.config import PROJECT_ROOT, Config
+from reglens.eval.citations import credit
+from reglens.eval.fingerprint import namespace, question_hash
 from reglens.eval.golden import GoldenItem
-from reglens.eval.retrieval import normalize_refs, refs_match
+from reglens.eval.retrieval import normalize_refs
 from reglens.llm.provider import LLMError
 
 ANSWER_DIR = PROJECT_ROOT / "data" / "evals" / "answers"
-PROMPT_VERSION = hashlib.sha256(SYSTEM.encode()).hexdigest()[:8]
+RUNS_DIR = PROJECT_ROOT / "data" / "evals" / "runs"
 
 
-def answer_version(agent: bool = False) -> str:
-    """Cache namespace: the single-pass prompt hash, or 'agent-<hash of agent code>'."""
-    if not agent:
-        return PROMPT_VERSION
-    from reglens.agent import run, tools
-
-    src = run.AGENT_SYSTEM + open(tools.__file__, encoding="utf-8").read()
-    src += open(run.__file__, encoding="utf-8").read()  # key resolution changes answers too
+def answer_version(config: Config, conn, agent: bool = False) -> str:
+    """Cache namespace of one answering mode (see eval/fingerprint.py)."""
+    opts = dict(config.answer or {})
+    if agent:
+        opts |= dict(config.agent or {})
+    model = config.model(opts.get("tier", "dev"))
     repeat = int(os.environ.get("REGLENS_REPEAT", "1"))  # repeat runs get their own cache
-    suffix = f"-r{repeat}" if repeat > 1 else ""
-    return "agent-" + hashlib.sha256(src.encode()).hexdigest()[:8] + suffix
+    suffix = f"-r{repeat}" if repeat > 1 and agent else ""
+    return namespace("agent" if agent else "single", conn, model, opts, suffix)
 
 
-def _cited_refs(record: dict) -> list[tuple[str, str]]:
-    ctx = record["context"]
+def artifact_name(item: GoldenItem) -> str:
+    return f"{item.id}-{question_hash(item.question)}.json"
+
+
+def file_sha(path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _cited(record: dict) -> list[tuple[str, str | None, str]]:
+    """(source, part, normalised ref) of every passage the answer cites."""
     cited = {c for cl in record["claims"] for c in cl["citations"]}
     out = []
-    for i, h in enumerate(ctx, 1):
+    for i, h in enumerate(record["context"], 1):
         if f"C{i}" in cited:
             refs = normalize_refs(h["ref"])
-            out.append((h["source_id"], refs[0] if refs else h["ref"]))
+            out.append((h["source_id"], h.get("title"), refs[0] if refs else h["ref"]))
     return out
 
 
 def citation_recall(item: GoldenItem, record: dict) -> float | None:
-    cited = _cited_refs(record)
-    wanted = [
-        [(c.source, r) for r in normalize_refs(c.ref)]
-        + [(a.source, r) for a in c.alternatives for r in normalize_refs(a.ref)]
-        for c in item.expected_citations
-    ]
-    wanted = [w for w in wanted if w]
-    if not wanted:
-        return None
-    found = sum(
-        any(s == ws and refs_match(wr, r) for ws, wr in w for s, r in cited) for w in wanted
-    )
-    return found / len(wanted)
+    got = _cited(record)
+    scores = [s for c in item.expected_citations if (s := credit(c, got)) is not None]
+    return sum(scores) / len(scores) if scores else None
 
 
 def run(
@@ -77,62 +82,73 @@ def run(
     *,
     log=print,
     agent: bool = False,
-    routes: dict[str, str] | None = None,
+    routes: dict[str, dict] | None = None,
+    label: str = "",
 ) -> dict:
-    """`routes` (item id -> 'agent' | 'single', from the router eval) picks the mode per item;
-    each mode keeps its own cache, so routed runs reuse earlier single-pass and agent answers."""
+    """`routes` (item id -> cached router record) makes this a routed run; otherwise every item
+    is answered single-pass, or by the agent with `agent=True`. Writes a run manifest."""
     from reglens.agent.run import answer_agentic
 
     modes = {
-        False: (ANSWER_DIR / answer_version(False), answer_question),
-        True: (ANSWER_DIR / answer_version(True), answer_agentic),
+        "single": (ANSWER_DIR / answer_version(config, conn, False), answer_question),
+        "agent": (ANSWER_DIR / answer_version(config, conn, True), answer_agentic),
     }
-    version = "routed" if routes is not None else answer_version(agent)
-    rows, new_tokens = [], 0
+    kind = "routed" if routes is not None else ("agent" if agent else "single")
+    rows, entries, new_tokens = [], [], 0
     for n, item in enumerate(items, 1):
 
-        def answer(use_agent: bool, item: GoldenItem = item, n: int = n) -> dict:
+        def answer(mode: str, item: GoldenItem = item, n: int = n) -> dict:
             nonlocal new_tokens
-            out_dir, answer_fn = modes[use_agent]
+            out_dir, answer_fn = modes[mode]
             out_dir.mkdir(parents=True, exist_ok=True)
-            path = out_dir / f"{item.id}.json"
+            path = out_dir / artifact_name(item)
             if path.exists():
                 return json.loads(path.read_text(encoding="utf-8"))
             try:
                 ans: Answer = answer_fn(conn, provider, config, item.question)
-            except LLMError as e:  # one failed item must not stop the run: record it as an error
+            except LLMError as e:  # one failed item must not stop the run: record it
                 ans = Answer(item.question, False, "", "", [], [], "", errors=[str(e)])
-            check = check_answer(ans)  # annotates claims first, so the record stores their checks
-            record = ans.to_dict() | {"check": check, "id": item.id}
+            check = check_answer(ans)  # annotates claims first, so the record stores them
+            record = ans.to_dict() | {"check": check, "id": item.id, "mode": mode}
             path.write_text(json.dumps(record, indent=2, ensure_ascii=False), encoding="utf-8")
             new_tokens += ans.usage_tokens
-            log(f"  [{n}/{len(items)}] {item.id}: {ans.usage_tokens:,} tokens")
+            log(f"  [{n}/{len(items)}] {item.id} ({mode}): {ans.usage_tokens:,} tokens")
             return record
 
-        use_agent = routes.get(item.id) == "agent" if routes is not None else agent
-        record = answer(use_agent)
-        mode = "agent" if use_agent else "single"
-        if routes is not None and use_agent and not record.get("answer") and record.get("errors"):
-            first = record.get("usage_tokens", 0)  # as in answer_routed: agent stopped, single-pass
-            record = answer(False)
-            record = record | {"usage_tokens": record.get("usage_tokens", 0) + first}
-            mode = "agent_failed"
-        elif routes is not None and not use_agent and record.get("missing_info"):
-            first = record.get("usage_tokens", 0)  # as in answer_routed: agent after a gap
-            record = answer(True)
-            record = record | {"usage_tokens": record.get("usage_tokens", 0) + first}
-            mode = "fallback"
+        if routes is not None and not gate_abstains(conn, config, item.question):
+            r = routes.get(item.id) or {"route": "single", "reason": "no cached route"}
+            record, outcome = dispatch(
+                r["route"],
+                r.get("reason", ""),
+                int(r.get("tokens", 0)),
+                single=lambda: answer("single"),
+                agent=lambda: answer("agent"),
+            )
+        else:  # plain run, or the retrieval gate abstains (no router call, as in the app)
+            mode = "agent" if (agent and routes is None) else "single"
+            record = answer(mode)
+            outcome = {"planned": mode, "route": mode, "reason": "", "attempts": [mode],
+                       "router_tokens": 0, "tokens": int(record.get("usage_tokens") or 0)}
+        path = modes[outcome["route"]][0] / artifact_name(item)
+        entries.append(
+            {"id": item.id, "type": item.type, "question_sha": question_hash(item.question)}
+            | outcome
+            | {"artifact": str(path.relative_to(PROJECT_ROOT)).replace("\\", "/"),
+               "artifact_sha256": file_sha(path), "errors": record.get("errors", []),
+               "unverified": bool(record.get("unverified"))}
+        )
         oos = item.type == "out_of_scope"
         rows.append(
             {
                 "id": item.id,
                 "type": item.type,
-                "mode": mode,
+                "route": outcome["route"],
+                "attempts": outcome["attempts"],
                 "abstained": record["abstained"],
                 "abstain_correct": record["abstained"] == oos,
                 "citation_recall": None if oos else citation_recall(item, record),
-                "supported_rate": record["check"]["supported_rate"],
-                "tokens": record.get("usage_tokens", 0),
+                "check_pass_rate": record["check"]["supported_rate"],
+                "tokens": outcome["tokens"],
                 "errors": record.get("errors", []),
             }
         )
@@ -143,8 +159,10 @@ def run(
 
     ins = [r for r in rows if r["type"] != "out_of_scope"]
     oos = [r for r in rows if r["type"] == "out_of_scope"]
+    run_id = f"{datetime.now():%Y%m%d-%H%M%S}-{kind}" + (f"-{label}" if label else "")
     summary = {
-        "prompt_version": version,
+        "run_id": run_id,
+        "kind": kind,
         "model": config.model((config.answer or {}).get("tier", "dev")),
         "items": len(rows),
         "abstain_on_out_of_scope": round(sum(r["abstained"] for r in oos) / len(oos), 3)
@@ -154,13 +172,35 @@ def run(
         if ins
         else None,
         "citation_recall": mean("citation_recall", ins),
-        "supported_rate": mean("supported_rate", ins),
+        "check_pass_rate": mean("check_pass_rate", ins),
         "avg_tokens": round(sum(r["tokens"] for r in rows) / max(len(rows), 1)),
+        "total_tokens": sum(r["tokens"] for r in rows),
         "new_tokens_this_run": new_tokens,
         "errors": [r["id"] for r in rows if r["errors"]],
         "per_item": rows,
     }
-    path = PROJECT_ROOT / "data" / "evals" / f"answers-{datetime.now():%Y%m%d-%H%M%S}.json"
-    path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    manifest = {
+        "run_id": run_id,
+        "kind": kind,
+        "created": datetime.now().isoformat(timespec="seconds"),
+        "namespaces": {m: d.name for m, (d, _) in modes.items()},
+        "router_version": ROUTER_VERSION if routes is not None else None,
+        "items": entries,
+        "summary": {k: v for k, v in summary.items() if k != "per_item"},
+    }
+    RUNS_DIR.mkdir(parents=True, exist_ok=True)
+    path = RUNS_DIR / f"{run_id}.json"
+    path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
     summary["file"] = str(path.relative_to(PROJECT_ROOT))
     return summary
+
+
+def load_run(run_id: str = "latest") -> dict:
+    """A run manifest by id, or the most recent one."""
+    if run_id == "latest":
+        runs = sorted(RUNS_DIR.glob("*.json"), key=lambda p: p.stat().st_mtime)
+        if not runs:
+            raise FileNotFoundError("no eval runs yet: run `reglens eval-answers` first")
+        return json.loads(runs[-1].read_text(encoding="utf-8"))
+    path = RUNS_DIR / f"{run_id}.json"
+    return json.loads(path.read_text(encoding="utf-8"))

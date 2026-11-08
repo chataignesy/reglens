@@ -12,6 +12,9 @@ uv run reglens eval-answers --set all --yes              # single-pass only
 uv run reglens judge --set all --yes && uv run reglens judge --set all --agent --yes
 ```
 
+> **Note (8 Nov 2026):** these commands predate run manifests. The review found that `judge --agent` grades a cache namespace, not the routed run, so they do not reproduce the routed headline exactly ([review](../DEEP-REVIEW-2026-11-08.md), D7). Runs now write a manifest (`eval-answers` prints its id) and `reglens judge --run <id>` grades exactly that run. The numbers here will be re-measured that way (review plan, step 8).
+
+
 ## Headline
 
 | 70 in-scope questions | Single-pass only | **Routed** |

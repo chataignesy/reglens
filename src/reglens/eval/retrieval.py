@@ -68,12 +68,15 @@ def evaluate(
     for item in items:
         if item.type == "out_of_scope" or item.status != "verified":
             continue
-        # (source, ref, [(alt source, alt ref), ...]) per evaluable expected citation
+        from reglens.eval.citations import Want, matches, part_of
+
+        # every member of an expected citation (a range counts each paragraph), with the
+        # accepted alternatives' members; the document part must match when given (D6)
         wanted = [
             (
-                c.source,
-                r,
-                [(a.source, ar) for a in c.alternatives for ar in normalize_refs(a.ref)],
+                Want(c.source, part_of(c.ref), r),
+                [Want(a.source, part_of(a.ref), ar) for a in c.alternatives
+                 for ar in normalize_refs(a.ref)],
             )
             for c in item.expected_citations
             if c.source in indexed
@@ -84,26 +87,21 @@ def evaluate(
             continue
         hits = search(conn, item.question, mode=mode, k=k, filters=filters, **search_kwargs)
         got = [
-            (h.source_id, normalize_refs(h.ref)[0] if normalize_refs(h.ref) else h.ref)
+            (h.source_id, h.title, normalize_refs(h.ref)[0] if normalize_refs(h.ref) else h.ref)
             for h in hits
         ]
         res = ItemResult(
             item.id,
             item.type,
-            [f"{s}:{r}" for s, r, _ in wanted],
-            top=[f"{s}:{r}" for s, r in got],
+            [f"{w.source}:{w.ref}" for w, _ in wanted],
+            top=[f"{s}:{r}" for s, _, r in got],
         )
-        for src, ref, alts in wanted:
-            targets = [(src, ref), *alts]  # the citation itself or any accepted alternative
+        for w, alts in wanted:
             rank = next(
-                (
-                    i
-                    for i, (s, r) in enumerate(got, 1)
-                    if any(s == ts and refs_match(tr, r) for ts, tr in targets)
-                ),
+                (i for i, g in enumerate(got, 1) if any(matches(t, *g) for t in (w, *alts))),
                 None,
             )
-            res.found_at[f"{src}:{ref}"] = rank
+            res.found_at[f"{w.source}:{w.ref}"] = rank
         results.append(res)
 
     def recall(at: int) -> float:

@@ -25,6 +25,9 @@ uv run reglens eval-answers --set phase2 --route --yes     # routed
 uv run reglens judge --set phase2 --yes && uv run reglens judge --set phase2 --agent --yes
 ```
 
+> **Note (8 Nov 2026):** these commands predate run manifests. The review found that `judge --agent` grades a cache namespace, not the routed run, so they do not reproduce the routed headline exactly ([review](../DEEP-REVIEW-2026-11-08.md), D7). Runs now write a manifest (`eval-answers` prints its id) and `reglens judge --run <id>` grades exactly that run. The numbers here will be re-measured that way (review plan, step 8).
+
+
 ## Headline
 
 | 34 new in-scope questions | Single-pass only | **Routed** |

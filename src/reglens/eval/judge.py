@@ -1,11 +1,15 @@
 """LLM judge: is the answer correct against the golden `expected_answer`?
 
+It grades one *run manifest* (see eval/answers.py): exactly the answer artifact each item
+ended with in that run, routed or not, so a headline score is reproducible from its run id.
+
 Cheap by design:
 - bulk tier (Haiku) at low effort; the judge sees question, reference answer and RegLens answer
   only (no passages), so a call is ~1.5-2k tokens;
-- no call where the outcome is deterministic: out-of-scope items (correct iff abstained) and
-  in-scope abstentions (score 0);
-- verdicts cached per (answer prompt version, judge prompt version, item id).
+- no call where the outcome is deterministic: out-of-scope items (correct iff abstained),
+  in-scope abstentions and answers without verified text (score 0);
+- verdicts cached by content (F4): judge prompt and model, question, reference and the graded
+  answer text. A regenerated answer is graded again; an unchanged one is not.
 
 Scores: 2 = correct and covers the reference's key facts; 1 = partly correct (key facts missing,
 or hedged where the reference is definite); 0 = wrong, contradicts the reference, or no answer.
@@ -15,10 +19,9 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import datetime
 
 from reglens.config import PROJECT_ROOT, Config
-from reglens.eval.answers import ANSWER_DIR, PROMPT_VERSION
+from reglens.eval.answers import RUNS_DIR, file_sha
 from reglens.eval.golden import GoldenItem
 from reglens.llm.provider import LLMError, LLMProvider
 
@@ -38,15 +41,7 @@ Reply with ONE JSON object and nothing else:
 """
 
 JUDGE_VERSION = hashlib.sha256(JUDGE_SYSTEM.encode()).hexdigest()[:8]
-ANSWER_VERSION = PROMPT_VERSION  # which cached answers to grade (see use_answers)
-JUDGE_DIR = PROJECT_ROOT / "data" / "evals" / "judge" / f"{PROMPT_VERSION}-{JUDGE_VERSION}"
-
-
-def use_answers(version: str) -> None:
-    """Grade the cached answers of `version` (e.g. an 'agent-…' run) instead of the default."""
-    global ANSWER_VERSION, JUDGE_DIR
-    ANSWER_VERSION = version
-    JUDGE_DIR = JUDGE_DIR.parent / f"{version}-{JUDGE_VERSION}"
+JUDGE_DIR = PROJECT_ROOT / "data" / "evals" / "judge" / "by-content"
 
 
 def judge_prompt(item: GoldenItem, answer_text: str) -> str:
@@ -55,6 +50,11 @@ def judge_prompt(item: GoldenItem, answer_text: str) -> str:
         f"Reference answer:\n{item.expected_answer}\n\n"
         f"Answer to grade:\n{answer_text}"
     )
+
+
+def verdict_key(item: GoldenItem, answer_text: str, model: str) -> str:
+    raw = "|".join([JUDGE_VERSION, model, item.question, item.expected_answer, answer_text])
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:20]
 
 
 def _parse(text: str) -> dict:
@@ -71,74 +71,86 @@ def _parse(text: str) -> dict:
     }
 
 
-def _load_answer(item_id: str) -> dict | None:
-    path = ANSWER_DIR / ANSWER_VERSION / f"{item_id}.json"
-    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
-
-
-def _ref_hash(item: GoldenItem) -> str:
-    return hashlib.sha256(item.expected_answer.encode()).hexdigest()[:12]
-
-
-def _cached(item: GoldenItem) -> dict | None:
-    """Cached verdict, unless it was graded against a different reference answer."""
-    path = JUDGE_DIR / f"{item.id}.json"
+def _artifact(entry: dict) -> tuple[dict | None, str]:
+    """(answer record, problem). The record must be the exact bytes the run recorded."""
+    path = PROJECT_ROOT / entry["artifact"]
     if not path.exists():
-        return None
-    verdict = json.loads(path.read_text(encoding="utf-8"))
-    stored = verdict.get("reference_hash")
-    return verdict if stored in (None, _ref_hash(item)) else None
+        return None, "answer artifact missing"
+    if file_sha(path) != entry["artifact_sha256"]:
+        return None, "answer artifact changed since the run"
+    return json.loads(path.read_text(encoding="utf-8")), ""
 
 
-def plan(items: list[GoldenItem]) -> dict:
+def _deterministic(item: GoldenItem, rec: dict) -> dict | None:
+    if item.type == "out_of_scope":
+        return {"score": 2 if rec["abstained"] else 0, "method": "deterministic",
+                "rationale": "out of scope: correct iff abstained"}
+    if rec["abstained"]:
+        return {"score": 0, "method": "deterministic",
+                "rationale": "abstained on an in-scope question"}
+    if rec.get("unverified") or not str(rec.get("answer") or "").strip():
+        return {"score": 0, "method": "deterministic",
+                "rationale": "no verified answer: " + "; ".join(rec.get("errors") or [])}
+    return None
+
+
+def plan(manifest: dict, items: list[GoldenItem], model: str) -> dict:
     """Which items need a judge call (for the dry-run estimate)."""
-    needs, deterministic, cached, no_answer = [], [], [], []
+    by_id = {e["id"]: e for e in manifest["items"]}
+    needs, deterministic, cached, problems = [], [], [], []
     for item in items:
-        rec = _load_answer(item.id)
+        entry = by_id.get(item.id)
+        if entry is None:
+            problems.append(f"{item.id}: not in run")
+            continue
+        rec, problem = _artifact(entry)
         if rec is None:
-            no_answer.append(item.id)
-        elif _cached(item) is not None:
-            cached.append(item.id)
-        elif item.type == "out_of_scope" or rec["abstained"]:
+            problems.append(f"{item.id}: {problem}")
+        elif _deterministic(item, rec) is not None:
             deterministic.append(item.id)
+        elif (JUDGE_DIR / f"{verdict_key(item, rec['answer'], model)}.json").exists():
+            cached.append(item.id)
         else:
             needs.append(item.id)
     return {"needs_call": needs, "deterministic": deterministic, "cached": cached,
-            "no_answer": no_answer}
+            "problems": problems}
 
 
-def judge(provider: LLMProvider, config: Config, items: list[GoldenItem], *, log=print) -> dict:
+def judge(
+    provider: LLMProvider, config: Config, manifest: dict, items: list[GoldenItem], *, log=print
+) -> dict:
     JUDGE_DIR.mkdir(parents=True, exist_ok=True)
-    rows, new_tokens = [], 0
+    model = config.model("bulk")
+    by_id = {e["id"]: e for e in manifest["items"]}
+    rows, new_tokens, problems = [], 0, []
     for item in items:
-        rec = _load_answer(item.id)
-        if rec is None:
+        entry = by_id.get(item.id)
+        if entry is None:
+            problems.append(f"{item.id}: not in run")
             continue
-        path = JUDGE_DIR / f"{item.id}.json"
-        verdict = _cached(item)
-        if verdict is not None:
-            pass
-        elif item.type == "out_of_scope":
-            verdict = {"score": 2 if rec["abstained"] else 0, "method": "deterministic",
-                       "rationale": "out of scope: correct iff abstained", "tokens": 0}
-        elif rec["abstained"]:
-            verdict = {"score": 0, "method": "deterministic",
-                       "rationale": "abstained on an in-scope question", "tokens": 0}
-        else:
-            answer_text = rec["answer"]
-            try:
-                c = provider.complete(judge_prompt(item, answer_text), purpose="judge",
-                                      system=JUDGE_SYSTEM, tier="bulk", effort="low")
-                verdict = _parse(c.text) | {"method": "llm", "model": c.model,
-                                            "tokens": c.usage.total_tokens}
-                new_tokens += c.usage.total_tokens
-                log(f"  {item.id}: score {verdict['score']} ({c.usage.total_tokens:,} tokens)")
-            except (LLMError, ValueError, json.JSONDecodeError) as e:
-                log(f"  {item.id}: judge failed: {e}")
-                continue  # not cached; a re-run retries
-        verdict["reference_hash"] = _ref_hash(item)
-        path.write_text(json.dumps(verdict, indent=2, ensure_ascii=False), encoding="utf-8")
-        rows.append({"id": item.id, "type": item.type} | verdict)
+        rec, problem = _artifact(entry)
+        if rec is None:
+            problems.append(f"{item.id}: {problem}")
+            continue
+        verdict = _deterministic(item, rec)
+        if verdict is None:
+            path = JUDGE_DIR / f"{verdict_key(item, rec['answer'], model)}.json"
+            if path.exists():
+                verdict = json.loads(path.read_text(encoding="utf-8"))
+            else:
+                try:
+                    c = provider.complete(judge_prompt(item, rec["answer"]), purpose="judge",
+                                          system=JUDGE_SYSTEM, tier="bulk", effort="low")
+                    verdict = _parse(c.text) | {"method": "llm", "model": c.model,
+                                                "tokens": c.usage.total_tokens}
+                    new_tokens += c.usage.total_tokens
+                    log(f"  {item.id}: score {verdict['score']} ({c.usage.total_tokens:,} tokens)")
+                except (LLMError, ValueError, json.JSONDecodeError) as e:
+                    log(f"  {item.id}: judge failed: {e}")
+                    problems.append(f"{item.id}: judge failed")
+                    continue  # not cached; a re-run retries
+                path.write_text(json.dumps(verdict, indent=2, ensure_ascii=False), "utf-8")
+        rows.append({"id": item.id, "type": item.type, "route": entry["route"]} | verdict)
 
     def mean(subset):
         return round(sum(r["score"] for r in subset) / (2 * len(subset)), 3) if subset else None
@@ -146,22 +158,25 @@ def judge(provider: LLMProvider, config: Config, items: list[GoldenItem], *, log
     single = [r for r in rows if r["type"] not in ("multi_hop", "out_of_scope")]
     multi = [r for r in rows if r["type"] == "multi_hop"]
     in_scope = single + multi
+    oos = [r for r in rows if r["type"] == "out_of_scope"]
     summary = {
-        "answer_prompt": ANSWER_VERSION,
+        "run_id": manifest["run_id"],
         "judge_prompt": JUDGE_VERSION,
-        "judge_model": config.model("bulk"),
+        "judge_model": model,
         "items": len(rows),
+        "problems": problems,  # items of the run that could not be graded
         "correctness_in_scope": mean(in_scope),  # mean score / 2
         "correctness_single": mean(single),
         "correctness_multi_hop": mean(multi),
         "fully_correct": sum(r["score"] == 2 for r in in_scope),
         "partly_correct": sum(r["score"] == 1 for r in in_scope),
         "wrong": sum(r["score"] == 0 for r in in_scope),
+        "out_of_scope_declined": f"{sum(r['score'] == 2 for r in oos)}/{len(oos)}",
         "with_contradictions": [r["id"] for r in rows if r.get("contradictions")],
         "new_tokens": new_tokens,
         "per_item": rows,
     }
-    out = PROJECT_ROOT / "data" / "evals" / f"judge-{datetime.now():%Y%m%d-%H%M%S}.json"
+    out = RUNS_DIR / f"{manifest['run_id']}.judge-{JUDGE_VERSION}.json"
     out.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
     summary["file"] = str(out.relative_to(PROJECT_ROOT))
     return summary

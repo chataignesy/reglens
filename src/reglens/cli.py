@@ -301,24 +301,26 @@ def _set_repeat(args: argparse.Namespace) -> None:
 
 def _cmd_eval_answers(args: argparse.Namespace) -> None:
     _set_repeat(args)
-    from reglens.eval.answers import ANSWER_DIR, answer_version, run
+    from reglens.eval.answers import ANSWER_DIR, answer_version, artifact_name, run
+    from reglens.index import db
 
     cfg = load_config(args.config)
+    conn = db.connect()  # the corpus generation is part of the cache identity
     items = _golden_items(args)
     routes = None
     if args.route:
         from reglens.eval.route import cached_routes
 
-        routes = cached_routes()
-        if missing := [i.id for i in items if i.type != "out_of_scope" and i.id not in routes]:
-            print(f"No cached route for {', '.join(missing)}: run `reglens eval-route` first.")
+        routes = cached_routes(items)
+        if missing := [i.id for i in items if i.id not in routes]:
+            print(f"No current route for {', '.join(missing)}: run `reglens eval-route` first.")
             return
 
     def mode(item) -> bool:
-        return routes.get(item.id) == "agent" if routes is not None else args.agent
+        return routes[item.id]["route"] == "agent" if routes is not None else args.agent
 
-    cached = {m: {p.stem for p in (ANSWER_DIR / answer_version(m)).glob("*.json")} for m in (0, 1)}
-    todo = [i for i in items if i.id not in cached[mode(i)]]
+    dirs = {m: ANSWER_DIR / answer_version(cfg, conn, bool(m)) for m in (0, 1)}
+    todo = [i for i in items if not (dirs[mode(i)] / artifact_name(i)).exists()]
     per_call = args.tokens_per_call
     est = len(todo) * per_call
     if routes is not None:
@@ -336,38 +338,39 @@ def _cmd_eval_answers(args: argparse.Namespace) -> None:
         print("Dry run. Re-run with --yes to call the model.")
         return
 
-    from reglens.index import db
     from reglens.llm.provider import get_provider
 
     s = run(
-        db.connect(),
+        conn,
         get_provider(cfg),
         cfg,
         items,
         log=lambda m: print(m, flush=True),
         agent=args.agent,
         routes=routes,
+        label=args.set,
     )
     print(
-        f"\nabstain on out-of-scope {s['abstain_on_out_of_scope']}  "
+        f"\nrun {s['run_id']}\n"
+        f"abstain on out-of-scope {s['abstain_on_out_of_scope']}  "
         f"answered in-scope {s['answered_in_scope']}  citation recall {s['citation_recall']}  "
-        f"supported claims {s['supported_rate']}  avg tokens {s['avg_tokens']:,}  "
+        f"mechanical checks passed {s['check_pass_rate']}  avg tokens {s['avg_tokens']:,}  "
         f"new tokens {s['new_tokens_this_run']:,}"
     )
     misses = [r for r in s["per_item"] if not r["abstain_correct"]]
     for r in misses:
         print(f"  abstention wrong: {r['id']} ({r['type']}, abstained={r['abstained']})")
     if s["errors"]:
-        print(f"  parse errors: {', '.join(s['errors'])}")
-    print(f"details: {s['file']}")
+        print(f"  with errors: {', '.join(s['errors'])}")
+    print(f"manifest: {s['file']}  (grade it with: reglens judge --run {s['run_id']})")
 
 
 def _cmd_eval_route(args: argparse.Namespace) -> None:
-    from reglens.eval.route import ROUTE_DIR, routable, run
+    from reglens.eval.route import cached_routes, run
 
     cfg = load_config(args.config)
-    items = routable(_golden_items(args))
-    cached = {p.stem for p in ROUTE_DIR.glob("*.json")}
+    items = _golden_items(args)
+    cached = cached_routes(items)
     todo = [i for i in items if i.id not in cached]
     est = len(todo) * args.tokens_per_call
     print(
@@ -481,22 +484,27 @@ def _cmd_gap(args: argparse.Namespace) -> None:
 
 
 def _cmd_judge(args: argparse.Namespace) -> None:
-    _set_repeat(args)
-    from reglens.eval.answers import answer_version
-    from reglens.eval.judge import judge, plan, use_answers
+    from reglens.eval.answers import load_run
+    from reglens.eval.judge import judge, plan
 
     cfg = load_config(args.config)
-    if args.agent:
-        use_answers(answer_version(agent=True))
-    items = _golden_items(args)
-    p = plan(items)
+    try:
+        manifest = load_run(args.run)
+    except FileNotFoundError as e:
+        raise SystemExit(f"{e}" if args.run == "latest" else f"no run '{args.run}'") from None
+    in_run = {e["id"] for e in manifest["items"]}
+    args.set = "all"  # the run decides which items are graded; --type / --id narrow it
+    items = [i for i in _golden_items(args) if i.id in in_run]
+    p = plan(manifest, items, cfg.model("bulk"))
     est = len(p["needs_call"]) * args.tokens_per_call
     print(
-        f"{len(items)} items: {len(p['needs_call'])} judge calls on {cfg.model('bulk')} "
+        f"run {manifest['run_id']} ({manifest['kind']}): {len(items)} items, "
+        f"{len(p['needs_call'])} judge calls on {cfg.model('bulk')} "
         f"(~{est:,} tokens at ~{args.tokens_per_call:,}/call), "
-        f"{len(p['deterministic'])} scored without a call, {len(p['cached'])} cached, "
-        f"{len(p['no_answer'])} without a cached answer (run eval-answers first)"
+        f"{len(p['deterministic'])} scored without a call, {len(p['cached'])} cached"
     )
+    for problem in p["problems"]:
+        print(f"  cannot grade: {problem}")
     if est > cfg.budget.approval_threshold_tokens:
         print(f"Above {cfg.budget.approval_threshold_tokens:,} tokens — needs explicit approval.")
     if not args.yes:
@@ -505,13 +513,15 @@ def _cmd_judge(args: argparse.Namespace) -> None:
 
     from reglens.llm.provider import get_provider
 
-    s = judge(get_provider(cfg), cfg, items, log=lambda m: print(m, flush=True))
+    s = judge(get_provider(cfg), cfg, manifest, items, log=lambda m: print(m, flush=True))
     print(
-        f"\ncorrectness (mean score/2): in-scope {s['correctness_in_scope']}  "
+        f"\nrun {s['run_id']}: correctness (mean score/2): in-scope {s['correctness_in_scope']}  "
         f"single {s['correctness_single']}  multi-hop {s['correctness_multi_hop']}\n"
         f"fully correct {s['fully_correct']}, partly {s['partly_correct']}, wrong {s['wrong']}; "
-        f"new tokens {s['new_tokens']:,}"
+        f"out of scope declined {s['out_of_scope_declined']}; new tokens {s['new_tokens']:,}"
     )
+    if s["problems"]:
+        print(f"  not graded: {'; '.join(s['problems'])}")
     for r in s["per_item"]:
         if r["score"] < 2 and r["type"] != "out_of_scope":
             print(f"  {r['id']:<10} {r['score']}  {r.get('rationale', '')[:150]}")
@@ -623,14 +633,12 @@ def main(argv: list[str] | None = None) -> None:
     rte.add_argument("--id", help="only these golden ids, comma-separated")
     rte.set_defaults(func=_cmd_eval_route)
 
-    jdg = sub.add_parser("judge", help="LLM judge of answer correctness (bulk tier, cached)")
-    jdg.add_argument("--set", default="phase0", help="golden file stem or 'all'")
+    jdg = sub.add_parser("judge", help="LLM judge of one eval run's answers (bulk tier, cached)")
+    jdg.add_argument("--run", default="latest", help="run id from eval-answers (default: latest)")
     jdg.add_argument("--tokens-per-call", type=int, default=2000, help="for the estimate")
     jdg.add_argument("--yes", action="store_true", help="actually call the judge model")
-    jdg.add_argument("--agent", action="store_true", help="grade the agentic answers")
     jdg.add_argument("--type", help="only this golden type, e.g. multi_hop")
     jdg.add_argument("--id", help="only these golden ids, comma-separated")
-    jdg.add_argument("--repeat", type=int, help="repeat run N (>1): separate agent cache")
     jdg.set_defaults(func=_cmd_judge)
 
     rg = sub.add_parser("register", help="extract the obligation register (LLM calls)")

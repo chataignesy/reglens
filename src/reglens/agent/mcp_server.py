@@ -55,10 +55,13 @@ def search(query: str, k: int = 6, source: str | None = None) -> str:
 
 
 @server.tool(annotations=READ_ONLY)
-def get_article(source: str, article: str, paragraph: str | None = None) -> str:
+def get_article(
+    source: str, article: str, paragraph: str | None = None, offset: int = 0
+) -> str:
     """Full text of an article, or one paragraph, of a regulation (e.g. source 'CRR', article
-    '151', paragraph '8'; or source 'RTS materiality threshold (Reg. 2018/171)', article '1')."""
-    return _call("get_article", source, article, paragraph)
+    '151', paragraph '8'; or source 'RTS materiality threshold (Reg. 2018/171)', article '1').
+    Long articles come in pages; the reply gives the `offset` for the next one."""
+    return _call("get_article", source, article, paragraph, offset)
 
 
 @server.tool(annotations=READ_ONLY)

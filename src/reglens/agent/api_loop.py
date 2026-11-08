@@ -42,11 +42,16 @@ TOOL_SCHEMAS: list[dict] = [
         "description": (
             "Full text of an article, or one paragraph, of a regulation (e.g. source 'CRR', "
             "article '151', paragraph '8'; or source 'RTS materiality threshold (Reg. 2018/171)', "
-            "article '1')."
+            "article '1'). Long articles come in pages; the reply gives the offset for the next."
         ),
         "input_schema": {
             "type": "object",
-            "properties": {"source": _STR, "article": _STR, "paragraph": _STR},
+            "properties": {
+                "source": _STR,
+                "article": _STR,
+                "paragraph": _STR,
+                "offset": {"type": "integer"},
+            },
             "required": ["source", "article"],
         },
     },
@@ -99,7 +104,7 @@ TOOL_SCHEMAS: list[dict] = [
 # Toolbox method arguments in call order, with defaults for optional ones.
 _ARGS: dict[str, list[tuple[str, object]]] = {
     "search": [("query", ""), ("k", 6), ("source", None)],
-    "get_article": [("source", ""), ("article", ""), ("paragraph", None)],
+    "get_article": [("source", ""), ("article", ""), ("paragraph", None), ("offset", 0)],
     "get_passage": [("citation_key", "")],
     "follow_reference": [("citation_key", "")],
     "get_definition": [("term", "")],

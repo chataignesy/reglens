@@ -1,0 +1,90 @@
+{
+  "pdf_refresh": {
+    "observed": "OLD converted regulation"
+  },
+  "paragraph_continuation": {
+    "expected_paragraph": "1",
+    "observed_tail_paragraph": null
+  },
+  "article_truncation": {
+    "available_chunks": 16,
+    "available_chars": 21278,
+    "returned_chars": 14000,
+    "truncation_disclosed": false,
+    "end": "stitution holds a senior lien and a junior lien held by the institution is recognised under paragrap"
+  },
+  "article_row_limit": {
+    "available_chunks": 185,
+    "query_limit": 40,
+    "truncation_disclosed": false
+  },
+  "citation_collision": {
+    "key": "ECB validation reporting instructions para. 1",
+    "chunks": 14,
+    "numbering_blocks": [
+      "b0",
+      "b1",
+      "b10",
+      "b11",
+      "b12",
+      "b2",
+      "b3",
+      "b4",
+      "b5",
+      "b6",
+      "b7",
+      "b8",
+      "b9"
+    ],
+    "examples": [
+      {
+        "id": "ecb-validation-reporting:paragraph:b0:1:",
+        "prefix": "ECB validation reporting instructions › Instructions for reporting the validation results of internal models › 2 Supplementary validation reporting on credit risk › 2.4 General information › 2.4.2 Validation information › para. 1",
+        "body_start": "Adequate with no deficiencies: No deficiencies detected by the validation function (i.e. no fol"
+      },
+      {
+        "id": "ecb-validation-reporting:paragraph:b1:1:",
+        "prefix": "ECB validation reporting instructions › Instructions for reporting the validation results of internal models › 2 Supplementary validation reporting on credit risk › 2.5 Probability of default › 2.5.2 Qualitative validation tools › para. 1",
+        "body_start": "The size of the portfolio (M) (see point (f) of Section 2.3)."
+      },
+      {
+        "id": "ecb-validation-reporting:paragraph:b2:1:",
+        "prefix": "ECB validation reporting instructions › Instructions for reporting the validation results of internal models › 2 Supplementary validation reporting on credit risk › 2.5 Probability of default › 2.5.2 Qualitative validation tools › 2.5.2.1 Rating process statistics › para. 1",
+        "body_start": "Customers with outdated ratings or financial statements 29 (see point 2(a) in Section 2.5.2);"
+      }
+    ]
+  },
+  "same_article_reference": {
+    "input": "The conditions in Article 178(3) shall apply.",
+    "observed_edges": []
+  },
+  "range_recall": {
+    "expected": "paras. 71-73",
+    "cited": "para. 71",
+    "observed": 1.0
+  },
+  "wrong_part_recall": {
+    "expected": "Foreword, para. 1",
+    "cited_part": "Credit risk",
+    "observed": 1.0
+  },
+  "mcp_session_lifetime": {
+    "first_call_next_question": "Tool budget exhausted (10 calls). Answer now with the passages you already have, and say what is missing."
+  },
+  "routed_judge_selection": {
+    "namespace": "agent-ecae52ea",
+    "cached_records": 25,
+    "golden_items": 120,
+    "routed_single_records_absent_from_selected_namespace": 66
+  },
+  "definition_qualification": {
+    "id": "crr3-consolidated:article:142::",
+    "paragraph": null,
+    "body_start": "For the purposes of the first subparagraph, point (5a), in making the assessment for the sales threshold, the amounts shall be reported, as they are, in the audited financial state",
+    "get_definition_excludes": true
+  },
+  "failed_cli_usage": {
+    "reported_tokens": 1100,
+    "ledger_records": 0
+  }
+}

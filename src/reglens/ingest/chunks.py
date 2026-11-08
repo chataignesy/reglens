@@ -39,6 +39,7 @@ class Chunk:
     body: str
     amended_by: list[str] = field(default_factory=list)
     part: int = 0  # >0 when a long unit was split into windows
+    cite: str = ""  # citation key, unique per logical unit (see ingest/cite.py)
 
 
 def _title_case(s: str) -> str:
@@ -144,6 +145,9 @@ def build_chunks(
                     part=i + 1 if len(bodies) > 1 else 0,
                 )
             )
+    from reglens.ingest.cite import assign_cites
+
+    assign_cites(chunks)
     return chunks
 
 

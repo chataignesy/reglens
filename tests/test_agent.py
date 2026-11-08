@@ -40,7 +40,8 @@ def test_agent_resolves_keys_and_bounds(monkeypatch):
     top = Hit("c1", "crr3-consolidated", "Art. 151(8)", "", "", "L1", None, 0.9)
     monkeypatch.setattr(run, "search", lambda *a, **k: [top])
     monkeypatch.setattr(run, "resolve_key", lambda conn, key: [ROWS[key]] if key in ROWS else [])
-    monkeypatch.setattr(run, "_read_trace", lambda path: [{"tool": "search", "keys": []}])
+    delivered = [{"tool": "search", "keys": ["CRR Art. 151(8)", "CRR Art. 161(1)"]}]
+    monkeypatch.setattr(run, "_read_trace", lambda path: delivered)
     reply = {
         "abstain": False,
         "answer": "Supervisory LGD applies [CRR Art. 151(8)]: 40 % [CRR Art. 161(1)].",

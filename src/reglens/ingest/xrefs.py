@@ -70,10 +70,38 @@ def reference_edges(chunk: Chunk) -> list[Edge]:
         refs = [(m.group(1), m.group(3))]
         refs += [(x.group(1), x.group(3)) for x in _MORE.finditer(m.group(4) or "")]
         for art, para in refs:
-            if target == chunk.source_id and art == chunk.article:
-                continue  # self-reference
+            if (
+                target == chunk.source_id
+                and art == chunk.article
+                and (not para or para == chunk.paragraph)
+            ):
+                continue  # self-reference; a sibling paragraph (178(1) -> 178(3)) is kept
             edges.append(Edge(chunk.id, "refers_to", target, art, para))
+    edges += _paragraph_edges(chunk)
     return edges
+
+
+_PARA_REF = re.compile(
+    r"\bparagraphs?\s+(\d+[a-z]?)((?:\s*(?:,|and|or|to)\s*\d+[a-z]?)*)(?!\s+of\s+Article)"
+)
+_PARA_MORE = re.compile(r"\d+[a-z]?")
+
+
+def _paragraph_edges(chunk: Chunk) -> list[Edge]:
+    """'paragraph 3' (or 'paragraph 3 of this Article') inside a regulation article: an edge to
+    that sibling paragraph. Amending-act points and guidelines number differently: skipped."""
+    if chunk.kind != "article" or chunk.legal_level not in ("L1", "L2"):
+        return []
+    if chunk.source_id == "crr3-amending-act" or not chunk.article:
+        return []
+    out = []
+    for m in _PARA_REF.finditer(chunk.body):
+        if re.match(r"\s*\d", chunk.body[m.end() :]):
+            continue  # cut inside a number by the lookahead: not a clean match
+        for para in [m.group(1), *_PARA_MORE.findall(m.group(2) or "")]:
+            if para != chunk.paragraph:
+                out.append(Edge(chunk.id, "refers_to", chunk.source_id, chunk.article, para))
+    return out
 
 
 def definitions(chunks: list[Chunk]) -> dict[str, Chunk]:

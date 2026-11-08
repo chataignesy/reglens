@@ -241,6 +241,9 @@ def parse_xhtml(
             if num is None and current is not None:
                 current.text += "\n" + body  # continuation of the previous paragraph
                 continue
-            current = Unit("article", number, num, None, hierarchy, title, body, amended)
+            # After a point split `current` is None, but an unnumbered qualification that
+            # follows still belongs to the paragraph (e.g. Art. 142(1) after point (5a)).
+            owner = num or (para_num if current is None else None)
+            current = Unit("article", number, owner, None, hierarchy, title, body, amended)
             units.append(current)
     return units

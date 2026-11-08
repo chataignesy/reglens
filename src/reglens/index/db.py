@@ -40,6 +40,8 @@ CREATE TABLE IF NOT EXISTS chunks (
     embedding vector({DIM}),
     tsv tsvector GENERATED ALWAYS AS (to_tsvector('english', text)) STORED
 );
+ALTER TABLE chunks ADD COLUMN IF NOT EXISTS cite text NOT NULL DEFAULT '';
+CREATE INDEX IF NOT EXISTS chunks_cite ON chunks (cite);
 CREATE INDEX IF NOT EXISTS chunks_tsv ON chunks USING gin (tsv);
 CREATE INDEX IF NOT EXISTS chunks_source ON chunks (source_id, article);
 CREATE INDEX IF NOT EXISTS chunks_embedding ON chunks USING hnsw (embedding vector_cosine_ops);
@@ -73,6 +75,7 @@ _COLS = [
     "body",
     "amended_by",
     "part",
+    "cite",
 ]
 
 

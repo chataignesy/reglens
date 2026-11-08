@@ -9,15 +9,17 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from functools import lru_cache
 
 from reglens.answer.pipeline import LEVEL_LABEL
+from reglens.ingest.cite import _sources, citation_key
 from reglens.retrieve.search import Filters, Hit, search
-from reglens.sources import Source, load_sources
+from reglens.sources import Source
 
 CRR = "crr3-consolidated"
 QA = "eba-qa-credit-risk"
-_COLS = "id, source_id, ref, title, text, legal_level, version, kind, article, paragraph, point"
+_COLS = (
+    "id, source_id, ref, title, text, legal_level, version, kind, article, paragraph, point, cite"
+)
 
 
 @dataclass
@@ -33,6 +35,7 @@ class Row:
     article: str | None
     paragraph: str | None
     point: str | None
+    cite: str = ""  # stored citation key (unique per logical unit)
 
     def hit(self, score: float = 0.0) -> Hit:
         return Hit(
@@ -47,11 +50,6 @@ class Row:
         )
 
 
-@lru_cache(maxsize=1)
-def _sources() -> dict[str, Source]:
-    return {s.id: s for s in load_sources()}
-
-
 def source_by_name(name: str) -> Source | None:
     """Accept a source id ('crr3-consolidated') or its short label ('CRR'), case-insensitive."""
     n = name.strip().lower()
@@ -61,28 +59,35 @@ def source_by_name(name: str) -> Source | None:
     return None
 
 
-def citation_key(source_id: str, ref: str, title: str | None, kind: str) -> str:
-    s = _sources()[source_id]
-    if kind == "qa":
-        return f"{s.label()} {ref.removeprefix('Q&A ')}"  # "EBA Q&A 2014_1297"
-    if s.parts and title and kind in ("paragraph", "section"):
-        return f"{s.label()}, {title}, {ref}"  # ECB guide: numbering restarts per part
-    return f"{s.label()} {ref}"
-
-
 def key_of(r: Row | Hit) -> str:
+    if getattr(r, "cite", ""):
+        return r.cite
     kind = getattr(r, "kind", None) or ("paragraph" if r.ref.startswith("para.") else "article")
     return citation_key(r.source_id, r.ref, r.title, kind)
 
 
-def _rows(conn, where: str, params: list, limit: int = 50) -> list[Row]:
-    sql = f"SELECT {_COLS} FROM chunks WHERE {where} ORDER BY id LIMIT %s"
-    return [Row(*r) for r in conn.execute(sql, [*params, limit]).fetchall()]
+def _rows(conn, where: str, params: list, limit: int = 50, offset: int = 0) -> list[Row]:
+    sql = f"SELECT {_COLS} FROM chunks WHERE {where} ORDER BY id LIMIT %s OFFSET %s"
+    return [Row(*r) for r in conn.execute(sql, [*params, limit, offset]).fetchall()]
+
+
+def _count(conn, where: str, params: list) -> int:
+    return conn.execute(f"SELECT count(*) FROM chunks WHERE {where}", params).fetchone()[0]
+
+
+def _one_unit(rows: list[Row]) -> list[Row]:
+    """Rows of a single logical unit, or [] when a loose key matches several (ambiguous)."""
+    units = {(r.kind, r.article, r.paragraph or None, r.point or None, r.title) for r in rows}
+    return rows if len(units) <= 1 else []
 
 
 def resolve_key(conn, key: str) -> list[Row]:
-    """Chunks a citation key refers to (all window parts). Empty if unknown."""
+    """Chunks a citation key refers to (all window parts and continuations). Empty if unknown
+    or ambiguous. Exact stored keys first; a loose older-style key must name one unit."""
     key = key.strip().strip("[]").strip()
+    rows = _rows(conn, "cite = %s", [key])
+    if rows:
+        return rows
     for s in sorted(_sources().values(), key=lambda s: -len(s.label())):
         label = s.label()
         if not key.startswith(label):
@@ -95,7 +100,7 @@ def resolve_key(conn, key: str) -> list[Row]:
         if part is not None:
             rows = [r for r in rows if (r.title or "") == part]
         if rows:
-            return rows
+            return _one_unit(rows)
     return []
 
 
@@ -112,10 +117,12 @@ def _format(rows: list[Row], max_chars: int) -> str:
 
 
 def trace_entry(call: int, tool: str, args: list, out: str) -> dict:
-    """One tool-call record: which passages (keys) the tool returned to the agent."""
+    """One tool-call record. `keys`: passages whose text the tool returned, the only ones the
+    agent may cite; `refs`: follow_reference targets, pointers without text."""
     keys = re.findall(r"^\[(.+?)\] \(", out, re.M)  # passages: "[key] (level)"
-    keys += re.findall(r"^- \w+: (.+)$", out, re.M)  # follow_reference targets
-    return {"call": call, "tool": tool, "args": args, "keys": keys, "chars": len(out)}
+    refs = re.findall(r"^- \w+: (.+)$", out, re.M)
+    entry = {"call": call, "tool": tool, "args": args, "keys": keys, "chars": len(out)}
+    return entry | ({"refs": refs} if refs else {})
 
 
 class Toolbox:
@@ -141,7 +148,8 @@ class Toolbox:
         self.passage_chars = passage_chars
         self.result_chars = result_chars
         self.calls = 0
-        self.seen: dict[str, Row] = {}
+        self.seen: dict[str, Row] = {}  # citation key -> passage actually returned
+        self.last_shown = 0
 
     def _budget(self) -> str | None:
         self.calls += 1
@@ -153,11 +161,24 @@ class Toolbox:
         return None
 
     def _out(self, rows: list[Row], note: str = "", *, snippets: bool = False) -> str:
-        for r in rows:
-            self.seen[key_of(r)] = r
+        """Whole passages up to `result_chars`; a passage is never cut by the size limit, and
+        what is left out is said. Only passages actually returned count as delivered (`seen`)."""
         cap = self.snippet_chars if snippets else self.passage_chars
-        text = (note + "\n\n" if note else "") + _format(rows, cap)
-        return text[: self.result_chars]
+        head = note + "\n\n" if note else ""
+        blocks: list[str] = []
+        used = len(head)
+        for r in rows:
+            block = _format([r], cap)
+            if blocks and used + len(block) + 2 > self.result_chars:
+                break
+            blocks.append(block)
+            used += len(block) + 2
+            self.seen[key_of(r)] = r
+        self.last_shown = len(blocks)
+        text = head + ("\n\n".join(blocks) if blocks else "No passages found.")
+        if len(blocks) < len(rows):
+            text += f"\n\n[Size limit: {len(rows) - len(blocks)} more passage(s) not shown.]"
+        return text
 
     def search(self, query: str, k: int = 6, source: str | None = None) -> str:
         """Hybrid search (BM25 + embeddings + reranker) over the corpus."""
@@ -185,8 +206,11 @@ class Toolbox:
             )
         return self._out(rows)
 
-    def get_article(self, source: str, article: str, paragraph: str | None = None) -> str:
-        """Full text of an article (or one paragraph) of a regulation, by number."""
+    def get_article(
+        self, source: str, article: str, paragraph: str | None = None, offset: int = 0
+    ) -> str:
+        """Full text of an article (or one paragraph) of a regulation, by number. Long
+        articles come in pages: the reply says which passages it holds and how to continue."""
         if msg := self._budget():
             return msg
         s = source_by_name(source)
@@ -194,11 +218,29 @@ class Toolbox:
             return f"Unknown source '{source}'."
         art = str(article).strip().removeprefix("Art.").removeprefix("Article").strip()
         where, params = "source_id = %s AND article = %s AND kind = 'article'", [s.id, art]
-        if paragraph:
+        para = str(paragraph).strip("() ") if paragraph else None
+        if para:
             where += " AND paragraph = %s"
-            params.append(str(paragraph).strip("() "))
-        rows = _rows(self.conn, where, params, limit=40)
-        return self._out(rows)
+            params.append(para)
+        what = f"{s.label()} Art. {art}" + (f"({para})" if para else "")
+        offset = max(int(offset or 0), 0)
+        total = _count(self.conn, where, params)
+        rows = _rows(self.conn, where, params, limit=40, offset=offset)
+        if not rows:
+            where_ = f" at offset {offset} of {total}." if total else "."
+            return f"No passages for {what}{where_}"
+        text = self._out(rows)
+        end = offset + self.last_shown
+        if offset or end < total:
+            more = (
+                f" Incomplete: call get_article('{source}', '{art}'"
+                + (f", '{para}'" if para else "")
+                + f", offset={end}) for the rest."
+                if end < total
+                else " This is the last page."
+            )
+            text = f"[{what}: passages {offset + 1}-{end} of {total}.{more}]\n\n" + text
+        return text
 
     def follow_reference(self, citation_key_: str) -> str:
         """Articles, paragraphs and Art. 4 definitions that a passage refers to."""
@@ -242,7 +284,20 @@ class Toolbox:
         rows = _rows(self.conn, where, [CRR, f"‘{term.strip()}’%"], limit=3)
         if not rows:  # also match "'X' or 'Y' means"
             rows = _rows(self.conn, where, [CRR, f"%‘{term.strip()}’%means%"], limit=3)
-        return self._out(rows) if rows else f"No CRR definition found for '{term}'."
+        if not rows:
+            return f"No CRR definition found for '{term}'."
+        quals: list[Row] = []  # Art. 142(1): "For the purposes of … point (5a) …"
+        for r in rows:
+            if r.paragraph and r.point:
+                quals += _rows(
+                    self.conn,
+                    "source_id = %s AND article = %s AND paragraph = %s AND point IS NULL "
+                    "AND kind = 'article' AND body ILIKE %s",
+                    [CRR, r.article, r.paragraph, f"%point {r.point}%"],
+                    limit=3,
+                )
+        ids = {r.id for r in rows}
+        return self._out(rows + [q for q in quals if q.id not in ids])
 
     def get_qa(self, article: str, query: str | None = None, k: int = 4) -> str:
         """Final EBA Q&As about a CRR article (most relevant first if a query is given)."""

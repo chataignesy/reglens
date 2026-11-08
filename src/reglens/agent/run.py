@@ -43,6 +43,9 @@ How to work:
 - Use `get_qa` when an EBA interpretation of a CRR article could matter.
 - Search results are snippets. If a passage you rely on is marked truncated, read it in full
   with `get_passage` on its key (tables and long lists often continue there).
+- Long articles come in pages: if a `get_article` reply says it is incomplete and the part you
+  need is not shown, call it again with the `offset` it gives (or ask for one paragraph).
+- `follow_reference` lists target provisions without their text: read a target before citing it.
 - Before answering, check the legal basis:
   (a) if the passages you rely on cite CRR or RTS provisions (e.g. "Article 181(1)(b)", "the RTS
       on economic downturn"), read the main one with `get_article`, or `follow_reference` first;
@@ -56,7 +59,8 @@ How to work:
 Rules:
 1. Every claim must be supported by passages you received and cite their keys exactly as shown in
    brackets, e.g. [CRR Art. 178(1)] or [EBA GL definition of default (GL/2016/07) para. 71].
-   Never use outside knowledge and never cite a key you did not receive.
+   Never use outside knowledge and never cite a key whose text you did not receive: such
+   citations are rejected.
 2. Abstain only when the question is outside the scope above or no passage answers any part of
    it. If passages answer part of the question, answer that part and say in the text what is
    missing. Missing information goes in the answer text, never in "claims".
@@ -138,10 +142,17 @@ def _lookup(conn, key: str, received: list[str]) -> list:
 
 
 def _resolve(
-    conn, keys: list[str], received: list[str] = ()
+    conn,
+    keys: list[str],
+    received: list[str] = (),
+    *,
+    delivered: set[str] | None = None,
+    undelivered: list[str] | None = None,
 ) -> tuple[list[Hit], dict[str, list[str]]]:
     """Cited keys -> context hits (in citation order, one per chunk) and key -> ['C#', ...].
-    A key may list several passages ("A; B"); shortened keys are matched to `received` keys."""
+    A key may list several passages ("A; B"); shortened keys are matched to `received` keys.
+    With `delivered` (keys of passages the tools returned), a key that names a real passage the
+    agent never received is not accepted: it becomes 'C?' and is listed in `undelivered`."""
     context: list[Hit] = []
     by_chunk: dict[str, str] = {}
     mapping: dict[str, list[str]] = {}
@@ -152,8 +163,12 @@ def _resolve(
         parts = [p.strip() for p in key.split(";") if p.strip()]
         for part in (q for p in parts for q in _expand_range(p)):
             rows = _lookup(conn, part, received)
+            if rows and delivered is not None and key_of(rows[0]) not in delivered:
+                if undelivered is not None:
+                    undelivered.append(part)
+                rows = []
             if not rows:
-                cids.append("C?")  # unknown key -> flagged by the citation check
+                cids.append("C?")  # unknown or unread key -> flagged by the citation check
                 continue
             if rows[0].id not in by_chunk:
                 merged = rows[0].hit(1.0)
@@ -300,8 +315,11 @@ def answer_agentic(
     text = str(data.get("answer") or "")
     keys = [str(k) for c in claims_raw for k in c.get("citations", [])]
     keys += re.findall(r"\[([^\[\]]+?)\]", text)
-    received = [k for t in trace for k in t.get("keys", [])]
-    context, mapping = _resolve(conn, keys, received)
+    received = [k for t in trace for k in t.get("keys", [])]  # passages with text, not refs
+    unread: list[str] = []
+    context, mapping = _resolve(
+        conn, keys, received, delivered=set(received), undelivered=unread
+    )
     text = re.sub(
         r"\[([^\[\]]+?)\]",
         lambda m: "".join(f"[{c}]" for c in mapping.get(m.group(1), ["C?"])),
@@ -310,6 +328,8 @@ def answer_agentic(
     unresolved = [k for k, cids in mapping.items() if "C?" in cids]
     if unresolved:
         ans.trace.append({"tool": "answer", "unresolved_keys": unresolved})
+    if unread:
+        ans.errors.append(f"cited passages the agent never read: {', '.join(unread)}")
 
     ans.abstained = bool(data.get("abstain"))
     ans.abstain_reason = str(data.get("abstain_reason") or "")

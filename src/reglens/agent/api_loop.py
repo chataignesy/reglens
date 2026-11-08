@@ -13,7 +13,9 @@ Tools run in-process (no MCP server). Uses the documented manual tool-use loop.
 
 from __future__ import annotations
 
-from reglens.agent.tools import Toolbox, trace_entry
+import re
+
+from reglens.agent.tools import Toolbox, partial_reads, trace_entry
 from reglens.llm.provider import AnthropicAPIProvider
 
 _STR = {"type": "string"}
@@ -141,6 +143,26 @@ def _with_cache(messages: list[dict]) -> list[dict]:
     return out
 
 
+def _completeness_note(text: str, trace: list[dict]) -> str | None:
+    """Why a first final answer is not complete yet (review R1): it cites passages read only
+    as truncated snippets, or it reports missing information itself. None when complete."""
+    from reglens.answer.schema import parse_reply
+
+    data, problems = parse_reply(text)
+    if problems or not data or data.get("abstain"):
+        return None
+    cited = {str(k) for c in data.get("claims") or [] for k in c.get("citations") or []}
+    cited |= set(re.findall(r"\[([^\[\]]+?)\]", str(data.get("answer") or "")))
+    cut = sorted(cited & partial_reads(trace))
+    if cut:
+        return ("Your answer relies on passages you only saw as truncated snippets: "
+                + "; ".join(cut) + ". Read them in full with get_passage.")
+    if data.get("missing_info"):
+        return ("Your answer says information is missing. If a tool can find it (the RTS or "
+                "article a passage refers to, a truncated passage), look for it.")
+    return None
+
+
 def run_api_agent(
     conn,
     provider: AnthropicAPIProvider,
@@ -172,6 +194,7 @@ def run_api_agent(
     reserve = max(max_tokens // 5, 1)  # kept for the final answer
     last = 0  # tokens of the previous request: the next one is at least that big
     stop = False  # set once a limit is reached: the next turn must answer
+    nudged = False  # the one completeness round (R1) has been used
     for turn in range(max_turns):
         if tokens >= max_tokens:
             errors.append(f"token budget ({max_tokens:,}) spent before the final answer")
@@ -195,6 +218,18 @@ def run_api_agent(
         last = usage.total_tokens
         if response.stop_reason != "tool_use":
             text = "".join(b.text for b in response.content if getattr(b, "type", "") == "text")
+            note = None if (stop or nudged) else _completeness_note(text, trace)
+            room = box.calls < max_calls and turn + 2 < max_turns
+            if note and room and tokens + int(last * 1.3) <= max_tokens - reserve:
+                nudged = True  # R1: one more round to read what the answer relies on
+                if progress:
+                    progress({"stage": "completing", "reason": note})
+                messages.append({"role": "assistant", "content": response.content})
+                left = max_calls - box.calls
+                messages.append({"role": "user", "content": [{"type": "text", "text": (
+                    f"{note} You have {left} tool call(s) left: read it now, then give the "
+                    "final JSON answer again.")}]})
+                continue
             return text, trace, tokens, model, errors
         if stop:  # tools were forbidden on this turn
             errors.append("agent asked for tools on its final turn")

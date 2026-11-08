@@ -185,6 +185,9 @@ def answer_payload(ans: Answer, check: dict) -> dict:
         "tokens": ans.usage_tokens,
         "errors": ans.errors,
         "unverified": ans.unverified,
+        # R3: completeness, separate from the mechanical checks and from scope (abstained)
+        "missing_info": ans.missing_info,
+        "partial_reads": len(ans.partial_cids),
         "raw_output": ans.raw_output if ans.unverified else "",
         "unresolved": [k for t in ans.trace for k in t.get("unresolved_keys", [])],
     }

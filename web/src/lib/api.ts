@@ -53,10 +53,12 @@ export interface AnswerPayload {
   unresolved: string[]; // citation keys the agent used that matched no passage
   unverified: boolean; // the model's reply broke the answer format even after a retry
   raw_output: string; // that reply, for diagnosis only (empty unless unverified)
+  missing_info: boolean; // the answer reports that information it needs is missing
+  partial_reads: number; // cited passages the agent only saw as truncated snippets
 }
 
 export interface ProgressEvent {
-  stage: "retrieved" | "routing" | "routed" | "drafting" | "agent" | "tool" | "fallback" | "agent_failed" | "invalid_reply";
+  stage: "retrieved" | "routing" | "routed" | "drafting" | "agent" | "tool" | "fallback" | "agent_failed" | "invalid_reply" | "completing";
   [key: string]: unknown;
 }
 

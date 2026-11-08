@@ -37,6 +37,11 @@ New items, to go before step 8 (they change answers or how they are graded):
 | R2 | The judge contradicts itself: pd-002 scored 2 while its rationale said "should be 1". | Flag verdicts whose score disagrees with their own missing facts or rationale. Keep the raw verdict, list the flags in the run report, and hand-check them. |
 | R3 | Scope compliance gets mixed up with claim support. | A separate scope signal in reports and the UI: the answer declined, answered in scope, or answered an out-of-scope question with related material. |
 
+**Status (R1–R3): ✅ done.**
+- **R1:** the tool trace records passages delivered only as truncated snippets. Claims citing one fail the mechanical check as `partial_read`, and the answer reports `missing_info`. The API agent gets one completeness round, if calls, turns and budget remain, when its draft relies on such passages or reports a gap. The `claude -p` path cannot continue a finished session, so there it is flagged only. The agent JSON has `missing_info`.
+- **R2:** `eval.judge.consistency_flags` (score versus missing facts, contradictions, or a different score named in the rationale). Raw verdicts are kept; `inconsistent_verdicts` is listed in the run summary and printed for a manual check.
+- **R3:** eval rows carry `scope` (declined / answered / answered_out_of_scope / declined_in_scope) and `reports_incomplete`; the summary has `scope_compliance` and the list of incomplete answers, separate from the mechanical check pass rate and the judged correctness. The answer view shows Scope, Completeness and Mechanical checks as separate lines.
+
 ## Principle
 
 Most findings share one cause: **source identity and completeness are lost between stages**.

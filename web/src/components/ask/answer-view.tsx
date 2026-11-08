@@ -169,6 +169,34 @@ export function AnswerView({ result }: { result: AnswerPayload }) {
         </CardContent>
       </Card>
 
+      <ul className="space-y-1 text-xs" aria-label="Answer signals">
+        <li className="flex items-center gap-1.5">
+          <CheckCircle2 className="size-3.5 text-emerald-600" />
+          <span>
+            <span className="font-medium">Scope:</span> answered from the RegLens corpus (EU credit risk
+            regulation). Questions outside it should be declined.
+          </span>
+        </li>
+        <li className="flex items-center gap-1.5">
+          {result.missing_info || result.partial_reads > 0 ? (
+            <CircleAlert className="size-3.5 text-amber-600" />
+          ) : (
+            <CheckCircle2 className="size-3.5 text-emerald-600" />
+          )}
+          <span>
+            <span className="font-medium">Completeness:</span>{" "}
+            {result.partial_reads > 0
+              ? `relies on ${result.partial_reads} passage(s) read only as truncated snippets; `
+              : ""}
+            {result.missing_info
+              ? "the answer reports that information it needs is missing (see the text)."
+              : result.partial_reads > 0
+                ? "check those sources in full."
+                : "no gaps reported. A judged completeness score exists only in the evaluation."}
+          </span>
+        </li>
+      </ul>
+
       {result.sources.length > 0 && (
         <section>
           <h3 className="mb-2 text-sm font-semibold">Sources</h3>

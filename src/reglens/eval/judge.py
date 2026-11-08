@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 
 from reglens.config import PROJECT_ROOT, Config
 from reglens.eval.answers import RUNS_DIR, file_sha
@@ -63,12 +64,32 @@ def _parse(text: str) -> dict:
     score = int(data.get("score"))
     if score not in (0, 1, 2):
         raise ValueError(f"score out of range: {score}")
-    return {
+    verdict = {
         "score": score,
         "missing": list(data.get("missing") or []),
         "contradictions": list(data.get("contradictions") or []),
         "rationale": str(data.get("rationale") or ""),
     }
+    return verdict | {"flags": consistency_flags(verdict)}
+
+
+_SHOULD_BE = re.compile(r"\bshould (?:be|score|get|receive)\s+(?:a\s+)?([012])\b", re.I)
+
+
+def consistency_flags(v: dict) -> list[str]:
+    """Where a verdict disagrees with itself (review R2). The raw score is kept; flagged
+    verdicts are listed in the run report for a manual check, never silently rewritten."""
+    flags = []
+    if v["score"] == 2 and v["missing"]:
+        flags.append("score 2 but key facts listed as missing")
+    if v["score"] >= 1 and v["contradictions"]:
+        flags.append(f"score {v['score']} but contradictions listed")
+    if v["score"] == 0 and not v["missing"] and not v["contradictions"]:
+        flags.append("score 0 without missing facts or contradictions")
+    said = {int(m) for m in _SHOULD_BE.findall(v["rationale"])}
+    if said and v["score"] not in said:
+        flags.append(f"rationale says the score should be {'/'.join(map(str, sorted(said)))}")
+    return flags
 
 
 def _artifact(entry: dict) -> tuple[dict | None, str]:
@@ -137,6 +158,7 @@ def judge(
             path = JUDGE_DIR / f"{verdict_key(item, rec['answer'], model)}.json"
             if path.exists():
                 verdict = json.loads(path.read_text(encoding="utf-8"))
+                verdict.setdefault("flags", consistency_flags(verdict))
             else:
                 try:
                     c = provider.complete(judge_prompt(item, rec["answer"]), purpose="judge",
@@ -173,6 +195,8 @@ def judge(
         "wrong": sum(r["score"] == 0 for r in in_scope),
         "out_of_scope_declined": f"{sum(r['score'] == 2 for r in oos)}/{len(oos)}",
         "with_contradictions": [r["id"] for r in rows if r.get("contradictions")],
+        # R2: verdicts that disagree with themselves; check these by hand before quoting a score
+        "inconsistent_verdicts": {r["id"]: r["flags"] for r in rows if r.get("flags")},
         "new_tokens": new_tokens,
         "per_item": rows,
     }

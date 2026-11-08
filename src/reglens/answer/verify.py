@@ -6,6 +6,8 @@ Checks per claim, in order:
 - unsupported_number  a number in the claim (%, EUR, periods, ...) is in none of its cited passages
                       (numbers written as words count; numbers taken from the question are allowed)
 - kind_mismatch       labelled "law" but cites no CRR/RTS passage
+- partial_read        (agent) cites a passage the agent saw only as a truncated snippet: the
+                      text checked here is more than the model read
 """
 
 from __future__ import annotations
@@ -55,6 +57,8 @@ def check_answer(ans: Answer) -> dict:
                 claim.check = f"unsupported_number({', '.join(sorted(missing))})"
             elif claim.kind == "law" and not any(h.legal_level in LAW_LEVELS for h in cited):
                 claim.check = "kind_mismatch"
+            elif any(c in ans.partial_cids for c in claim.citations):
+                claim.check = "partial_read"
             else:
                 claim.check = "ok"
         key = claim.check.split("(")[0]

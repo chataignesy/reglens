@@ -138,12 +138,23 @@ def run(
                "unverified": bool(record.get("unverified"))}
         )
         oos = item.type == "out_of_scope"
+        # R3: three separate signals: scope (did it answer what it should?), claim support
+        # (the mechanical checks) and completeness (does the answer report gaps?)
+        if oos:
+            scope = "declined" if record["abstained"] else "answered_out_of_scope"
+        else:
+            scope = "declined_in_scope" if record["abstained"] else "answered"
+        incomplete = not record["abstained"] and (
+            bool(record.get("missing_info")) or bool(record.get("partial_cids"))
+        )
         rows.append(
             {
                 "id": item.id,
                 "type": item.type,
                 "route": outcome["route"],
                 "attempts": outcome["attempts"],
+                "scope": scope,
+                "reports_incomplete": incomplete,
                 "abstained": record["abstained"],
                 "abstain_correct": record["abstained"] == oos,
                 "citation_recall": None if oos else citation_recall(item, record),
@@ -171,8 +182,13 @@ def run(
         "answered_in_scope": round(sum(not r["abstained"] for r in ins) / len(ins), 3)
         if ins
         else None,
+        "scope_compliance": round(sum(r["abstain_correct"] for r in rows) / len(rows), 3)
+        if rows
+        else None,
+        "answered_out_of_scope": [r["id"] for r in oos if r["scope"] == "answered_out_of_scope"],
         "citation_recall": mean("citation_recall", ins),
         "check_pass_rate": mean("check_pass_rate", ins),
+        "reports_incomplete": [r["id"] for r in ins if r["reports_incomplete"]],
         "avg_tokens": round(sum(r["tokens"] for r in rows) / max(len(rows), 1)),
         "total_tokens": sum(r["tokens"] for r in rows),
         "new_tokens_this_run": new_tokens,

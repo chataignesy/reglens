@@ -352,6 +352,7 @@ def _cmd_eval_answers(args: argparse.Namespace) -> None:
     )
     print(
         f"\nrun {s['run_id']}\n"
+        f"scope compliance {s['scope_compliance']}  "
         f"abstain on out-of-scope {s['abstain_on_out_of_scope']}  "
         f"answered in-scope {s['answered_in_scope']}  citation recall {s['citation_recall']}  "
         f"mechanical checks passed {s['check_pass_rate']}  avg tokens {s['avg_tokens']:,}  "
@@ -362,6 +363,8 @@ def _cmd_eval_answers(args: argparse.Namespace) -> None:
         print(f"  abstention wrong: {r['id']} ({r['type']}, abstained={r['abstained']})")
     if s["errors"]:
         print(f"  with errors: {', '.join(s['errors'])}")
+    if s["reports_incomplete"]:
+        print(f"  answers reporting missing information: {', '.join(s['reports_incomplete'])}")
     print(f"manifest: {s['file']}  (grade it with: reglens judge --run {s['run_id']})")
 
 
@@ -555,6 +558,8 @@ def _cmd_judge(args: argparse.Namespace) -> None:
     )
     if s["problems"]:
         print(f"  not graded: {'; '.join(s['problems'])}")
+    for item_id, flags in s["inconsistent_verdicts"].items():
+        print(f"  check by hand: {item_id}: {'; '.join(flags)}")
     for r in s["per_item"]:
         if r["score"] < 2 and r["type"] != "out_of_scope":
             print(f"  {r['id']:<10} {r['score']}  {r.get('rationale', '')[:150]}")

@@ -121,8 +121,15 @@ def trace_entry(call: int, tool: str, args: list, out: str) -> dict:
     agent may cite; `refs`: follow_reference targets, pointers without text."""
     keys = re.findall(r"^\[(.+?)\] \(", out, re.M)  # passages: "[key] (level)"
     refs = re.findall(r"^- \w+: (.+)$", out, re.M)
+    cut = re.findall(r"…\[truncated; get_passage\('(.+?)'\) for the full text\]", out)
     entry = {"call": call, "tool": tool, "args": args, "keys": keys, "chars": len(out)}
-    return entry | ({"refs": refs} if refs else {})
+    return entry | ({"refs": refs} if refs else {}) | ({"truncated": cut} if cut else {})
+
+
+def partial_reads(trace: list[dict]) -> set[str]:
+    """Keys the agent saw only as truncated snippets, never in full (review R1)."""
+    full = {k for t in trace for k in t.get("keys", []) if k not in t.get("truncated", [])}
+    return {k for t in trace for k in t.get("truncated", [])} - full
 
 
 class Toolbox:

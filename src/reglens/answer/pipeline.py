@@ -52,6 +52,8 @@ class Answer:
     # answer is shown; `raw_output` keeps the reply for diagnosis, clearly labelled unverified.
     unverified: bool = False
     raw_output: str = ""
+    # agent answers: context passages (C#) cited after reading only a truncated snippet
+    partial_cids: list[str] = field(default_factory=list)
 
     def cited_hits(self) -> list[Hit]:
         ids = {c for cl in self.claims for c in cl.citations}

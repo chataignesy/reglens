@@ -20,7 +20,7 @@ import threading
 from datetime import date
 from pathlib import Path
 
-from reglens.agent.tools import key_of, resolve_key
+from reglens.agent.tools import key_of, partial_reads, resolve_key
 from reglens.answer.pipeline import Answer, Claim, Progress, as_of_statement
 from reglens.answer.prompts import SCOPE
 from reglens.answer.schema import parse_reply
@@ -69,8 +69,11 @@ Rules:
    instructions) or "interpretation" (your inference; say so in the text).
 4. Quote numbers exactly as the passages give them. Be concise; no legal-advice disclaimers.
 
+5. Set "missing_info": true when something the answer needs is not in the passages you read
+   (and say what in the text).
+
 Final reply: ONE JSON object and nothing else:
-{{"abstain": false, "abstain_reason": "",
+{{"abstain": false, "abstain_reason": "", "missing_info": false,
   "answer": "short answer in Markdown citing keys in brackets",
   "claims": [{{"text": "one atomic claim", "citations": ["CRR Art. 178(1)"], "kind": "law"}}]}}
 """
@@ -149,6 +152,7 @@ def _resolve(
     *,
     delivered: set[str] | None = None,
     undelivered: list[str] | None = None,
+    canonical: dict[str, str] | None = None,
 ) -> tuple[list[Hit], dict[str, list[str]]]:
     """Cited keys -> context hits (in citation order, one per chunk) and key -> ['C#', ...].
     A key may list several passages ("A; B"); shortened keys are matched to `received` keys.
@@ -176,6 +180,8 @@ def _resolve(
                 merged.text = "\n".join(r.text for r in rows)  # windowed chunks: all parts
                 context.append(merged)
                 by_chunk[rows[0].id] = f"C{len(context)}"
+                if canonical is not None:  # C# -> the passage's own citation key
+                    canonical[by_chunk[rows[0].id]] = key_of(rows[0])
             if by_chunk[rows[0].id] not in cids:
                 cids.append(by_chunk[rows[0].id])
         mapping[key] = cids
@@ -321,8 +327,9 @@ def answer_agentic(
     keys += re.findall(r"\[([^\[\]]+?)\]", text)
     received = [k for t in trace for k in t.get("keys", [])]  # passages with text, not refs
     unread: list[str] = []
+    canonical: dict[str, str] = {}
     context, mapping = _resolve(
-        conn, keys, received, delivered=set(received), undelivered=unread
+        conn, keys, received, delivered=set(received), undelivered=unread, canonical=canonical
     )
     text = re.sub(
         r"\[([^\[\]]+?)\]",
@@ -334,6 +341,13 @@ def answer_agentic(
         ans.trace.append({"tool": "answer", "unresolved_keys": unresolved})
     if unread:
         ans.errors.append(f"cited passages the agent never read: {', '.join(unread)}")
+    # R1: passages cited after reading only a truncated snippet of them
+    snippets_only = partial_reads(trace)
+    ans.partial_cids = sorted(c for c, k in canonical.items() if k in snippets_only)
+    if ans.partial_cids:
+        names = ", ".join(canonical[c] for c in ans.partial_cids)
+        ans.errors.append(f"relies on passages read only as truncated snippets: {names}")
+    ans.missing_info = bool(data.get("missing_info")) or bool(ans.partial_cids)
 
     ans.abstained = bool(data.get("abstain"))
     ans.abstain_reason = str(data.get("abstain_reason") or "")

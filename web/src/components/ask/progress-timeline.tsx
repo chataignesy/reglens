@@ -58,6 +58,11 @@ function describe(e: ProgressEvent): { icon: React.ReactNode; text: string } {
         icon: <Undo2 className="size-4" />,
         text: `The research agent stopped without a usable answer (${short(String(e.reason ?? ""), 90)}): answering in a single pass instead`,
       };
+    case "completing":
+      return {
+        icon: <BookOpen className="size-4" />,
+        text: "The draft relied on unread text or reported a gap: one more round to read it",
+      };
     case "invalid_reply":
       return {
         icon: <CircleAlert className="size-4" />,

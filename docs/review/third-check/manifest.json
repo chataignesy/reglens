@@ -1,6 +1,0 @@
-{
-  "checked_at_utc": "2026-11-09T18:10:08.287790+00:00",
-  "head": "8a1a7bfd369fd0eaa8cbb84514a95095b5be76ed",
-  "application_diff_sha256": "f92fd94ae1637cc1d2d66c6069fd403b98a050819b5db874fce69fab83076c5b",
-  "note": "Reviewed uncommitted fixes; review did not edit application source. No new paid LLM calls."
-}

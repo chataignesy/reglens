@@ -14,12 +14,15 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import re
 from importlib import metadata
 from pathlib import Path
 
 from reglens.config import PROJECT_ROOT
 from reglens.ingest.eurlex import Unit
+
+log = logging.getLogger(__name__)
 
 DOCLING_DIR = PROJECT_ROOT / "data" / "processed" / "docling"
 
@@ -45,7 +48,10 @@ def converter_version() -> str:
 def pdf_to_markdown(source_id: str, pdf: Path, *, force: bool = False) -> str:
     """Docling Markdown for `pdf`, cached. The cache is valid only for the exact PDF bytes it
     was converted from: `<id>.meta.json` records the PDF's SHA-256 and the converter version,
-    and a re-downloaded PDF (new bytes) is converted again instead of reusing old text."""
+    and a re-downloaded PDF (new bytes) is converted again instead of reusing old text.
+    A different converter version also converts again (second review: converter upgrades
+    must not silently reuse old output). A cache adopted before provenance was recorded has
+    no known version; it is reused with a warning (re-run with `parse --force` to refresh)."""
     out = DOCLING_DIR / f"{source_id}.md"
     meta_path = out.with_suffix(".meta.json")
     digest = file_sha256(pdf)
@@ -56,7 +62,14 @@ def pdf_to_markdown(source_id: str, pdf: Path, *, force: bool = False) -> str:
             meta = {"pdf_sha256": digest, "converter": "unknown (adopted cache)"}
             meta_path.write_text(json.dumps(meta, indent=2), encoding="utf-8")
         if meta and meta.get("pdf_sha256") == digest:
-            return out.read_text(encoding="utf-8")
+            made_by = str(meta.get("converter", ""))
+            if made_by == converter_version():
+                return out.read_text(encoding="utf-8")
+            if made_by.startswith("unknown"):
+                log.warning("%s: Docling cache of unknown converter version reused", source_id)
+                return out.read_text(encoding="utf-8")
+            log.warning("%s: cache made by %s, now %s: converting again", source_id,
+                        made_by, converter_version())
     from docling.document_converter import DocumentConverter  # heavy import, ml extra
 
     doc = DocumentConverter().convert(str(pdf)).document

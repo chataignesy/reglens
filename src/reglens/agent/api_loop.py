@@ -16,6 +16,7 @@ from __future__ import annotations
 import re
 
 from reglens.agent.tools import Toolbox, partial_reads, trace_entry
+from reglens.cancel import Cancelled
 from reglens.llm.provider import AnthropicAPIProvider
 
 _STR = {"type": "string"}
@@ -119,12 +120,22 @@ STOP_NOTE = (
 )
 
 
+def _check_cancel(provider) -> None:
+    """Second review S2: stop downstream work (tools, continuation, final answer) as soon as
+    the question is cancelled, even while an SDK request was in flight. Raises Cancelled."""
+    token = getattr(provider, "cancel", None)
+    if token is not None:
+        token.check()
+
+
 def _run_tool(box: Toolbox, name: str, args: dict) -> tuple[str, list]:
     if name not in _ARGS:
         return f"Unknown tool '{name}'.", []
     values = [args.get(a, default) for a, default in _ARGS[name]]
     try:
         return getattr(box, name)(*values), values
+    except Cancelled:
+        raise  # never a tool error the model could read
     except Exception as e:  # bad arguments from the model -> tell it, don't crash the loop
         return f"Tool error: {e}", values
 
@@ -143,7 +154,7 @@ def _with_cache(messages: list[dict]) -> list[dict]:
     return out
 
 
-def _completeness_note(text: str, trace: list[dict]) -> str | None:
+def _completeness_note(text: str, trace: list[dict], conn=None) -> str | None:
     """Why a first final answer is not complete yet (review R1): it cites passages read only
     as truncated snippets, or it reports missing information itself. None when complete."""
     from reglens.answer.schema import parse_reply
@@ -153,10 +164,10 @@ def _completeness_note(text: str, trace: list[dict]) -> str | None:
         return None
     cited = {str(k) for c in data.get("claims") or [] for k in c.get("citations") or []}
     cited |= set(re.findall(r"\[([^\[\]]+?)\]", str(data.get("answer") or "")))
-    cut = sorted(cited & partial_reads(trace))
+    cut = sorted(cited & partial_reads(trace, conn))
     if cut:
-        return ("Your answer relies on passages you only saw as truncated snippets: "
-                + "; ".join(cut) + ". Read them in full with get_passage.")
+        return ("Your answer relies on passages you only saw in part (truncated, or not all "
+                "of their parts): " + "; ".join(cut) + ". Read them in full with get_passage.")
     if data.get("missing_info"):
         return ("Your answer says information is missing. If a tool can find it (the RTS or "
                 "article a passage refers to, a truncated passage), look for it.")
@@ -217,9 +228,10 @@ def run_api_agent(
         )
         tokens += usage.total_tokens
         last = usage.total_tokens
+        _check_cancel(provider)  # cancelled while the request was in flight: do nothing more
         if response.stop_reason != "tool_use":
             text = "".join(b.text for b in response.content if getattr(b, "type", "") == "text")
-            note = None if (stop or nudged) else _completeness_note(text, trace)
+            note = None if (stop or nudged) else _completeness_note(text, trace, box.conn)
             room = box.calls < max_calls and turn + 2 < max_turns
             if note and room and tokens + int(last * 1.3) <= max_tokens - reserve:
                 nudged = True  # R1: one more round to read what the answer relies on
@@ -239,9 +251,11 @@ def run_api_agent(
         messages.append({"role": "assistant", "content": response.content})
         results: list[dict] = []
         for block in (b for b in response.content if getattr(b, "type", "") == "tool_use"):
+            _check_cancel(provider)
             out, values = _run_tool(box, block.name, dict(block.input or {}))
             err = out.startswith(("Tool error", "Unknown tool"))
-            trace.append(trace_entry(box.calls, block.name, values, out))
+            chunks = getattr(box, "last_chunks", None)
+            trace.append(trace_entry(box.calls, block.name, values, out, chunks))
             if progress:
                 progress({"stage": "tool"} | trace[-1])
             results.append(

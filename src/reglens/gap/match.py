@@ -116,7 +116,11 @@ def validate(oid: str, raw: dict, by_clause: dict[str, Clause]) -> Verdict:
     - a quote not found verbatim in its clauses keeps the status, flagged "not_verbatim".
     """
     status = str(raw.get("status", "")).strip().lower()
-    named = [str(c) for c in raw.get("clauses") or []]
+    clauses = raw.get("clauses") or []
+    if isinstance(clauses, str):  # "C3" instead of ["C3"]
+        clauses = [clauses]
+    named = [str(c) for c in clauses] if isinstance(clauses, list | tuple) else []
+    malformed_clauses = not isinstance(clauses, list | tuple)
     cited = [c for c in named if c in by_clause]
     quote = str(raw.get("quote") or "").strip()
     rationale = str(raw.get("rationale", ""))
@@ -128,6 +132,8 @@ def validate(oid: str, raw: dict, by_clause: dict[str, Clause]) -> Verdict:
 
     if status not in STATUSES:
         return invalid(f"status {status!r}")
+    if malformed_clauses:
+        return invalid(f"clauses must be a list, got {type(clauses).__name__}")
     if status not in NEEDS_EVIDENCE:
         return Verdict(oid, status, cited, quote, True, rationale, "none_required")
     if not cited:
@@ -145,9 +151,17 @@ def parse_verdicts(batch: list[Obligation], reply: str, clauses: list[Clause]) -
     by_clause = {c.id: c for c in clauses}
     wanted = {o.id for o in batch}
     out: dict[str, Verdict] = {}
-    for v in _parse_json(reply).get("verdicts") or []:
+    data = _parse_json(reply)
+    if not isinstance(data, dict):
+        raise ValueError(f"reply is a JSON {type(data).__name__}, not an object")
+    entries = data.get("verdicts")
+    # second review S7: check the collection and each entry before reading fields; anything
+    # malformed leaves its obligation unassessed below instead of aborting the run
+    for v in entries if isinstance(entries, list) else []:
+        if not isinstance(v, dict):
+            continue
         oid = str(v.get("id", ""))
-        if oid not in wanted or oid in out or not isinstance(v, dict):
+        if oid not in wanted or oid in out:
             continue
         out[oid] = validate(oid, v, by_clause)
     # an obligation the model skipped is reported, not silently treated as covered
@@ -200,9 +214,10 @@ def match(
             log(f"  [{n}/{len(todo)}] {batch[0].topic} ({len(batch)}): {used:,} tokens")
         try:
             verdicts += parse_verdicts(batch, reply, clauses)
-        except (ValueError, json.JSONDecodeError) as e:
+        except (ValueError, TypeError, AttributeError) as e:  # JSONDecodeError is a ValueError
             log(f"  [{n}] unparseable reply: {e}")
-            verdicts += [Verdict(o.id, "unassessed", [], "", True, "unparseable") for o in batch]
+            verdicts += [Verdict(o.id, "unassessed", [], "", False, f"unparseable reply: {e}",
+                                 "invalid") for o in batch]
     return verdicts, new_tokens
 
 

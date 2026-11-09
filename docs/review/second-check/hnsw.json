@@ -1,0 +1,7 @@
+{
+  "forced_hnsw_count": 30,
+  "exact_count": 30,
+  "overlap": 1.0,
+  "ef_search": "400",
+  "iterative_scan": "relaxed_order"
+}

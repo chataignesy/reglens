@@ -86,6 +86,30 @@ New items, to go before step 8 (they change answers or how they are graded):
 - **R2:** `eval.judge.consistency_flags` (score versus missing facts, contradictions, or a different score named in the rationale). Raw verdicts are kept; `inconsistent_verdicts` is listed in the run summary and printed for a manual check.
 - **R3:** eval rows carry `scope` (declined / answered / answered_out_of_scope / declined_in_scope) and `reports_incomplete`; the summary has `scope_compliance` and the list of incomplete answers, separate from the mechanical check pass rate and the judged correctness. The answer view shows Scope, Completeness and Mechanical checks as separate lines.
 
+### Additions from the second review
+
+[SECOND-REVIEW-2026-11-08.md](SECOND-REVIEW-2026-11-08.md) checked commit `8a1a7bf` and found seven remaining defects. The plan was one small code fix per finding, each with a regression test built from the review's reproduction, in `tests/test_second_review.py`. None of the fixes needs an LLM call.
+
+| | Finding | Change |
+|---|---|---|
+| S1 (P1) | A single delivered window authorised the whole passage. The paragraph-30 case delivered 978 chars and resolved 4,677. | The toolbox records the characters delivered per chunk (`last_chunks`), and every trace entry has `chunks`. `_resolve` builds context from that delivered text only, never from unseen windows. A unit counts as read only when every window was delivered whole; otherwise it is `partial_read`. The API agent's completeness nudge uses the same rule. Old traces without `chunks` keep the key-level check. |
+| S2 | Tools started after a cancel that arrived during an SDK request. | The API loop checks for cancellation after each model return and before each tool. `Cancelled` propagates and is never turned into a tool error. The request that had already finished is still in the ledger. |
+| S3 | Cancel killed `claude -p` but not its MCP child. | `cancel.kill_tree` kills by PID or process group, never by name: `taskkill /T /F` on Windows, `killpg` elsewhere. It runs on both cancel and timeout. The test kills a real parent and its child. |
+| S4 | The corpus fingerprint ignored metadata (`applies_to`, `legal_level`, `version`, `kind`, …) and was memoised. | All answer-relevant chunk columns and `sources.yaml` are hashed. The memo is gone (~0.1 s per call). |
+| S5 | Retrieval recall flattened alternative ranges. Retrieving para. 72 of 72–73 scored 1.0, versus 0.5 at answer level. | Retrieval uses the same `citations.groups`: OR over complete AND-groups, as answer-level credit does. The retrieval eval is unchanged (rerank recall@10 0.805, hit@10 0.913), so no reported number moves. |
+| S6 | A run could be judged against a question that was edited under the same id. | `judge.plan` / `judge` reject a `question_sha` mismatch. For older manifests they check the answer record's question. The real smoke run still plans cleanly (25 cached, 5 deterministic, 0 problems). |
+| S7 | `{"verdicts":[null]}` crashed the gap batch. | The collection and each entry are type-checked before any field is read. A clause given as a string is accepted; other clause types are invalid. Any malformed reply becomes `unassessed` / `invalid` and no longer aborts the run. |
+
+Other items from the review, also fixed:
+- **Converter version on cache reuse:** a Docling cache made by a different converter version is converted again. The 7 current caches were adopted before provenance was recorded, so they are reused with a warning; `parse --force` refreshes them.
+- **Progress events as cancellation points:** the API's progress emitter raises `Cancelled` instead of silently dropping events, so single-pass steps stop there too. The CLI trace watcher exits quietly.
+
+**Status (S1–S7 + these): ✅ done** (149 tests). Still open from the review:
+- adjudicate the 4 flagged smoke verdicts (practitioner judgement);
+- vector model revision pinning, which stays with the deferred roadmap items. The model *name* is already in the code hash.
+
+The cache namespaces change with this code, so the next eval run produces fresh answers rather than reusing the smoke artifacts. The smoke manifest stays valid for `judge --run`.
+
 ## Principle
 
 Most findings share one cause: **source identity and completeness are lost between stages**.

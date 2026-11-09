@@ -116,18 +116,47 @@ def _format(rows: list[Row], max_chars: int) -> str:
     return "\n\n".join(out) if out else "No passages found."
 
 
-def trace_entry(call: int, tool: str, args: list, out: str) -> dict:
+def trace_entry(call: int, tool: str, args: list, out: str, chunks: dict | None = None) -> dict:
     """One tool-call record. `keys`: passages whose text the tool returned, the only ones the
-    agent may cite; `refs`: follow_reference targets, pointers without text."""
+    agent may cite; `refs`: follow_reference targets, pointers without text; `chunks`: chunk id
+    -> characters of its text actually delivered (second review S1: coverage per window)."""
     keys = re.findall(r"^\[(.+?)\] \(", out, re.M)  # passages: "[key] (level)"
     refs = re.findall(r"^- \w+: (.+)$", out, re.M)
     cut = re.findall(r"…\[truncated; get_passage\('(.+?)'\) for the full text\]", out)
     entry = {"call": call, "tool": tool, "args": args, "keys": keys, "chars": len(out)}
+    entry |= {"chunks": dict(chunks)} if chunks is not None else {}
     return entry | ({"refs": refs} if refs else {}) | ({"truncated": cut} if cut else {})
 
 
-def partial_reads(trace: list[dict]) -> set[str]:
-    """Keys the agent saw only as truncated snippets, never in full (review R1)."""
+def delivered_chars(trace: list[dict]) -> dict[str, int] | None:
+    """Chunk id -> most characters of it any tool call delivered. None for an old trace
+    without per-chunk records (then only key-level checks are possible)."""
+    if not any("chunks" in t for t in trace):
+        return None
+    got: dict[str, int] = {}
+    for t in trace:
+        for cid, n in (t.get("chunks") or {}).items():
+            got[cid] = max(got.get(cid, 0), int(n))
+    return got
+
+
+def coverage(rows: list[Row], got: dict[str, int]) -> str:
+    """How much of one logical unit (all its windows) was delivered: none / partial / full."""
+    seen = [r for r in rows if got.get(r.id, 0) > 0]
+    if not seen:
+        return "none"
+    full = all(got.get(r.id, 0) >= len(r.text) for r in rows)
+    return "full" if full else "partial"
+
+
+def partial_reads(trace: list[dict], conn=None) -> set[str]:
+    """Keys the agent never read in full (review R1). With `conn` and a trace that records
+    chunks, a unit counts as read only when every one of its windows was delivered whole
+    (second review S1); otherwise a key is partial if it was only ever seen truncated."""
+    got = delivered_chars(trace) if conn is not None else None
+    if got is not None:
+        keys = {k for t in trace for k in t.get("keys", [])}
+        return {k for k in keys if coverage(resolve_key(conn, k), got) == "partial"}
     full = {k for t in trace for k in t.get("keys", []) if k not in t.get("truncated", [])}
     return {k for t in trace for k in t.get("truncated", [])} - full
 
@@ -159,10 +188,12 @@ class Toolbox:
         self.calls = 0
         self.seen: dict[str, Row] = {}  # citation key -> passage actually returned
         self.last_shown = 0
+        self.last_chunks: dict[str, int] = {}  # chunk id -> chars delivered by the last call
 
     def _budget(self) -> str | None:
         """None while calls remain (or without a cap: `max_calls=None`), else the stop note."""
         self.calls += 1
+        self.last_chunks = {}
         if self.max_calls is not None and self.calls > self.max_calls:
             return (
                 f"Tool budget exhausted ({self.max_calls} calls). Answer now with the "
@@ -184,6 +215,8 @@ class Toolbox:
             blocks.append(block)
             used += len(block) + 2
             self.seen[key_of(r)] = r
+            n = min(len(r.text), cap)
+            self.last_chunks[r.id] = max(self.last_chunks.get(r.id, 0), n)
         self.last_shown = len(blocks)
         text = head + ("\n\n".join(blocks) if blocks else "No passages found.")
         if len(blocks) < len(rows):

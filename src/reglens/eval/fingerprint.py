@@ -9,10 +9,10 @@ from __future__ import annotations
 
 import hashlib
 import json
-from functools import lru_cache
 from pathlib import Path
 
 import reglens
+from reglens.config import PROJECT_ROOT
 
 _PKG = Path(reglens.__file__).parent
 
@@ -48,21 +48,34 @@ def code_hash(files: list[str]) -> str:
     return h.hexdigest()[:12]
 
 
-@lru_cache(maxsize=4)
-def _corpus(conn_id: int, conn) -> str:
+# Every chunk column that can change retrieval inclusion (applies_to, filters), source
+# classification (legal_level, kind), dates (version), citation keys or text (second review S4).
+_CHUNK_FIELDS = (
+    "id", "source_id", "text_hash", "cite", "applies_to", "legal_level", "version", "kind",
+    "ref", "title", "article", "paragraph", "point", "part", "source_sha256",
+    "array_to_string(amended_by, '|')",
+)
+
+
+def _corpus(conn) -> str:
+    row_expr = " || '~' || ".join(f"coalesce({c}::text, '')" for c in _CHUNK_FIELDS)
     row = conn.execute(
-        "SELECT md5(string_agg(id || ':' || text_hash || ':' || cite, ',' ORDER BY id)), "
+        f"SELECT md5(string_agg({row_expr}, ',' ORDER BY id)), "
         "(SELECT md5(string_agg(src || kind || target_source || target_article || "
         "coalesce(target_paragraph, '') || coalesce(target_point, ''), ',' ORDER BY "
         "src, kind, target_source, target_article, target_paragraph, target_point)) FROM edges) "
         "FROM chunks"
     ).fetchone()
-    return sha(f"{row[0]}|{row[1]}")
+    registry = PROJECT_ROOT / "sources.yaml"  # labels, legal levels, dates, applicability
+    reg = hashlib.sha256(registry.read_bytes()).hexdigest() if registry.exists() else ""
+    return sha(f"{row[0]}|{row[1]}|{reg}")
 
 
 def corpus_fingerprint(conn) -> str:
-    """Chunks (ids, text hashes, citation keys) and graph edges currently indexed."""
-    return _corpus(id(conn), conn)
+    """Chunks (text hashes, citation keys and all answer-relevant metadata), graph edges and
+    the source registry. Computed fresh on every call (~0.1 s): no memo can go stale after a
+    metadata-only refresh."""
+    return _corpus(conn)
 
 
 def namespace(kind: str, conn, model: str, settings: dict, suffix: str = "") -> str:

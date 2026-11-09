@@ -46,7 +46,7 @@ def _call(tool: str, *args) -> str:
     """Run a Toolbox method and append it to the trace file (if any)."""
     out = getattr(box(), tool)(*args)
     if path := os.environ.get("REGLENS_TRACE_FILE"):
-        entry = trace_entry(box().calls, tool, list(args), out)
+        entry = trace_entry(box().calls, tool, list(args), out, getattr(box(), "last_chunks", None))
         with open(path, "a", encoding="utf-8") as f:
             f.write(json.dumps(entry, ensure_ascii=False) + "\n")
     return out

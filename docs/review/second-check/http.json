@@ -1,0 +1,32 @@
+{
+  "ready": {
+    "status": 200,
+    "bytes": 80
+  },
+  "gap/runs": {
+    "status": 200,
+    "bytes": 414
+  },
+  "gap?run=demo": {
+    "status": 200,
+    "bytes": 485785
+  },
+  "gap/export?run=demo&format=xlsx": {
+    "status": 200,
+    "bytes": 89288
+  },
+  "disconnect": {
+    "first": "event: progress",
+    "calls": 1,
+    "cancelled": true,
+    "available_slots": 2
+  },
+  "admission": {
+    "third_status": 429,
+    "accepted_statuses": [
+      200,
+      200
+    ],
+    "available_slots": 2
+  }
+}

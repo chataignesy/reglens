@@ -47,8 +47,22 @@ class ItemResult:
     id: str
     type: str
     expected: list[str]
-    found_at: dict[str, int | None] = field(default_factory=dict)  # citation -> rank (1-based)
+    found_at: dict[str, int | None] = field(default_factory=dict)  # member -> rank (1-based)
     top: list[str] = field(default_factory=list)
+    # expected citation -> its AND-groups (the citation, then each accepted alternative) as
+    # the rank of every member: the same OR-over-AND structure as answer-level credit (S5)
+    groups: dict[str, list[list[int | None]]] = field(default_factory=dict)
+
+    def credit(self, at: int) -> float:
+        """Mean over expected citations of the best group's share of members within `at`."""
+        per = [
+            max(sum(1 for r in g if r and r <= at) / len(g) for g in gs)
+            for gs in self.groups.values() if gs
+        ]
+        return sum(per) / len(per) if per else 0.0
+
+    def ranks(self) -> list[int]:
+        return [r for gs in self.groups.values() for g in gs for r in g if r]
 
 
 def evaluate(
@@ -68,20 +82,13 @@ def evaluate(
     for item in items:
         if item.type == "out_of_scope" or item.status != "verified":
             continue
-        from reglens.eval.citations import Want, matches, part_of
+        from reglens.eval.citations import groups, matches
 
-        # every member of an expected citation (a range counts each paragraph), with the
-        # accepted alternatives' members; the document part must match when given (D6)
-        wanted = [
-            (
-                Want(c.source, part_of(c.ref), r),
-                [Want(a.source, part_of(a.ref), ar) for a in c.alternatives
-                 for ar in normalize_refs(a.ref)],
-            )
-            for c in item.expected_citations
-            if c.source in indexed
-            for r in normalize_refs(c.ref)
-        ]
+        # each expected citation as OR over complete AND-groups (the citation's own members,
+        # or all members of one accepted alternative), shared with answer-level credit (S5);
+        # the document part must match when given (D6)
+        wanted = [(c, groups(c)) for c in item.expected_citations if c.source in indexed]
+        wanted = [(c, gs) for c, gs in wanted if gs]
         if not wanted:
             skipped.append(item.id)
             continue
@@ -90,34 +97,30 @@ def evaluate(
             (h.source_id, h.title, normalize_refs(h.ref)[0] if normalize_refs(h.ref) else h.ref)
             for h in hits
         ]
+
+        def rank(w, got=got) -> int | None:
+            return next((i for i, g in enumerate(got, 1) if matches(w, *g)), None)
+
         res = ItemResult(
             item.id,
             item.type,
-            [f"{w.source}:{w.ref}" for w, _ in wanted],
+            [f"{w.source}:{w.ref}" for _, gs in wanted for w in gs[0]],
             top=[f"{s}:{r}" for s, _, r in got],
         )
-        for w, alts in wanted:
-            rank = next(
-                (i for i, g in enumerate(got, 1) if any(matches(t, *g) for t in (w, *alts))),
-                None,
-            )
-            res.found_at[f"{w.source}:{w.ref}"] = rank
+        for c, gs in wanted:
+            res.groups[f"{c.source}:{c.ref}"] = [[rank(w) for w in g] for g in gs]
+            for w in gs[0]:
+                res.found_at[f"{w.source}:{w.ref}"] = rank(w)
         results.append(res)
 
     def recall(at: int) -> float:
-        per_item = [
-            sum(1 for r in x.found_at.values() if r and r <= at) / len(x.found_at) for x in results
-        ]
+        per_item = [x.credit(at) for x in results]
         return sum(per_item) / len(per_item) if per_item else 0.0
 
     def hit(at: int) -> float:
-        return sum(any(r and r <= at for r in x.found_at.values()) for x in results) / max(
-            len(results), 1
-        )
+        return sum(any(r <= at for r in x.ranks()) for x in results) / max(len(results), 1)
 
-    mrr = sum(
-        1 / min((r for r in x.found_at.values() if r), default=float("inf")) for x in results
-    ) / max(len(results), 1)
+    mrr = sum(1 / min(x.ranks(), default=float("inf")) for x in results) / max(len(results), 1)
     return {
         "mode": mode,
         "k": k,

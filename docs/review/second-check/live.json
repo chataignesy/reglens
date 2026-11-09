@@ -1,0 +1,125 @@
+{
+  "elapsed_s": 27.839244200033136,
+  "check": {
+    "claims": 5,
+    "ok": 5,
+    "supported_rate": 1.0,
+    "problems": {}
+  },
+  "reference": "0.1% for QRRE revolvers and 0.05% for other retail exposures; the PD used is the higher of the grade/pool PD and the floor. PD of defaulted retail exposures is 100%.",
+  "result": {
+    "question": "What PD input floors apply to retail exposures under CRR3?",
+    "abstained": false,
+    "abstain_reason": "",
+    "answer": "Under Art. 163(1) CRR, the PD used as an input to the RWEA and expected loss formulae is the higher of the one-year PD of the internal grade or pool and the following floors [C2]:\n\n- **0,1 %** for QRRE revolvers [C2]\n- **0,05 %** for retail exposures that are not QRRE revolvers [C2]\n\nThe floors apply only for calculating risk-weighted exposure amounts and expected loss amounts [C2]. They do not apply to the part of an exposure covered by an eligible guarantee from a central government, central bank or the ECB. The uncovered part remains subject to the floors [C5].",
+    "claims": [
+      {
+        "text": "For retail exposures, the PD used as an input to the risk-weighted exposure amount and expected loss formulae is the higher of the one-year PD associated with the internal borrower grade or pool and the PD input floor.",
+        "citations": [
+          "C2"
+        ],
+        "kind": "law",
+        "check": "ok"
+      },
+      {
+        "text": "The PD input floor is 0,1 % for QRRE revolvers.",
+        "citations": [
+          "C2"
+        ],
+        "kind": "law",
+        "check": "ok"
+      },
+      {
+        "text": "The PD input floor is 0,05 % for retail exposures which are not QRRE revolvers.",
+        "citations": [
+          "C2"
+        ],
+        "kind": "law",
+        "check": "ok"
+      },
+      {
+        "text": "The PD input floors apply for the sole purpose of calculating risk-weighted exposure amounts and expected loss amounts.",
+        "citations": [
+          "C2"
+        ],
+        "kind": "law",
+        "check": "ok"
+      },
+      {
+        "text": "PD, LGD and CCF input floors do not apply to the part of an exposure covered by an eligible guarantee from a central government, central bank or the ECB, while the uncovered part remains subject to them.",
+        "citations": [
+          "C5"
+        ],
+        "kind": "law",
+        "check": "ok"
+      }
+    ],
+    "context": [
+      {
+        "id": "crr3-consolidated:article:164:4a:",
+        "ref": "Art. 164(4a)",
+        "source_id": "crr3-consolidated",
+        "title": "Loss Given Default (LGD)",
+        "score": 0.9605836272239685
+      },
+      {
+        "id": "crr3-consolidated:article:163:1:",
+        "ref": "Art. 163(1)",
+        "source_id": "crr3-consolidated",
+        "title": "Probability of default (PD)",
+        "score": 0.939024806022644
+      },
+      {
+        "id": "crr3-consolidated:article:164:6:",
+        "ref": "Art. 164(6)",
+        "source_id": "crr3-consolidated",
+        "title": "Loss Given Default (LGD)",
+        "score": 0.9370958209037781
+      },
+      {
+        "id": "crr3-consolidated:article:164:7:",
+        "ref": "Art. 164(7)",
+        "source_id": "crr3-consolidated",
+        "title": "Loss Given Default (LGD)",
+        "score": 0.9092645049095154
+      },
+      {
+        "id": "crr3-consolidated:article:159a::",
+        "ref": "Art. 159a",
+        "source_id": "crr3-consolidated",
+        "title": "Non-application of PD, LGD and CCF input floors",
+        "score": 0.8992984294891357
+      },
+      {
+        "id": "crr3-consolidated:article:164:4:",
+        "ref": "Art. 164(4)",
+        "source_id": "crr3-consolidated",
+        "title": "Loss Given Default (LGD)",
+        "score": 0.8820220232009888
+      },
+      {
+        "id": "crr3-consolidated:article:161:6:",
+        "ref": "Art. 161(6)",
+        "source_id": "crr3-consolidated",
+        "title": "Loss Given Default (LGD)",
+        "score": 0.8128673434257507
+      },
+      {
+        "id": "crr3-consolidated:article:160:1:",
+        "ref": "Art. 160(1)",
+        "source_id": "crr3-consolidated",
+        "title": "Probability of default (PD)",
+        "score": 0.8033281564712524
+      }
+    ],
+    "as_of": "Answered 08 Nov 2026 from: CRR consolidated version of 26 Jun 2026",
+    "model": "claude-sonnet-5-5",
+    "usage_tokens": 5984,
+    "errors": [],
+    "trace": [],
+    "missing_info": false,
+    "unverified": false,
+    "raw_output": "",
+    "partial_cids": []
+  }
+}

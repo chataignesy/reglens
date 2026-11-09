@@ -3,15 +3,38 @@
 The HTTP API creates a `CancelToken` per request and sets it when the browser disconnects
 (Stop, closed tab). Work stops at the next check: before every model call (both providers
 check `provider.cancel`), at every progress event between steps and tool calls, and a running
-`claude -p` subprocess is killed at once. In-process retrieval (milliseconds) is not
+`claude -p` subprocess is killed at once together with its descendants (the MCP server it
+starts; second review S3). In-process retrieval (milliseconds) is not
 interrupted; an Anthropic API request already in flight finishes, but no further one starts.
 """
 
 from __future__ import annotations
 
+import os
+import signal
 import subprocess
+import sys
 import threading
 import time
+
+_WINDOWS = sys.platform == "win32"
+
+
+def kill_tree(proc: subprocess.Popen) -> None:
+    """Kill a process and all its descendants, by process id / group only (never by name).
+    Windows: `taskkill /T /F` on the PID; elsewhere: the process group started with it."""
+    try:
+        if _WINDOWS:
+            subprocess.run(["taskkill", "/T", "/F", "/PID", str(proc.pid)],
+                           capture_output=True, timeout=10)
+        else:
+            os.killpg(proc.pid, signal.SIGKILL)
+    except (OSError, subprocess.SubprocessError):
+        pass
+    try:
+        proc.kill()  # fallback for the direct process
+    except OSError:
+        pass
 
 
 class Cancelled(Exception):
@@ -48,6 +71,9 @@ def cancellable_runner(token: CancelToken, poll_s: float = 0.25):
             encoding=encoding,
             cwd=cwd,
             env=env,
+            # own group, so the whole tree can be killed (Windows: taskkill /T works by PID)
+            creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if _WINDOWS else 0,
+            start_new_session=not _WINDOWS,
         )
         result: dict = {}
         reader = threading.Thread(
@@ -61,11 +87,11 @@ def cancellable_runner(token: CancelToken, poll_s: float = 0.25):
         while reader.is_alive():
             reader.join(poll_s)
             if token.cancelled:
-                proc.kill()
+                kill_tree(proc)
                 reader.join(5)
                 raise Cancelled()
             if timeout and time.monotonic() - start > timeout:
-                proc.kill()
+                kill_tree(proc)
                 reader.join(5)
                 raise subprocess.TimeoutExpired(cmd, timeout)
         return subprocess.CompletedProcess(cmd, proc.returncode, result.get("out", ""),

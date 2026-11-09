@@ -1,0 +1,42 @@
+{
+  "sdk_cancel": {
+    "tools_started_after_cancel": 2
+  },
+  "process_tree_cancel": {
+    "child_survived": true
+  },
+  "window_provenance": {
+    "key": "EBA GL downturn LGD (GL/2019/03) para. 30",
+    "available_rows": 2,
+    "delivered_rows": 1,
+    "delivered_chars": 978,
+    "resolved_chars": 4677,
+    "mapping": {
+      "EBA GL downturn LGD (GL/2019/03) para. 30": [
+        "C1"
+      ]
+    },
+    "partial_reads": []
+  },
+  "metadata_cache_identity": {
+    "before": "f25378a0016a",
+    "after": "f25378a0016a",
+    "same": true
+  },
+  "alternative_range": {
+    "retrieval_credit": 1.0,
+    "answer_credit": 0.5
+  },
+  "malformed_gap_output": {
+    "exception": "AttributeError",
+    "message": "'NoneType' object has no attribute 'get'"
+  },
+  "changed_question_old_run": {
+    "needs_call": [
+      "pd-002"
+    ],
+    "deterministic": [],
+    "cached": [],
+    "problems": []
+  }
+}

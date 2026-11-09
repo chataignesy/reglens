@@ -23,6 +23,7 @@ import re
 
 from reglens.config import PROJECT_ROOT, Config
 from reglens.eval.answers import RUNS_DIR, file_sha
+from reglens.eval.fingerprint import question_hash
 from reglens.eval.golden import GoldenItem
 from reglens.llm.provider import LLMError, LLMProvider
 
@@ -102,6 +103,21 @@ def _artifact(entry: dict) -> tuple[dict | None, str]:
     return json.loads(path.read_text(encoding="utf-8")), ""
 
 
+def _run_answer(item: GoldenItem, entry: dict | None) -> tuple[dict | None, str]:
+    """The run's answer for `item`, or a problem. Second review S6: the run must have answered
+    this question text, not an earlier wording kept under the same id."""
+    if entry is None:
+        return None, "not in run"
+    if entry.get("question_sha") and entry["question_sha"] != question_hash(item.question):
+        return None, "question changed since the run (regrade needs a new run)"
+    rec, problem = _artifact(entry)
+    if rec is not None and rec.get("question") and (
+        question_hash(str(rec["question"])) != question_hash(item.question)
+    ):
+        return None, "answer is for a different question text"
+    return rec, problem
+
+
 def _deterministic(item: GoldenItem, rec: dict) -> dict | None:
     if item.type == "out_of_scope":
         return {"score": 2 if rec["abstained"] else 0, "method": "deterministic",
@@ -120,11 +136,7 @@ def plan(manifest: dict, items: list[GoldenItem], model: str) -> dict:
     by_id = {e["id"]: e for e in manifest["items"]}
     needs, deterministic, cached, problems = [], [], [], []
     for item in items:
-        entry = by_id.get(item.id)
-        if entry is None:
-            problems.append(f"{item.id}: not in run")
-            continue
-        rec, problem = _artifact(entry)
+        rec, problem = _run_answer(item, by_id.get(item.id))
         if rec is None:
             problems.append(f"{item.id}: {problem}")
         elif _deterministic(item, rec) is not None:
@@ -146,10 +158,7 @@ def judge(
     rows, new_tokens, problems = [], 0, []
     for item in items:
         entry = by_id.get(item.id)
-        if entry is None:
-            problems.append(f"{item.id}: not in run")
-            continue
-        rec, problem = _artifact(entry)
+        rec, problem = _run_answer(item, entry)
         if rec is None:
             problems.append(f"{item.id}: {problem}")
             continue

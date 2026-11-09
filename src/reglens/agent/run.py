@@ -20,7 +20,7 @@ import threading
 from datetime import date
 from pathlib import Path
 
-from reglens.agent.tools import key_of, partial_reads, resolve_key
+from reglens.agent.tools import coverage, delivered_chars, key_of, partial_reads, resolve_key
 from reglens.answer.pipeline import Answer, Claim, Progress, as_of_statement
 from reglens.answer.prompts import SCOPE
 from reglens.answer.schema import parse_reply
@@ -154,11 +154,15 @@ def _resolve(
     delivered: set[str] | None = None,
     undelivered: list[str] | None = None,
     canonical: dict[str, str] | None = None,
+    got: dict[str, int] | None = None,
+    partial: set[str] | None = None,
 ) -> tuple[list[Hit], dict[str, list[str]]]:
     """Cited keys -> context hits (in citation order, one per chunk) and key -> ['C#', ...].
     A key may list several passages ("A; B"); shortened keys are matched to `received` keys.
     With `delivered` (keys of passages the tools returned), a key that names a real passage the
-    agent never received is not accepted: it becomes 'C?' and is listed in `undelivered`."""
+    agent never received is not accepted: it becomes 'C?' and is listed in `undelivered`.
+    With `got` (chunk id -> delivered chars, second review S1) the context holds exactly the
+    delivered text of each window, never unseen windows; units not read whole go to `partial`."""
     context: list[Hit] = []
     by_chunk: dict[str, str] = {}
     mapping: dict[str, list[str]] = {}
@@ -169,22 +173,33 @@ def _resolve(
         parts = [p.strip() for p in key.split(";") if p.strip()]
         for part in (q for p in parts for q in _expand_range(p)):
             rows = _lookup(conn, part, received)
-            if rows and delivered is not None and key_of(rows[0]) not in delivered:
+            unit = rows
+            if rows and got is not None:  # window-level delivery
+                if coverage(rows, got) == "partial" and partial is not None:
+                    partial.add(key_of(rows[0]))
+                rows = [r for r in rows if got.get(r.id, 0) > 0]
+                if not rows and undelivered is not None:
+                    undelivered.append(part)
+            elif rows and delivered is not None and key_of(rows[0]) not in delivered:
                 if undelivered is not None:
                     undelivered.append(part)
                 rows = []
             if not rows:
                 cids.append("C?")  # unknown or unread key -> flagged by the citation check
                 continue
-            if rows[0].id not in by_chunk:
+            uid = unit[0].id
+            if uid not in by_chunk:
                 merged = rows[0].hit(1.0)
-                merged.text = "\n".join(r.text for r in rows)  # windowed chunks: all parts
+                if got is None:  # old trace without chunk records: all window parts
+                    merged.text = "\n".join(r.text for r in rows)
+                else:  # exactly the text that was delivered, nothing unseen
+                    merged.text = "\n".join(r.text[: got[r.id]] for r in rows)
                 context.append(merged)
-                by_chunk[rows[0].id] = f"C{len(context)}"
+                by_chunk[uid] = f"C{len(context)}"
                 if canonical is not None:  # C# -> the passage's own citation key
-                    canonical[by_chunk[rows[0].id]] = key_of(rows[0])
-            if by_chunk[rows[0].id] not in cids:
-                cids.append(by_chunk[rows[0].id])
+                    canonical[by_chunk[uid]] = key_of(unit[0])
+            if by_chunk[uid] not in cids:
+                cids.append(by_chunk[uid])
         mapping[key] = cids
     return context, mapping
 
@@ -199,11 +214,16 @@ def _read_trace(path: str) -> list[dict]:
 
 def _watch_trace(path: str, emit, stop: threading.Event) -> None:
     """Report each tool call as the MCP server appends it to the trace file."""
+    from reglens.cancel import Cancelled
+
     seen = 0
     while True:
         entries = _read_trace(path)
-        for entry in entries[seen:]:
-            emit({"stage": "tool"} | entry)
+        try:
+            for entry in entries[seen:]:
+                emit({"stage": "tool"} | entry)
+        except Cancelled:
+            return  # the provider kills the subprocess; nothing left to report
         seen = max(seen, len(entries))
         if stop.wait(0.5):
             return
@@ -342,8 +362,11 @@ def answer_agentic(
     received = [k for t in trace for k in t.get("keys", [])]  # passages with text, not refs
     unread: list[str] = []
     canonical: dict[str, str] = {}
+    got = delivered_chars(trace)
+    partial: set[str] = set()
     context, mapping = _resolve(
-        conn, keys, received, delivered=set(received), undelivered=unread, canonical=canonical
+        conn, keys, received, delivered=set(received), undelivered=unread, canonical=canonical,
+        got=got, partial=partial,
     )
     text = re.sub(
         r"\[([^\[\]]+?)\]",
@@ -356,11 +379,11 @@ def answer_agentic(
     if unread:
         ans.errors.append(f"cited passages the agent never read: {', '.join(unread)}")
     # R1: passages cited after reading only a truncated snippet of them
-    snippets_only = partial_reads(trace)
+    snippets_only = partial if got is not None else partial_reads(trace)
     ans.partial_cids = sorted(c for c, k in canonical.items() if k in snippets_only)
     if ans.partial_cids:
         names = ", ".join(canonical[c] for c in ans.partial_cids)
-        ans.errors.append(f"relies on passages read only as truncated snippets: {names}")
+        ans.errors.append(f"relies on passages read only in part: {names}")
     ans.missing_info = bool(data.get("missing_info")) or bool(ans.partial_cids)
 
     ans.abstained = bool(data.get("abstain"))

@@ -270,8 +270,8 @@ def ask(
     events: queue.Queue = queue.Queue()
 
     def emit(event: dict) -> None:
-        if not token.cancelled:
-            events.put(("progress", event))
+        token.check()  # a progress event is a cancellation point (second review S2)
+        events.put(("progress", event))
 
     def work() -> None:
         try:

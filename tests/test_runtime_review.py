@@ -59,7 +59,7 @@ def test_api_loop_gives_one_round_to_read_what_the_answer_relies_on(monkeypatch,
         effort=None, max_calls=10, max_turns=13, max_tokens=200_000, progress=events.append)
     assert [t["tool"] for t in trace] == ["search", "get_passage"] and len(client.calls) == 4
     nudge = client.calls[2]["messages"][-1]["content"][-1]["text"]
-    assert "truncated snippets" in nudge and KEY in nudge
+    assert "only saw in part" in nudge and KEY in nudge
     assert any(e["stage"] == "completing" for e in events)
     assert partial_reads(trace) == set()
 

@@ -131,7 +131,7 @@ def _format(rows: list[Row], max_chars: int) -> str:
         if len(body) > max_chars:  # search snippets: the full text is one get_passage call away
             body = body[:max_chars] + f" …[truncated; get_passage('{key}') for the full text]"
         meta = {k: str(getattr(r, k)) for k in METADATA if getattr(r, k)}
-        out.append(f"[{key}] ({level})\nContext metadata: {meta}; "
+        out.append(f"[{key}] ({level})\nMetadata: {meta}; "
                    f"temporal verified: {r.temporal_verified}\n{body}")
     return "\n\n".join(out) if out else "No passages found."
 

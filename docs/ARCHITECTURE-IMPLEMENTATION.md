@@ -11,7 +11,7 @@ acceptance checks. Unknown legal dates/conditions remain unknown rather than bei
 | 2 | Stable obligation identities, compatible migration of existing references/results, bounded long-policy matching | Done: 752 IDs migrated with aliases; 15 planted gaps resolve; 14 focused tests pass |
 | 3 | Provision-level temporal/applicability metadata and explicit query constraints with unknown-coverage reporting | Done: 6 metadata/date/database checks; frontend type check |
 | 4 | Separate semantic evidence review and prose/claim alignment reporting; auditable practitioner adjudication | Done: opt-in review, strict response checks and hash-bound append-only practitioner records; 2 tests |
-| 5 | Structured research checklist, evidence coverage, and targeted completion within the existing budgets | Pending |
+| 5 | Structured research checklist, evidence coverage, and targeted completion within the existing budgets | Done: five evidence-linked checks, unread/partial evidence rejected, targeted SDK completion bounded by existing limits; CLI instructions share checklist |
 | 6 | Shared runtime tool contracts and parity scenarios for CLI/MCP and SDK paths | Pending |
 | 7 | Shared local inference instance across API/MCP processes, bounded execution, explicit readiness | Pending |
 | 8 | Frozen evaluation snapshots/holdouts, leakage checks, immutable adjudication and run provenance; documentation and final checks | Pending |

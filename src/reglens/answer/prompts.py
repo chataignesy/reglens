@@ -1,5 +1,7 @@
 """Prompts for grounded answering. Kept static (no dates or IDs) so the prefix is cacheable."""
 
+from reglens.answer.research import INSTRUCTION
+
 SCOPE = """\
 The corpus covers EU credit risk regulation for banks:
 - CRR (Regulation (EU) No 575/2013, consolidated incl. CRR3): Art. 4 definitions, Art. 92 for
@@ -52,3 +54,6 @@ Reply with ONE JSON object and nothing else:
 
 def user_prompt(question: str, context: str) -> str:
     return f"Context passages:\n\n{context}\n\nQuestion: {question}"
+
+
+SYSTEM += INSTRUCTION

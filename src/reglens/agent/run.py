@@ -23,6 +23,7 @@ from pathlib import Path
 from reglens.agent.tools import coverage, delivered_chars, key_of, partial_reads, resolve_key
 from reglens.answer.pipeline import Answer, Claim, Progress, as_of_statement
 from reglens.answer.prompts import SCOPE
+from reglens.answer.research import INSTRUCTION
 from reglens.answer.schema import parse_reply
 from reglens.config import Config
 from reglens.llm.provider import AnthropicAPIProvider, ClaudeCLIProvider, LLMError
@@ -77,6 +78,9 @@ Final reply: ONE JSON object and nothing else:
   "answer": "short answer in Markdown citing keys in brackets",
   "claims": [{{"text": "one atomic claim", "citations": ["CRR Art. 178(1)"], "kind": "law"}}]}}
 """
+
+
+AGENT_SYSTEM += INSTRUCTION
 
 
 def _mcp_config(
@@ -422,6 +426,9 @@ def answer_agentic(
     ans.context = context
     ans.coverage = coverage(context, filters)
     ans.as_of = as_of_statement(context, today)
+    from reglens.answer.research import report
+
+    ans.research = report(data, set(received), snippets_only)
     ans.claims = [
         Claim(
             str(c.get("text", "")),

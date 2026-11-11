@@ -56,6 +56,7 @@ class Answer:
     partial_cids: list[str] = field(default_factory=list)
     coverage: dict = field(default_factory=dict)
     corpus_generation: str = "legacy"
+    research: dict = field(default_factory=dict)
     semantic_review: dict = field(default_factory=lambda: {"status": "not_run"})
 
     def cited_hits(self) -> list[Hit]:
@@ -219,6 +220,9 @@ def answer_question(
     ans.abstain_reason = str(data.get("abstain_reason") or "")
     ans.missing_info = bool(data.get("missing_info"))
     ans.answer = str(data.get("answer") or "")
+    from reglens.answer.research import report
+
+    ans.research = report(data, {f"C{i}" for i in range(1, len(hits) + 1)})
     ans.claims = [
         Claim(
             str(c.get("text", "")), [str(x) for x in c.get("citations", [])], str(c.get("kind", ""))

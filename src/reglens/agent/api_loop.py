@@ -168,6 +168,10 @@ def _completeness_note(text: str, trace: list[dict], conn=None) -> str | None:
     if cut:
         return ("Your answer relies on passages you only saw in part (truncated, or not all "
                 "of their parts): " + "; ".join(cut) + ". Read them in full with get_passage.")
+    from reglens.answer.research import completion_note
+
+    if note := completion_note(data):
+        return note
     if data.get("missing_info"):
         return ("Your answer says information is missing. If a tool can find it (the RTS or "
                 "article a passage refers to, a truncated passage), look for it.")

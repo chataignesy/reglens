@@ -123,7 +123,7 @@ uv run reglens ask --route "Can a bank use own LGD estimates for a large corpora
 
 ### Start the web UI
 
-Once the corpus is indexed (the steps above, done once), three processes run the UI. Each
+Once the corpus is indexed (the steps above, done once), the following processes run the UI. Each
 command goes in its own terminal and starts from the repository root.
 
 1. **Database.** Docker Desktop must be running.
@@ -132,8 +132,17 @@ command goes in its own terminal and starts from the repository root.
    docker compose up -d
    ```
 
-2. **API** on http://localhost:8000. It loads the embedding model and the reranker at startup
-   and is ready once it logs `Application startup complete`.
+2. **Inference and API.** For agent runs, start one shared GPU service in its own terminal:
+
+   ```bash
+   uv run uvicorn reglens.inference:app --host 127.0.0.1 --port 8001 --workers 1
+   ```
+
+   Set `REGLENS_INFERENCE_URL=http://127.0.0.1:8001` in the API terminal (PowerShell:
+   `$env:REGLENS_INFERENCE_URL='http://127.0.0.1:8001'`). Agent subprocesses inherit this setting.
+   Then start the **API** on http://localhost:8000. `/api/ready` reports actual model/database
+   readiness; application startup alone does not establish model readiness. Without this setting,
+   each process loads its own models, which is suitable only for simple single-process use.
 
    ```bash
    uv run uvicorn reglens.api.app:app --port 8000

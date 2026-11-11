@@ -102,6 +102,8 @@ def _mcp_config(
                         else {}
                     ),
                     **({"REGLENS_CORPUS_GENERATION": generation} if generation else {}),
+                    **({"REGLENS_INFERENCE_URL": os.environ["REGLENS_INFERENCE_URL"]}
+                       if "REGLENS_INFERENCE_URL" in os.environ else {}),
                     "REGLENS_MAX_TOOL_CALLS": str(max_calls),
                     "REGLENS_TRACE_FILE": trace_path,
                     "PYTHONIOENCODING": "utf-8",

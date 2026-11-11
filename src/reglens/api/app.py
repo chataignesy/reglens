@@ -51,8 +51,14 @@ async def lifespan(_app: FastAPI):
 
             WARMUP.update(state="loading", error=None)
             try:
-                embedder()
-                reranker()
+                from reglens.inference_client import endpoint
+                from reglens.inference_client import ready as inference_ready
+
+                if endpoint():
+                    inference_ready()
+                else:
+                    embedder()
+                    reranker()
                 WARMUP["state"] = "ready"
             except Exception as e:  # reported by /api/ready, not lost in a background thread
                 WARMUP.update(state="failed", error=f"{type(e).__name__}: {e}"[:300])
@@ -116,6 +122,14 @@ def ready() -> Response:
     except Exception as e:
         db_ok, db_error = False, type(e).__name__
     models_ok = WARMUP["state"] in ("ready", "skipped")
+    from reglens.inference_client import endpoint
+    from reglens.inference_client import ready as inference_ready
+
+    if endpoint():
+        try:
+            models_ok = bool(inference_ready().get("ready"))
+        except Exception:
+            models_ok = False
     body = {"ready": db_ok and models_ok, "models": WARMUP["state"], "database": db_ok,
             "error": WARMUP.get("error") or db_error, "busy": MAX_CONCURRENT - _slots._value}
     return Response(json.dumps(body), status_code=200 if body["ready"] else 503,

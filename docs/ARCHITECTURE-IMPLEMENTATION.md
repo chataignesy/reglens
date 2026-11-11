@@ -13,7 +13,7 @@ acceptance checks. Unknown legal dates/conditions remain unknown rather than bei
 | 4 | Separate semantic evidence review and prose/claim alignment reporting; auditable practitioner adjudication | Done: opt-in review, strict response checks and hash-bound append-only practitioner records; 2 tests |
 | 5 | Structured research checklist, evidence coverage, and targeted completion within the existing budgets | Done: five evidence-linked checks, unread/partial evidence rejected, targeted SDK completion bounded by existing limits; CLI instructions share checklist |
 | 6 | Shared runtime tool contracts and parity scenarios for CLI/MCP and SDK paths | Done: common schemas/validation/execution, identical delivery/trace/budget parity scripts; 20 related tests |
-| 7 | Shared local inference instance across API/MCP processes, bounded execution, explicit readiness | Pending |
+| 7 | Shared local inference instance across API/MCP processes, bounded execution, explicit readiness | Done: loopback service, process owner guard, bounded queue, fail-closed model identity; 13 related checks and real two-process GPU smoke (0.65–0.68 s warm embed+rerank) |
 | 8 | Frozen evaluation snapshots/holdouts, leakage checks, immutable adjudication and run provenance; documentation and final checks | Pending |
 
 Code changes and offline/local-model checks are authorised by the implementation request.

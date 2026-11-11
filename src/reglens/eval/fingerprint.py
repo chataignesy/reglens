@@ -22,6 +22,8 @@ RETRIEVAL_FILES = [
     "retrieve/glossary.py",
     "retrieve/glossary.yaml",
     "index/embed.py",
+    "inference_client.py",
+    "inference.py",
     "context.py",
     "index/generations.py",
 ]

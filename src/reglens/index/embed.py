@@ -51,7 +51,7 @@ def reranker():
     return model
 
 
-def embed(
+def local_embed(
     texts: list[str], *, batch_size: int = 8, identity: dict | None = None
 ) -> list[list[float]]:
     spec = identity or model_identity()
@@ -63,7 +63,51 @@ def embed(
     return [v.tolist() for v in vecs]
 
 
-def rerank(query: str, texts: list[str], *, batch_size: int = 8) -> list[float]:
+def local_rerank(query: str, texts: list[str], *, batch_size: int = 8) -> list[float]:
     return [
         float(s) for s in reranker().predict([(query, t) for t in texts], batch_size=batch_size)
     ]
+
+
+def embed(
+    texts: list[str], *, batch_size: int = 8, identity: dict | None = None
+) -> list[list[float]]:
+    from reglens.inference_client import endpoint, request
+
+    if endpoint():
+        # Bound each HTTP operation, including large indexing batches.
+        vectors = []
+        for start in range(0, len(texts), 8):
+            vectors.extend(
+                request(
+                    "/embed",
+                    {
+                        "texts": texts[start : start + 8],
+                        "identity": identity or model_identity(),
+                        "batch_size": min(batch_size, 32),
+                    },
+                )["vectors"]
+            )
+        return vectors
+    return local_embed(texts, batch_size=batch_size, identity=identity)
+
+
+def rerank(query: str, texts: list[str], *, batch_size: int = 8) -> list[float]:
+    from reglens.inference_client import endpoint, request
+
+    if endpoint():
+        scores = []
+        for start in range(0, len(texts), 8):
+            scores.extend(
+                request(
+                    "/rerank",
+                    {
+                        "texts": texts[start : start + 8],
+                        "query": query,
+                        "identity": model_identity(),
+                        "batch_size": min(batch_size, 32),
+                    },
+                )["scores"]
+            )
+        return scores
+    return local_rerank(query, texts, batch_size=batch_size)

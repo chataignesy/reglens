@@ -182,7 +182,7 @@ export function AskView() {
           <Label>Answering</Label>
           <Segmented label="Answering" value={mode} onChange={setMode} options={MODES} disabled={running} />
           <p className="text-xs text-muted-foreground">{MODES.find((m) => m.value === mode)?.hint}</p>
-          <div className="flex items-center gap-2 pt-1">
+          <div className="flex flex-wrap items-center gap-2 pt-1">
               <label className="text-xs">Legal application date <input aria-label="Legal application date" type="date" value={legalDate} disabled={running} onChange={(e) => setLegalDate(e.target.value)} className="rounded border p-1" /></label>
               <label className="text-xs">Approach <select aria-label="Approach" value={approach} disabled={running} onChange={(e) => setApproach(e.target.value)} className="rounded border p-1"><option value="">Any</option><option value="SA">SA</option><option value="IRB">IRB</option></select></label>
               <Label className="text-xs">Institution type</Label>

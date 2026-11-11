@@ -37,6 +37,7 @@ def catalog_exists(conn) -> bool:
 
 def install(conn) -> None:
     """Idempotent adoption. Does not rename/delete any existing user tables."""
+    conn.execute("SELECT pg_advisory_xact_lock(%s)", (LOCK,))
     conn.execute(CATALOG)
     conn.execute(
         "INSERT INTO public.corpus_generations(id,schema_name,state) "
@@ -101,11 +102,13 @@ def writable(conn) -> None:
         return
     schema = conn.execute("SELECT current_schema()").fetchone()[0]
     if schema == "public":
-        if catalog_exists(conn) and active(conn) != "legacy":
-            raise ValueError("Legacy snapshot is immutable after managed publication")
+        # Adoption waits for pre-adoption application writes; adopted legacy is frozen too.
+        conn.execute("SELECT pg_advisory_xact_lock_shared(%s)", (LOCK,))
+        if catalog_exists(conn):
+            raise ValueError("Published legacy snapshot is immutable; build another generation")
         return
     row = conn.execute(
-        "SELECT state FROM public.corpus_generations WHERE schema_name=%s", (schema,)
+        "SELECT state FROM public.corpus_generations WHERE schema_name=%s FOR SHARE", (schema,)
     ).fetchone()
     if row and row[0] != "building":
         raise ValueError("Published corpus is immutable; build another generation")
@@ -162,6 +165,17 @@ def reuse_vectors(conn) -> int:
     return result.rowcount
 
 
+def resume(conn, gid: str) -> dict:
+    """Select a private build for its explicit operator; readers still cannot pin it."""
+    row = conn.execute(
+        "SELECT schema_name,state,metadata FROM public.corpus_generations WHERE id=%s", (gid,)
+    ).fetchone()
+    if not row or row[1] != "building":
+        raise ValueError("Only an unfinished build can be resumed")
+    conn.execute(sql.SQL("SET search_path TO {}, public").format(sql.Identifier(row[0])))
+    return row[2]
+
+
 def validate(conn, gid: str) -> dict:
     row = conn.execute(
         "SELECT schema_name FROM public.corpus_generations WHERE id=%s", (gid,)
@@ -191,12 +205,13 @@ def publish(conn, gid: str, *, expected_head: str | None = None) -> dict:
     """Validate then atomically move head. A stale builder never overwrites a newer build."""
     if not re.fullmatch(r"[a-f0-9]{32}|legacy", gid):
         raise ValueError("Invalid generation id")
-    report = validate(conn, gid)
     with conn.transaction():
         conn.execute("SELECT pg_advisory_xact_lock(%s)", (LOCK,))
         row = conn.execute(
             "SELECT base_id,state FROM public.corpus_generations WHERE id=%s FOR UPDATE", (gid,)
         ).fetchone()
+        # Wait for in-flight writers before validating; state cannot flip underneath them.
+        report = validate(conn, gid)
         head = active(conn)
         expected = expected_head if expected_head is not None else row[0]
         if expected is not None and head != expected:

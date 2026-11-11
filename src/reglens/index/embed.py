@@ -40,12 +40,12 @@ def embedder(model_name: str = EMBED_MODEL, revision: str = EMBED_REVISION, max_
     return model
 
 
-@lru_cache(maxsize=1)
-def reranker():
+@lru_cache(maxsize=2)
+def reranker(model_name: str = RERANK_MODEL, revision: str = RERANK_REVISION):
     from sentence_transformers import CrossEncoder
 
     device = _device()
-    model = CrossEncoder(RERANK_MODEL, revision=RERANK_REVISION, device=device, max_length=1024)
+    model = CrossEncoder(model_name, revision=revision, device=device, max_length=1024)
     if device == "cuda":
         model.model.half()
     return model
@@ -63,10 +63,12 @@ def local_embed(
     return [v.tolist() for v in vecs]
 
 
-def local_rerank(query: str, texts: list[str], *, batch_size: int = 8) -> list[float]:
-    return [
-        float(s) for s in reranker().predict([(query, t) for t in texts], batch_size=batch_size)
-    ]
+def local_rerank(
+    query: str, texts: list[str], *, batch_size: int = 8, identity: dict | None = None
+) -> list[float]:
+    spec = identity or model_identity()
+    model = reranker(spec["reranker"], spec["reranker_revision"])
+    return [float(s) for s in model.predict([(query, t) for t in texts], batch_size=batch_size)]
 
 
 def embed(
@@ -92,7 +94,9 @@ def embed(
     return local_embed(texts, batch_size=batch_size, identity=identity)
 
 
-def rerank(query: str, texts: list[str], *, batch_size: int = 8) -> list[float]:
+def rerank(
+    query: str, texts: list[str], *, batch_size: int = 8, identity: dict | None = None
+) -> list[float]:
     from reglens.inference_client import endpoint, request
 
     if endpoint():
@@ -104,10 +108,10 @@ def rerank(query: str, texts: list[str], *, batch_size: int = 8) -> list[float]:
                     {
                         "texts": texts[start : start + 8],
                         "query": query,
-                        "identity": model_identity(),
+                        "identity": identity or model_identity(),
                         "batch_size": min(batch_size, 32),
                     },
                 )["scores"]
             )
         return scores
-    return local_rerank(query, texts, batch_size=batch_size)
+    return local_rerank(query, texts, batch_size=batch_size, identity=identity)

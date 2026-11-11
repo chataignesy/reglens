@@ -59,9 +59,10 @@ class Filters:
         if self.source_ids:
             where.append("source_id = ANY(%s)")
             params.append(self.source_ids)
-        elif self.default_scope and _off_by_default(conn):
-            where.append("NOT (source_id = ANY(%s))")
-            params.append(_off_by_default(conn))
+        elif self.default_scope:
+            if excluded := _off_by_default(conn):
+                where.append("NOT (source_id = ANY(%s))")
+                params.append(excluded)
         if self.exclude_kinds:
             where.append("NOT (kind = ANY(%s))")
             params.append(list(self.exclude_kinds))
@@ -139,11 +140,12 @@ def _fetch(conn: psycopg.Connection, scored: list[tuple[str, float]]) -> list[Hi
         ([i for i, _ in scored],),
     ).fetchall()
     by_id = {r[0]: r for r in rows}
+    generation = current(conn)
     return [
         Hit(
             *by_id[i][:7],
             score=s,
-            generation=current(conn),
+            generation=generation,
             **{
                 k: str(v) if k in METADATA[:5] and v is not None else v
                 for k, v in zip(METADATA, by_id[i][7:], strict=True)
@@ -221,7 +223,9 @@ def search(
 
     pool = _fetch(conn, fused[:candidates])
     # the reranker also sees the glossary wording (recall@10 0.81 -> 0.84 on the golden set)
-    scores = rerank(q_dense, [h.text for h in pool])
+    from reglens.index.generations import metadata
+
+    scores = rerank(q_dense, [h.text for h in pool], identity=metadata(conn).get("models") or None)
     for h, s in zip(pool, scores, strict=True):
         h.score = s
     return sorted(pool, key=lambda h: -h.score)[:k]

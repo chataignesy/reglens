@@ -102,8 +102,11 @@ def _mcp_config(
                         else {}
                     ),
                     **({"REGLENS_CORPUS_GENERATION": generation} if generation else {}),
-                    **({"REGLENS_INFERENCE_URL": os.environ["REGLENS_INFERENCE_URL"]}
-                       if "REGLENS_INFERENCE_URL" in os.environ else {}),
+                    **(
+                        {"REGLENS_INFERENCE_URL": os.environ["REGLENS_INFERENCE_URL"]}
+                        if "REGLENS_INFERENCE_URL" in os.environ
+                        else {}
+                    ),
                     "REGLENS_MAX_TOOL_CALLS": str(max_calls),
                     "REGLENS_TRACE_FILE": trace_path,
                     "PYTHONIOENCODING": "utf-8",
@@ -323,7 +326,8 @@ def answer_agentic(
             [],
             top,
             as_of_statement(top, today),
-            coverage=coverage(top, filters), corpus_generation=current(conn),
+            coverage=coverage(top, filters),
+            corpus_generation=current(conn),
         )
 
     system = AGENT_SYSTEM.replace("{max_calls}", str(max_calls))
@@ -374,6 +378,9 @@ def answer_agentic(
 
     ans = Answer(asked, False, "", "", [], [], "", model=model, usage_tokens=tokens, trace=trace)
     ans.corpus_generation = current(conn)
+    from reglens.sources import load_sources
+
+    ans.source_registry = {s.id: asdict(s) for s in load_sources(conn=conn)}
     ans.errors += errors
     if not text:
         return ans
@@ -425,6 +432,8 @@ def answer_agentic(
     ans.abstained = bool(data.get("abstain"))
     ans.abstain_reason = str(data.get("abstain_reason") or "")
     ans.answer = text
+    for hit in context:
+        hit.generation = ans.corpus_generation
     ans.context = context
     ans.coverage = coverage(context, filters)
     ans.as_of = as_of_statement(context, today)

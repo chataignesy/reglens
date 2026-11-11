@@ -1,0 +1,3262 @@
+{
+  "schema": 1,
+  "role": "development",
+  "items": [
+    {
+      "id": "dod-001",
+      "question": "Under the CRR, when is an obligor considered to be in default?",
+      "type": "factual",
+      "expected_answer": "When either or both apply: (a) the institution considers the obligor unlikely to pay its credit obligations in full without recourse to actions such as realising security; (b) the obligor is more than 90 days past due on any material credit obligation to the institution, its parent or subsidiaries.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 178(1)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "definition-of-default",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Wording checked in consolidated text (2026-06-26 version).",
+      "tags": []
+    },
+    {
+      "id": "dod-002",
+      "question": "Can a bank apply the definition of default at facility level instead of obligor level, and for which exposures?",
+      "type": "factual",
+      "expected_answer": "Yes, but only for retail exposures: institutions may apply points (a) and (b) of Art. 178(1) at the level of an individual credit facility rather than the total obligations of a borrower.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 178(1), second subparagraph",
+          "alternatives": [
+            {
+              "source": "eba-gl-dod",
+              "ref": "para. 88",
+              "alternatives": []
+            },
+            {
+              "source": "eba-gl-dod",
+              "ref": "para. 92",
+              "alternatives": []
+            }
+          ]
+        }
+      ],
+      "applies_to": "all",
+      "topic": "definition-of-default",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in text. Alternatives accepted 2026-10-27 (retrieval review).",
+      "tags": []
+    },
+    {
+      "id": "dod-003",
+      "question": "What are the maximum absolute and relative components of the materiality threshold for retail past-due credit obligations?",
+      "type": "factual",
+      "expected_answer": "Absolute component: at most EUR 100 (or national-currency equivalent) for the sum of amounts past due; relative component: between 0% and 2.5% of total on-balance exposures to the obligor, set at 1% unless the competent authority justifies otherwise. Both must be exceeded for the obligation to be material. Non-retail absolute component is at most EUR 500.",
+      "expected_citations": [
+        {
+          "source": "rts-default-materiality",
+          "ref": "Art. 1(2)",
+          "alternatives": []
+        },
+        {
+          "source": "rts-default-materiality",
+          "ref": "Art. 2(2)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "definition-of-default",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text and reviewed 2026-10-27.",
+      "tags": []
+    },
+    {
+      "id": "dod-004",
+      "question": "What is the minimum probation period before a defaulted exposure (not under distressed restructuring) can be reclassified as non-defaulted?",
+      "type": "factual",
+      "expected_answer": "At least 3 months after the conditions of Art. 178(1)(b) and 178(3) cease to be met, taking into account the obligor's behaviour and financial situation during that period.",
+      "expected_citations": [
+        {
+          "source": "eba-gl-dod",
+          "ref": "para. 71(a)",
+          "alternatives": [
+            {
+              "source": "ecb-guide-internal-models",
+              "ref": "para. 170",
+              "alternatives": []
+            },
+            {
+              "source": "ecb-guide-internal-models",
+              "ref": "para. 172",
+              "alternatives": []
+            },
+            {
+              "source": "ecb-guide-internal-models",
+              "ref": "para. 173",
+              "alternatives": []
+            }
+          ]
+        }
+      ],
+      "applies_to": "all",
+      "topic": "definition-of-default",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text and reviewed 2026-10-27. Alternatives accepted 2026-10-27 (retrieval review).",
+      "tags": [
+        "probation"
+      ]
+    },
+    {
+      "id": "dod-005",
+      "question": "How long is the probation period for a defaulted exposure subject to distressed restructuring?",
+      "type": "factual",
+      "expected_answer": "At least 1 year from the latest of: (a) extending the restructuring measures, (b) the exposure being classified as defaulted, (c) the end of the grace period in the restructuring arrangements. Reclassification also requires, among others, a material payment during that period, no past-due amounts and no remaining concerns about full repayment.",
+      "expected_citations": [
+        {
+          "source": "eba-gl-dod",
+          "ref": "para. 72",
+          "alternatives": [
+            {
+              "source": "ecb-guide-internal-models",
+              "ref": "para. 170",
+              "alternatives": []
+            },
+            {
+              "source": "ecb-guide-internal-models",
+              "ref": "para. 172",
+              "alternatives": []
+            },
+            {
+              "source": "ecb-guide-internal-models",
+              "ref": "para. 173",
+              "alternatives": []
+            }
+          ]
+        },
+        {
+          "source": "eba-gl-dod",
+          "ref": "para. 73",
+          "alternatives": [
+            {
+              "source": "ecb-guide-internal-models",
+              "ref": "para. 170",
+              "alternatives": []
+            },
+            {
+              "source": "ecb-guide-internal-models",
+              "ref": "para. 172",
+              "alternatives": []
+            },
+            {
+              "source": "ecb-guide-internal-models",
+              "ref": "para. 173",
+              "alternatives": []
+            }
+          ]
+        }
+      ],
+      "applies_to": "all",
+      "topic": "definition-of-default",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text and reviewed 2026-10-27. Alternatives accepted 2026-10-27 (retrieval review).",
+      "tags": [
+        "probation",
+        "forbearance"
+      ]
+    },
+    {
+      "id": "dod-006",
+      "question": "What diminished financial obligation threshold should trigger default for a distressed restructuring?",
+      "type": "factual",
+      "expected_answer": "Institutions set a threshold for the diminished financial obligation (DO = (NPV0 - NPV1)/NPV0, discounted at the original effective interest rate) that should not be higher than 1%; above it the exposure is considered defaulted.",
+      "expected_citations": [
+        {
+          "source": "eba-gl-dod",
+          "ref": "para. 51",
+          "alternatives": []
+        },
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 178(3)(d)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "definition-of-default",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text and reviewed 2026-10-27.",
+      "tags": [
+        "forbearance"
+      ]
+    },
+    {
+      "id": "dod-007",
+      "question": "When does the sale of credit obligations at a loss indicate unlikeliness to pay?",
+      "type": "factual",
+      "expected_answer": "When the credit-related economic loss on the sale (L = (E - P)/E) is material; institutions set the materiality threshold, which should not be higher than 5%.",
+      "expected_citations": [
+        {
+          "source": "eba-gl-dod",
+          "ref": "para. 44",
+          "alternatives": []
+        },
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 178(3)(c)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "definition-of-default",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text and reviewed 2026-10-27.",
+      "tags": [
+        "unlikeliness-to-pay"
+      ]
+    },
+    {
+      "id": "pd-001",
+      "question": "What is the PD input floor for IRB corporate exposures under CRR3?",
+      "type": "factual",
+      "expected_answer": "0.05%.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 160(1)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "pd-estimation",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in text.",
+      "tags": [
+        "input-floors"
+      ]
+    },
+    {
+      "id": "pd-002",
+      "question": "What PD input floors apply to retail exposures under CRR3?",
+      "type": "factual",
+      "expected_answer": "0.1% for QRRE revolvers and 0.05% for other retail exposures; the PD used is the higher of the grade/pool PD and the floor. PD of defaulted retail exposures is 100%.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 163(1)",
+          "alternatives": []
+        },
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 163(2)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "pd-estimation",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in text.",
+      "tags": [
+        "input-floors",
+        "retail"
+      ]
+    },
+    {
+      "id": "pd-003",
+      "question": "What minimum length of historical observation period is required for PD estimation?",
+      "type": "factual",
+      "expected_answer": "At least five years for at least one data source, for both non-retail (Art. 180(1)(h)) and retail (Art. 180(2)(e)) exposures.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 180(1)(h)",
+          "alternatives": []
+        },
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 180(2)(e)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "pd-estimation",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text and reviewed 2026-10-27.",
+      "tags": [
+        "data"
+      ]
+    },
+    {
+      "id": "lgd-001",
+      "question": "What LGD input floors apply to retail exposures under CRR3?",
+      "type": "factual",
+      "expected_answer": "Unsecured: QRRE 50%, other retail 30%. Secured: retail secured by residential property 5%; other retail secured by financial collateral 0%, by receivables 10%, by residential or commercial immovable property 10%, by other physical collateral 15%.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 164(4), Table 1",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "lgd-estimation",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text and reviewed 2026-10-27.",
+      "tags": [
+        "input-floors",
+        "retail"
+      ]
+    },
+    {
+      "id": "moc-001",
+      "question": "Into which categories must deficiencies be classified when quantifying the margin of conservatism (MoC)?",
+      "type": "factual",
+      "expected_answer": "Identified deficiencies are classified into two categories: Category A, identified data and methodological deficiencies; Category B, relevant changes to underwriting standards, risk appetite, collection and recovery policies and other sources of additional uncertainty. Category C, the general estimation error, is not a deficiency category but a separate component of the final MoC (the sum of the MoC for A, B and C).",
+      "expected_citations": [
+        {
+          "source": "eba-gl-pd-lgd",
+          "ref": "para. 36",
+          "alternatives": []
+        },
+        {
+          "source": "eba-gl-pd-lgd",
+          "ref": "para. 42",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "margin-of-conservatism",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text and reviewed 2026-10-27. Reference reworded 2026-10-29 after judge spot-check: A/B are deficiency categories (para. 36), C is a separate MoC component (para. 42).",
+      "tags": []
+    },
+    {
+      "id": "scope-001",
+      "question": "How does the CRR define a 'large corporate'?",
+      "type": "factual",
+      "expected_answer": "A corporate undertaking with consolidated annual sales of more than EUR 500 million, or belonging to a group whose total consolidated annual sales exceed EUR 500 million.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 142(1)(5a)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "irb-scope",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in text.",
+      "tags": [
+        "crr3"
+      ]
+    },
+    {
+      "id": "sa-001",
+      "question": "Under the CRR3 standardised approach, what risk weight applies to the part of a residential mortgage exposure up to 55% of the property value?",
+      "type": "factual",
+      "expected_answer": "20% (loan-splitting approach), with the 55% reduced by more senior liens not held by the institution.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 125(1)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "standardised-approach",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in text.",
+      "tags": [
+        "real-estate"
+      ]
+    },
+    {
+      "id": "floor-001",
+      "question": "What output floor factor may institutions apply in 2026 under the transitional arrangements?",
+      "type": "factual",
+      "expected_answer": "55% for 1 January to 31 December 2026 (phase-in: 50% 2025, 55% 2026, 60% 2027, 65% 2028, 70% 2029; end state x = 72.5% under Art. 92(3)). A Member State may decide that the un-floored total risk exposure amount applies at solo level.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 465(1)(b)",
+          "alternatives": []
+        },
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 92(3)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "output-floor",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text and reviewed 2026-10-27.",
+      "tags": [
+        "as-of"
+      ]
+    },
+    {
+      "id": "mh-001",
+      "question": "A bank has A-IRB permission. Can it use its own LGD and CCF estimates for a corporate group with EUR 800 million consolidated sales?",
+      "type": "multi_hop",
+      "expected_answer": "No. The obligor is a large corporate (sales > EUR 500m), and under CRR3 exposures to large corporates (not in the specialised lending class) must use the supervisory LGD values of Art. 161(1) and SA-CCFs, i.e. F-IRB treatment.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 142(1)(5a)",
+          "alternatives": []
+        },
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 151(8)(c)",
+          "alternatives": []
+        },
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 161(1)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "irb-scope",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Art. 151(8)(c) checked in text. Needs definition lookup + scope rule.",
+      "tags": [
+        "crr3"
+      ]
+    },
+    {
+      "id": "mh-002",
+      "question": "In a jurisdiction where the competent authority set the retail materiality threshold at EUR 100 and 1%, a retail obligor owes EUR 120 past due, which is 3% of its exposure, for 95 days, then pays it off. Is it in default, and when can it return to non-default?",
+      "type": "multi_hop",
+      "expected_answer": "Yes: both the absolute (EUR 120 > EUR 100) and relative (3% > 1%) components are exceeded and the obligation has been past due more than 90 days, so it is in default. After repayment it can return to non-default only after a probation period of at least 3 months, considering the obligor's behaviour and financial situation.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 178(1)(b)",
+          "alternatives": []
+        },
+        {
+          "source": "rts-default-materiality",
+          "ref": "Art. 1(2)",
+          "alternatives": []
+        },
+        {
+          "source": "eba-gl-dod",
+          "ref": "para. 71(a)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "definition-of-default",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text and reviewed 2026-10-27.",
+      "tags": [
+        "probation"
+      ]
+    },
+    {
+      "id": "mh-003",
+      "question": "What does the regulatory framework require for downturn LGD, and what applies if no downturn can be observed in the bank's data?",
+      "type": "multi_hop",
+      "expected_answer": "Institutions must use LGD estimates appropriate for an economic downturn where more conservative than the long-run average (Art. 181(1)(b)). The RTS specifies how the downturn period is identified; its duration (Art. 4) is based on the most severe 12-month values of the economic indicators, and recital 14 states a downturn period should last at least 12 months. Where neither observed nor estimated downturn impact is available, the institution must include a strictly positive Category A MoC, and the final downturn LGD including MoC must be at least min(long-run average LGD + 15 percentage points, 105%).",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 181(1)(b)",
+          "alternatives": []
+        },
+        {
+          "source": "rts-economic-downturn",
+          "ref": "Art. 4",
+          "alternatives": []
+        },
+        {
+          "source": "rts-economic-downturn",
+          "ref": "recital 14",
+          "alternatives": []
+        },
+        {
+          "source": "eba-gl-downturn-lgd",
+          "ref": "para. 36",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "downturn-lgd",
+      "difficulty": "hard",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text and reviewed 2026-10-27. Note: 105% bounds the floor (min of LRA+15pp and 105%).",
+      "tags": [
+        "lgd"
+      ]
+    },
+    {
+      "id": "mh-004",
+      "question": "A defaulted corporate loan is restructured with a 2% NPV loss. How should the bank classify it and when can it be cured?",
+      "type": "multi_hop",
+      "expected_answer": "A 2% NPV loss exceeds the maximum 1% diminished-financial-obligation threshold, so the restructuring is a distressed restructuring and the exposure is (or stays) defaulted. It can return to non-default only after at least 1 year from the latest of extending the restructuring measures, the default classification, or the end of any grace period, and only if the para. 73 conditions are met (e.g. a material payment, no past-due amounts, no concerns about full repayment).",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 178(3)(d)",
+          "alternatives": []
+        },
+        {
+          "source": "eba-gl-dod",
+          "ref": "para. 51",
+          "alternatives": []
+        },
+        {
+          "source": "eba-gl-dod",
+          "ref": "para. 72",
+          "alternatives": []
+        },
+        {
+          "source": "eba-gl-dod",
+          "ref": "para. 73",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "definition-of-default",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text and reviewed 2026-10-27.",
+      "tags": [
+        "forbearance",
+        "probation"
+      ]
+    },
+    {
+      "id": "mh-005",
+      "question": "An A-IRB bank recognises financial collateral in its own LGD estimates for other retail exposures. Which CRR requirements and floors apply?",
+      "type": "multi_hop",
+      "expected_answer": "It must consider the dependence between the risk of the obligor and that of the funded credit protection or its provider (Art. 181(1)(c)), and treat currency mismatches between the obligation and the collateral conservatively (Art. 181(1)(d)). The LGD input floor for other retail exposures secured by financial collateral is 0% (Art. 164(4), Table 1), compared with 30% if unsecured.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 181(1)(c)",
+          "alternatives": []
+        },
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 181(1)(d)",
+          "alternatives": []
+        },
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 164(4), Table 1",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "credit-risk-mitigation",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text and reviewed 2026-10-27. Replaces the earlier guarantee question.",
+      "tags": [
+        "crm",
+        "input-floors"
+      ]
+    },
+    {
+      "id": "mh-006",
+      "question": "What back-testing must an IRB bank perform on PD estimates, and how are the results reported to the ECB?",
+      "type": "multi_hop",
+      "expected_answer": "Under Art. 185(b) the bank must regularly compare realised default rates with estimated PDs for each grade and analyse deviations outside the expected range, and do the same for own LGD and CCF estimates. Per the ECB instructions of February 2019, significant institutions submit the results with their annual validation report, using the ECB templates; tests include discriminatory power (e.g. AUC). The answer should note the instructions predate CRR3.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 185(b)",
+          "alternatives": []
+        },
+        {
+          "source": "ecb-validation-reporting",
+          "ref": "Section 2.2",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "SI",
+      "topic": "validation",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text and reviewed 2026-10-27. Source is the Feb 2019 version; answer should state the date.",
+      "tags": [
+        "back-testing"
+      ]
+    },
+    {
+      "id": "mh-007",
+      "question": "Which floors constrain the capital requirement of an IRB retail mortgage portfolio in 2026?",
+      "type": "multi_hop",
+      "expected_answer": "Input floors apply per exposure: PD at least 0.05% (retail other than QRRE revolvers) and LGD at least 5% for retail exposures secured by residential property. The output floor (factor 55% in 2026) applies to the institution's total risk exposure amount, not to the portfolio alone, comparing it with the standardised approach (where mortgages use 20% up to 55% of property value); a Member State may exempt the solo level.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 163(1)(b)",
+          "alternatives": []
+        },
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 164(4)",
+          "alternatives": []
+        },
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 465(1)(b)",
+          "alternatives": []
+        },
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 92(3)",
+          "alternatives": []
+        },
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 125(1)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "output-floor",
+      "difficulty": "hard",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text and reviewed 2026-10-27.",
+      "tags": [
+        "input-floors",
+        "as-of"
+      ]
+    },
+    {
+      "id": "cmp-001",
+      "question": "Which CRR3 provision changed the PD input floor for IRB corporate exposures, and to what value?",
+      "type": "comparison",
+      "expected_answer": "Article 1, point (86) of Regulation (EU) 2024/1623 replaced CRR Art. 160(1), setting a PD input floor of 0.05% for corporate exposures (and inserting a separate Art. 160(1a) for regional governments, local authorities and public sector entities).",
+      "expected_citations": [
+        {
+          "source": "crr3-amending-act",
+          "ref": "Art. 1(86)",
+          "alternatives": []
+        },
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 160(1)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "pd-estimation",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text and reviewed 2026-10-27. Old CRR2 value not in corpus, so the question avoids it.",
+      "tags": [
+        "crr3",
+        "input-floors"
+      ]
+    },
+    {
+      "id": "cmp-002",
+      "question": "What changed in the June 2026 release of the ECB guide to internal models?",
+      "type": "comparison",
+      "expected_answer": "Release 4.1 (26 June 2026) removed all content related to CCF estimation; release 4.0 (28 July 2025) had updated the guide for regulatory changes (CRR3).",
+      "expected_citations": [
+        {
+          "source": "ecb-guide-internal-models",
+          "ref": "Document releases table",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "SI",
+      "topic": "validation",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in the release table.",
+      "tags": [
+        "versions"
+      ]
+    },
+    {
+      "id": "app-001",
+      "question": "Does the ECB guide to internal models apply to a less significant institution supervised by its national competent authority?",
+      "type": "applicability",
+      "expected_answer": "The guide explains how the ECB understands and applies the CRR when it grants internal-model permissions, i.e. for the institutions it supervises directly (significant institutions). It does not address LSIs: saying the guide (or the passages) does not cover or address LSIs is a correct answer. It is not law and does not overrule EU or national law. For an LSI the binding requirements remain the CRR, RTS and EBA guidelines as applied by its national competent authority; any use of the guide by NCAs is outside this corpus.",
+      "expected_citations": [
+        {
+          "source": "ecb-guide-internal-models",
+          "ref": "Foreword, paras. 1-3",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "LSI",
+      "topic": "applicability",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text and reviewed 2026-10-27. Reference reworded 2026-10-29: 'does not address / passages do not say' phrasing accepted.",
+      "tags": [
+        "si-lsi"
+      ]
+    },
+    {
+      "id": "oos-001",
+      "question": "How is the sensitivities-based method for market risk own funds requirements calculated under FRTB?",
+      "type": "out_of_scope",
+      "expected_answer": "Abstain: market risk (FRTB) is outside the credit risk corpus.",
+      "expected_citations": [],
+      "applies_to": "all",
+      "topic": "out-of-scope",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Note the CRR is in the corpus, so the system must recognise the topic, not just the source.",
+      "tags": []
+    },
+    {
+      "id": "oos-002",
+      "question": "What is the required stable funding factor for residential mortgages under the NSFR?",
+      "type": "out_of_scope",
+      "expected_answer": "Abstain: liquidity (NSFR) is outside the credit risk corpus.",
+      "expected_citations": [],
+      "applies_to": "all",
+      "topic": "out-of-scope",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Tempting: NSFR text is in the full CRR file but outside the MVP scope.",
+      "tags": []
+    },
+    {
+      "id": "oos-003",
+      "question": "What customer due diligence must a bank perform when onboarding a corporate client under the AML rules?",
+      "type": "out_of_scope",
+      "expected_answer": "Abstain: anti-money-laundering requirements are outside the corpus.",
+      "expected_citations": [],
+      "applies_to": "all",
+      "topic": "out-of-scope",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Loan origination guidelines mention AML/CFT briefly — answer should not over-reach.",
+      "tags": []
+    },
+    {
+      "id": "oos-004",
+      "question": "What is the supervisory outlier test threshold for interest rate risk in the banking book?",
+      "type": "out_of_scope",
+      "expected_answer": "Abstain: IRRBB is outside the credit risk corpus.",
+      "expected_citations": [],
+      "applies_to": "all",
+      "topic": "out-of-scope",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "oos-005",
+      "question": "How is the business indicator component calculated in the new standardised approach for operational risk?",
+      "type": "out_of_scope",
+      "expected_answer": "Abstain: operational risk is outside the credit risk corpus.",
+      "expected_citations": [],
+      "applies_to": "all",
+      "topic": "out-of-scope",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Also in the full CRR file but outside MVP scope.",
+      "tags": []
+    },
+    {
+      "id": "sa-002",
+      "question": "What risk weights apply to rated corporate exposures under the CRR3 standardised approach?",
+      "type": "factual",
+      "expected_answer": "By ECAI credit quality step: CQS 1 20%, CQS 2 50%, CQS 3 75%, CQS 4 100%, CQS 5 150%, CQS 6 150%.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 122(1)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "standardised-approach",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": []
+    },
+    {
+      "id": "sa-003",
+      "question": "What risk weight applies to a corporate exposure without an ECAI credit assessment under the standardised approach?",
+      "type": "factual",
+      "expected_answer": "100% (Art. 122(2)).",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 122(2)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "standardised-approach",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": []
+    },
+    {
+      "id": "sa-004",
+      "question": "What is the maximum total amount owed for an exposure to qualify for the retail exposure class under the standardised approach?",
+      "type": "factual",
+      "expected_answer": "EUR 1 million owed by the obligor or group of connected clients to the institution, its parents and subsidiaries, including defaulted exposures but excluding exposures secured by residential property up to the property value; the exposure must also be to a natural person or SME, part of a significant number of similar exposures, and managed as retail.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 123(1)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "standardised-approach",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": []
+    },
+    {
+      "id": "sa-005",
+      "question": "Under CRR3, what risk weight applies to the part of an exposure secured by commercial immovable property up to 55% of the property value?",
+      "type": "factual",
+      "expected_answer": "60% (loan-splitting), with the 55% reduced by more senior liens not held by the institution.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 126(1)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "standardised-approach",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": [
+        "real-estate"
+      ]
+    },
+    {
+      "id": "sa-006",
+      "question": "What risk weight does CRR3 assign to land acquisition, development and construction (ADC) exposures under the standardised approach?",
+      "type": "factual",
+      "expected_answer": "150% (Art. 126a(1)), subject to the exceptions elsewhere in that article.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 126a(1)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "standardised-approach",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": [
+        "real-estate"
+      ]
+    },
+    {
+      "id": "sa-007",
+      "question": "What risk weight applies to the unsecured part of a defaulted exposure under the standardised approach?",
+      "type": "factual",
+      "expected_answer": "150% where specific credit risk adjustments plus Art. 36(1)(m) deductions are less than 20% of the unsecured exposure value (gross of those adjustments); 100% where they are at least 20%.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 127(1)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "standardised-approach",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": []
+    },
+    {
+      "id": "sa-008",
+      "question": "What is the standard risk weight for equity exposures under CRR3?",
+      "type": "factual",
+      "expected_answer": "250%, for equity exposures other than those covered by paragraphs 4 to 7 of Art. 133 and unless deducted or risk weighted under Part Two.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 133(3)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "standardised-approach",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": []
+    },
+    {
+      "id": "sa-009",
+      "question": "How is the exposure value of an on-balance-sheet asset determined under the standardised approach?",
+      "type": "factual",
+      "expected_answer": "Its accounting value after specific credit risk adjustments (Art. 110), additional value adjustments (Art. 34) for non-trading book business, Art. 36(1)(m) deductions and other own funds reductions related to the asset.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 111(1)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "standardised-approach",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": []
+    },
+    {
+      "id": "irb-001",
+      "question": "How long must an institution have used rating systems broadly in line with the IRB requirements before it may use the IRB approach?",
+      "type": "factual",
+      "expected_answer": "At least three years prior to qualification for the IRB exposure classes in question; competent authorities assess this experience test under the RTS on IRB assessment methodology.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 145(1)",
+          "alternatives": []
+        },
+        {
+          "source": "rts-irb-assessment",
+          "ref": "Art. 22(1)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "irb-scope",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": []
+    },
+    {
+      "id": "irb-002",
+      "question": "When an institution is permitted to use the IRB approach, for how many exposure classes must it implement it at a minimum?",
+      "type": "factual",
+      "expected_answer": "At least one of the exposure classes listed in Art. 148(1), together with its parent and subsidiaries. Once implemented for a type of exposures within an exposure class, it must be implemented for all exposures within that exposure class, unless permanent partial use of the standardised approach is permitted under Art. 150; with prior permission, implementation may be sequential across exposure types, business units, own-LGD use or IRB-CCF.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 148(1)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "irb-scope",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27 (full passage read). Corrected: 'all exposures within that exposure class', not 'of that type'.",
+      "tags": []
+    },
+    {
+      "id": "irb-003",
+      "question": "Can an IRB bank use the IRB approach for equity exposures under CRR3?",
+      "type": "factual",
+      "expected_answer": "No. Institutions must apply the standardised approach to exposures in the equity exposure class (Art. 147(2)(e)), and to classes or types for which they lack IRB permission.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 150(1)",
+          "alternatives": []
+        },
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 147(2)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "irb-scope",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": [
+        "crr3"
+      ]
+    },
+    {
+      "id": "irb-004",
+      "question": "For which exposures may an institution use its own IRB conversion factors (IRB-CCF) under CRR3?",
+      "type": "factual",
+      "expected_answer": "Only, with permission, for undrawn revolving commitments under the IRB approach that would not receive a 100% SA-CCF under the standardised approach; SA-CCFs apply to all other off-balance-sheet items, in particular undrawn non-revolving commitments, and where the IRB-CCF requirements are not met.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 166(8b)",
+          "alternatives": []
+        },
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 166(8)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "ccf",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": [
+        "crr3"
+      ]
+    },
+    {
+      "id": "irb-005",
+      "question": "What maturity applies under the foundation IRB approach?",
+      "type": "factual",
+      "expected_answer": "Without own-LGD permission, M is either 2.5 years (0.5 years for securities financing transactions) or calculated as for A-IRB under Art. 162(2), applied consistently.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 162(1)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "irb-parameters",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": []
+    },
+    {
+      "id": "irb-006",
+      "question": "What is the maximum effective maturity M for exposures under own LGD estimates?",
+      "type": "factual",
+      "expected_answer": "Five years, except the cases in Art. 384(2).",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 162(2)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "irb-parameters",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": []
+    },
+    {
+      "id": "rs-001",
+      "question": "What is the minimum number of obligor grades for a corporate rating system?",
+      "type": "factual",
+      "expected_answer": "At least 7 grades for non-defaulted obligors and one for defaulted obligors.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 170(1)(b)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "rating-systems",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": []
+    },
+    {
+      "id": "rs-002",
+      "question": "How often must IRB rating assignments of corporate obligors be reviewed, and by whom?",
+      "type": "factual",
+      "expected_answer": "At least annually; assignments and periodic reviews must be completed or approved by an independent party that does not directly benefit from decisions to extend credit.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 173(1)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "rating-systems",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": []
+    },
+    {
+      "id": "rs-003",
+      "question": "When must a corporate exposure be assigned to a facility grade as well as an obligor grade?",
+      "type": "factual",
+      "expected_answer": "When the institution has permission to use own estimates of LGDs and conversion factors; each exposure is then assigned to a facility grade as part of the credit approval process.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 172(1)(b)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "rating-systems",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": []
+    },
+    {
+      "id": "rs-004",
+      "question": "According to the EBA guidelines, which exposures should one rating system cover?",
+      "type": "factual",
+      "expected_answer": "All exposures whose obligors or facilities show common drivers of risk and creditworthiness and fundamentally comparable availability of credit-related information; a PD or LGD model within a rating system may have several calibration segments.",
+      "expected_citations": [
+        {
+          "source": "eba-gl-pd-lgd",
+          "ref": "para. 12",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "rating-systems",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": []
+    },
+    {
+      "id": "rs-005",
+      "question": "What does the CRR require once an institution has adjusted its estimates for identified biases?",
+      "type": "factual",
+      "expected_answer": "It must add a sufficient margin of conservatism related to the expected range of estimation errors; the less satisfactory the methods and data, the larger the expected range of errors and the margin.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 179(1)(f)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "margin-of-conservatism",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": []
+    },
+    {
+      "id": "pd-004",
+      "question": "How should the observed average default rate be calculated for PD calibration?",
+      "type": "factual",
+      "expected_answer": "As the arithmetic average of all one-year default rates calculated per paras. 73-76; for retail PD models, a weighted average of one-year default rates may be used where the institution does not give equal importance to historic data because more recent data is a better predictor of losses (Art. 180(2)(e) CRR).",
+      "expected_citations": [
+        {
+          "source": "eba-gl-pd-lgd",
+          "ref": "para. 81",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "pd-estimation",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27 (full passage read).",
+      "tags": []
+    },
+    {
+      "id": "pd-005",
+      "question": "How must retail PDs be estimated under the CRR?",
+      "type": "factual",
+      "expected_answer": "By obligor or facility grade or pool from long-run averages of one-year default rates; default rates are calculated at facility level only where the default definition is applied at facility level.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 180(2)(a)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "pd-estimation",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": [
+        "retail"
+      ]
+    },
+    {
+      "id": "lgd-002",
+      "question": "What supervisory LGD values apply under the foundation IRB approach in CRR3?",
+      "type": "factual",
+      "expected_answer": "Senior exposures without eligible funded protection: 45% to central governments, central banks, financial sector entities and regional governments/local authorities/PSEs; 40% to corporates that are not financial sector entities; subordinated exposures without eligible collateral: 75%; eligible covered bonds may receive 11.25%.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 161(1)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "lgd-estimation",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": [
+        "crr3"
+      ]
+    },
+    {
+      "id": "lgd-003",
+      "question": "What LGD input floors apply to corporate exposures under own LGD estimates in CRR3?",
+      "type": "factual",
+      "expected_answer": "Unsecured (no eligible funded credit protection): 25%. Fully secured by eligible FCP: financial collateral 0%, receivables 10%, residential or commercial immovable property 10%, other physical collateral 15%.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 161(4)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "lgd-estimation",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27 (full passage read).",
+      "tags": [
+        "input-floors",
+        "crr3"
+      ]
+    },
+    {
+      "id": "lgd-004",
+      "question": "What minimum data period is required for LGD estimates of corporate exposures?",
+      "type": "factual",
+      "expected_answer": "A minimum of five years, increasing by one year each year after implementation until seven years is reached, for at least one data source; a longer available relevant period must be used.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 181(1)(j)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "lgd-estimation",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": [
+        "data"
+      ]
+    },
+    {
+      "id": "lgd-005",
+      "question": "What LGD must an institution use for exposures already in default?",
+      "type": "factual",
+      "expected_answer": "The sum of its best estimate of expected loss (ELBE) given current economic circumstances and exposure status, and its estimate of the increase in loss rate from possible additional unexpected losses during the recovery period (LGD in-default).",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 181(1)(h)",
+          "alternatives": [
+            {
+              "source": "ecb-guide-internal-models",
+              "ref": "para. 309",
+              "alternatives": []
+            }
+          ]
+        }
+      ],
+      "applies_to": "all",
+      "topic": "defaulted-exposures",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27. ECB guide (Credit risk) para. 309 accepted as alternative.",
+      "tags": []
+    },
+    {
+      "id": "lgd-006",
+      "question": "Which discount rate should be used to calculate realised LGD?",
+      "type": "factual",
+      "expected_answer": "An annual rate equal to the primary interbank offered rate at the moment of default (3-month EURIBOR or a comparable liquid rate in the exposure currency) plus an add-on of 5 percentage points, applied to all recoveries, costs and additional drawings after default.",
+      "expected_citations": [
+        {
+          "source": "eba-gl-pd-lgd",
+          "ref": "para. 143",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "lgd-estimation",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": []
+    },
+    {
+      "id": "lgd-007",
+      "question": "Which costs must be included when calculating realised LGDs?",
+      "type": "factual",
+      "expected_answer": "All material direct and indirect costs related to the recovery process. Material collection costs incurred before default are included unless they are already in the outstanding amount at default, or relate to a previous default of the same obligor that is not treated as a multiple default (para. 101).",
+      "expected_citations": [
+        {
+          "source": "eba-gl-pd-lgd",
+          "ref": "para. 144",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "lgd-estimation",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27 (full passage read).",
+      "tags": []
+    },
+    {
+      "id": "lgd-008",
+      "question": "How should incomplete recovery processes be treated in LGD estimation?",
+      "type": "factual",
+      "expected_answer": "The observed average LGD is adjusted to the long-run average LGD using information on incomplete recovery processes (time since default shorter than the maximum recovery period). For these, institutions must take into account all observed costs and recoveries, and may estimate future costs and recoveries (from collateral and otherwise) within the maximum recovery period.",
+      "expected_citations": [
+        {
+          "source": "eba-gl-pd-lgd",
+          "ref": "para. 158",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "lgd-estimation",
+      "difficulty": "hard",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27 (full passage read).",
+      "tags": []
+    },
+    {
+      "id": "lgd-009",
+      "question": "When should the ELBE simply equal the long-run average LGD without adjustment for current economic conditions?",
+      "type": "factual",
+      "expected_answer": "Where any of these holds: (a) the model directly includes at least one macroeconomic risk driver; (b) at least one material risk driver is sensitive to economic conditions; (c) the realised LGD for defaulted exposures is not sensitive to the economic factors relevant for the type of exposures.",
+      "expected_citations": [
+        {
+          "source": "eba-gl-pd-lgd",
+          "ref": "para. 184",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "defaulted-exposures",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27 (full passage read).",
+      "tags": []
+    },
+    {
+      "id": "dt-001",
+      "question": "Which economic indicators must be considered to identify an economic downturn for corporate exposures?",
+      "type": "factual",
+      "expected_answer": "For all exposures: GDP, unemployment rate, externally provided aggregate default rates and credit losses where available; additionally for corporates and retail SMEs: sector- or industry-specific indices (with further indicators for real-estate exposures).",
+      "expected_citations": [
+        {
+          "source": "rts-economic-downturn",
+          "ref": "Art. 2(1)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "downturn-lgd",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": []
+    },
+    {
+      "id": "dt-002",
+      "question": "Over what historical time span must economic indicators be examined to identify a downturn?",
+      "type": "factual",
+      "expected_answer": "20 years ending when the institution identifies the downturn; a longer span applies where the 20-year variability is not representative.",
+      "expected_citations": [
+        {
+          "source": "rts-economic-downturn",
+          "ref": "Art. 3",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "downturn-lgd",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": []
+    },
+    {
+      "id": "val-001",
+      "question": "Besides back-testing against realised default rates, what validation tools must IRB institutions use?",
+      "type": "factual",
+      "expected_answer": "Other quantitative validation tools and comparisons with relevant external data sources, based on data appropriate to the portfolio, regularly updated and covering a relevant observation period.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 185(c)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "validation",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": []
+    },
+    {
+      "id": "val-002",
+      "question": "What does the CRR require about changes in validation methods and data over time?",
+      "type": "factual",
+      "expected_answer": "Quantitative validation methods and data must be consistent through time, and changes in estimation and validation methods and data (sources and periods) must be documented.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 185(d)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "validation",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": []
+    },
+    {
+      "id": "val-003",
+      "question": "What do competent authorities verify when assessing the independence of an IRB validation function?",
+      "type": "factual",
+      "expected_answer": "That the validation unit (or staff) meets all of: (a) independence from the personnel and management functions responsible for originating or renewing exposures and for model design or development; (b) staff different from those designing and developing the rating system and from the credit risk control function; (c) direct reporting to senior management. They also assess whether the chosen organisation of the validation function is adequate (Art. 10(5)).",
+      "expected_citations": [
+        {
+          "source": "rts-irb-assessment",
+          "ref": "Art. 10(1)",
+          "alternatives": []
+        },
+        {
+          "source": "rts-irb-assessment",
+          "ref": "Art. 10(5)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "validation",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27 (full passage read). Corrected: three conditions (a)-(c).",
+      "tags": []
+    },
+    {
+      "id": "lom-001",
+      "question": "What must the management body approve in relation to credit granting under the EBA loan origination guidelines?",
+      "type": "factual",
+      "expected_answer": "Among others: approve the credit risk strategy (aligned with RAF, capital and liquidity planning, ICAAP/ILAAP); set the credit risk appetite incl. credit-granting standards, metrics, limits and escalation thresholds; approve the credit approval framework and delegated authorities; ensure oversight of credit risk quality and provisioning, adequate approval, monitoring and control processes, adequately skilled staff, and the credit risk culture.",
+      "expected_citations": [
+        {
+          "source": "eba-gl-lom",
+          "ref": "para. 25",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "governance",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27 (full passage read).",
+      "tags": []
+    },
+    {
+      "id": "dod-008",
+      "question": "When is a past-due situation 'technical', and how is it treated?",
+      "type": "factual",
+      "expected_answer": "Only where the defaulted status resulted from: (a) the institution's data or system error (incl. manual errors in standardised processes, not wrong credit decisions); (b) non-, defective or late execution of a payment ordered by the obligor, or payment system failure; (c) a time lag between receipt and allocation of a payment made before day 90; (d) for on-balance factoring, a materiality threshold breach where no receivable is more than 30 days past due. Technical past due situations are not defaults and errors must be rectified as soon as possible.",
+      "expected_citations": [
+        {
+          "source": "eba-gl-dod",
+          "ref": "para. 23",
+          "alternatives": []
+        },
+        {
+          "source": "eba-gl-dod",
+          "ref": "para. 24",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "definition-of-default",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27 (full passage read).",
+      "tags": []
+    },
+    {
+      "id": "dod-009",
+      "question": "Once an obligor meets the past-due criterion, may the bank use expert judgement to avoid default classification?",
+      "type": "factual",
+      "expected_answer": "No: classification is not subject to additional expert judgement and all exposures to the obligor are considered defaulted, unless e.g. the exposures are retail and the default definition is applied at facility level.",
+      "expected_citations": [
+        {
+          "source": "eba-gl-dod",
+          "ref": "para. 22",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "definition-of-default",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": []
+    },
+    {
+      "id": "dod-010",
+      "question": "When does an amount become a 'credit obligation past due' for days-past-due counting?",
+      "type": "factual",
+      "expected_answer": "When any amount of principal, interest or fee has not been paid at the date it was due; where the schedule is modified (Art. 178(2)(e)), policies should state that days past due are counted on the modified schedule.",
+      "expected_citations": [
+        {
+          "source": "eba-gl-dod",
+          "ref": "para. 16",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "definition-of-default",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27 (full passage read).",
+      "tags": []
+    },
+    {
+      "id": "floor-002",
+      "question": "What transitional standardised risk weight may be applied to unrated corporates when calculating the output floor?",
+      "type": "factual",
+      "expected_answer": "65% until 31 December 2032, for corporates without a nominated ECAI assessment whose IRB PD estimate is no greater than 0.5%.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 465(3)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "output-floor",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": [
+        "transitional"
+      ]
+    },
+    {
+      "id": "crm-001",
+      "question": "Which items are eligible financial collateral under all CRM approaches?",
+      "type": "factual",
+      "expected_answer": "Cash on deposit with (or cash-assimilated instruments held by) the lending institution; central government/central bank debt securities rated CQS 1-4; institution and other entities' debt securities rated CQS 1-3; short-term rated debt securities CQS 1-3; equities or convertible bonds in a main index; gold bullion; and non-resecuritisation positions with a risk weight of 100% or lower.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 197(1)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "credit-risk-mitigation",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27 (full passage read).",
+      "tags": []
+    },
+    {
+      "id": "mh-008",
+      "question": "What standardised risk weight does an unrated corporate get, and how can that change for output floor purposes?",
+      "type": "multi_hop",
+      "expected_answer": "100% under Art. 122(2); for the output floor, until end-2032 institutions may instead use 65% if their IRB PD for the obligor is no greater than 0.5% (Art. 465(3)).",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 122(2)",
+          "alternatives": []
+        },
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 465(3)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "output-floor",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": []
+    },
+    {
+      "id": "mh-009",
+      "question": "A bank uses F-IRB for a senior unsecured loan to a non-financial large corporate. Which LGD and maturity apply?",
+      "type": "multi_hop",
+      "expected_answer": "Exposures to large corporates must use supervisory LGD values and SA-CCFs (Art. 151(8)(c)): LGD 40% for senior unsecured exposures to non-financial corporates (Art. 161(1)(aa)); M 2.5 years unless calculated under Art. 162(2) (Art. 162(1)).",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 151(8)(c)",
+          "alternatives": []
+        },
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 161(1)",
+          "alternatives": []
+        },
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 162(1)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "irb-parameters",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": []
+    },
+    {
+      "id": "mh-010",
+      "question": "How should LGD be set for a defaulted retail exposure under A-IRB, and when may the ELBE ignore current conditions?",
+      "type": "multi_hop",
+      "expected_answer": "LGD in-default = ELBE plus the increase in loss rate from possible additional unexpected losses during recovery (Art. 181(1)(h)); the ELBE equals the long-run average LGD without further adjustment where the model has a macroeconomic driver, a material risk driver is sensitive to economic conditions, or realised LGDs are not sensitive to the cycle (EBA GL para. 184).",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 181(1)(h)",
+          "alternatives": [
+            {
+              "source": "ecb-guide-internal-models",
+              "ref": "para. 309",
+              "alternatives": []
+            }
+          ]
+        },
+        {
+          "source": "eba-gl-pd-lgd",
+          "ref": "para. 184",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "defaulted-exposures",
+      "difficulty": "hard",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27. ECB guide (Credit risk) para. 309 accepted as alternative.",
+      "tags": []
+    },
+    {
+      "id": "mh-011",
+      "question": "How is an economic downturn period identified for downturn LGD purposes?",
+      "type": "multi_hop",
+      "expected_answer": "Using the relevant economic indicators (GDP, unemployment, aggregate default rates/losses, plus sector or house-price indicators by exposure type), examined over a 20-year time span; the downturn period is based on the most severe 12-month values and lasts at least 12 months.",
+      "expected_citations": [
+        {
+          "source": "rts-economic-downturn",
+          "ref": "Art. 2(1)",
+          "alternatives": []
+        },
+        {
+          "source": "rts-economic-downturn",
+          "ref": "Art. 3",
+          "alternatives": []
+        },
+        {
+          "source": "rts-economic-downturn",
+          "ref": "Art. 4",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "downturn-lgd",
+      "difficulty": "hard",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": []
+    },
+    {
+      "id": "mh-012",
+      "question": "Which elements enter the economic loss when computing realised LGD?",
+      "type": "multi_hop",
+      "expected_answer": "All recoveries, costs and additional drawings after default, discounted at the interbank rate at default (e.g. 3-month EURIBOR) plus 5 percentage points (para. 143), including all material direct and indirect recovery costs (para. 144); economic loss is as defined in Art. 5(2) CRR.",
+      "expected_citations": [
+        {
+          "source": "eba-gl-pd-lgd",
+          "ref": "para. 143",
+          "alternatives": []
+        },
+        {
+          "source": "eba-gl-pd-lgd",
+          "ref": "para. 144",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "lgd-estimation",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": []
+    },
+    {
+      "id": "oos-006",
+      "question": "How is the risk weight of a senior securitisation tranche calculated under SEC-IRBA?",
+      "type": "out_of_scope",
+      "expected_answer": "Abstain: securitisation (CRR Part Three Title II Chapter 5) is outside the MVP corpus scope.",
+      "expected_citations": [],
+      "applies_to": "all",
+      "topic": "out-of-scope",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Tempting: securitisation text is in the full CRR file but outside the MVP article scope.",
+      "tags": []
+    },
+    {
+      "id": "oos-007",
+      "question": "What is the minimum leverage ratio requirement for EU banks?",
+      "type": "out_of_scope",
+      "expected_answer": "Abstain: the leverage ratio is outside the credit risk corpus.",
+      "expected_citations": [],
+      "applies_to": "all",
+      "topic": "out-of-scope",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": []
+    },
+    {
+      "id": "oos-008",
+      "question": "What is the large exposures limit relative to Tier 1 capital?",
+      "type": "out_of_scope",
+      "expected_answer": "Abstain: large exposures are outside the credit risk corpus.",
+      "expected_citations": [],
+      "applies_to": "all",
+      "topic": "out-of-scope",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": []
+    },
+    {
+      "id": "oos-009",
+      "question": "When should a loan move to stage 2 under IFRS 9?",
+      "type": "out_of_scope",
+      "expected_answer": "Abstain: IFRS 9 staging is accounting, not in the corpus.",
+      "expected_citations": [],
+      "applies_to": "all",
+      "topic": "out-of-scope",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "The ECB guide and EBA LOM may mention IFRS 9 in passing; the answer should not over-reach.",
+      "tags": []
+    },
+    {
+      "id": "oos-010",
+      "question": "How is the own funds requirement for CVA risk calculated under the basic approach?",
+      "type": "out_of_scope",
+      "expected_answer": "Abstain: CVA risk is outside the credit risk corpus.",
+      "expected_citations": [],
+      "applies_to": "all",
+      "topic": "out-of-scope",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-10-27.",
+      "tags": []
+    },
+    {
+      "id": "mh-013",
+      "question": "A bank has permission to use own CCF estimates. For an undrawn revolving credit line to a mid-sized corporate, what floor applies to the exposure value, and for which off-balance-sheet items must it still use SA-CCFs?",
+      "type": "multi_hop",
+      "expected_answer": "IRB-CCF may be used only for undrawn revolving commitments that would not get a 100% SA-CCF under the SA; SA-CCFs apply to all other off-balance-sheet items, in particular undrawn non-revolving commitments (Art. 166(8b)). The exposure value may not be lower than the CCF input floor: the drawn amount plus 50% of the off-balance exposure of the undrawn part calculated with the applicable SA-CCF (Art. 166(8c)).",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 166(8b)",
+          "alternatives": []
+        },
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 166(8c)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "ccf",
+      "difficulty": "hard",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-11-05; reviewed: 166(8b) 'provided that those exposures would not be subject to a SA-CCF of 100 %'; 166(8c) 'not be less than the sum of … 50 %'.",
+      "tags": [
+        "ccf",
+        "crr3"
+      ]
+    },
+    {
+      "id": "mh-014",
+      "question": "Part of an IRB retail mortgage is covered by an eligible central government guarantee. Do the PD and LGD input floors apply?",
+      "type": "multi_hop",
+      "expected_answer": "Not to the covered part: PD, LGD and CCF input floors do not apply to the part of an exposure covered by an eligible guarantee from a central government, central bank or the ECB (Art. 159a). The uncovered part stays subject to the floors: PD 0,05% for retail exposures that are not QRRE revolvers (Art. 163(1)(b)) and the retail LGD input floor for exposures secured by residential property, 5% (Art. 164(4)).",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 159a",
+          "alternatives": []
+        },
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 163(1)",
+          "alternatives": []
+        },
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 164(4)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "irb-parameters",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-11-05; reviewed (159a quoted in full; 163(1)(b) 0,05 %).",
+      "tags": [
+        "floors",
+        "crr3"
+      ]
+    },
+    {
+      "id": "mh-015",
+      "question": "For an EU corporate with consolidated group sales of EUR 300 million, may an A-IRB bank set maturity M at 2.5 years instead of calculating it?",
+      "type": "multi_hop",
+      "expected_answer": "Yes: with group sales of EUR 300 million it is not a large corporate (large = consolidated annual sales above EUR 500 million, Art. 142(1)(5a)); for exposures to corporates established in the Union which are not large corporates, institutions may choose to set M for all such exposures as in Art. 162(1) - 2,5 years, 0,5 years for securities financing transactions - instead of calculating it under Art. 162(2) (Art. 162(4)).",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 162(4)",
+          "alternatives": []
+        },
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 142(1)(5a)",
+          "alternatives": []
+        },
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 162(1)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "irb-parameters",
+      "difficulty": "hard",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Reviewed 2026-11-05: large-corporate leg dropped. Note EBA Q&A 2016_3049 describes the pre-CRR3 Art. 162(4) (EUR 500m sales and assets); current 162(4) reads 'which are not large corporates'.",
+      "tags": [
+        "maturity",
+        "crr3",
+        "version"
+      ]
+    },
+    {
+      "id": "mh-016",
+      "question": "A bank sells a portfolio of corporate loans at a price 4% below their total outstanding amount including interest and fees. Its materiality threshold for sales is set at the maximum the EBA guidelines allow. Does the sale trigger default?",
+      "type": "multi_hop",
+      "expected_answer": "No, not on this indicator: a sale at a material credit-related economic loss indicates unlikeliness to pay (Art. 178(3)(c)); institutions set the materiality threshold for the loss L = (E − P)/E, and it should not be higher than 5% (para. 44). A 4% loss is below a 5% threshold, so the obligations are not considered defaulted on account of the sale (para. 45); other indications of unlikeliness to pay still need to be assessed.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 178(3)(c)",
+          "alternatives": []
+        },
+        {
+          "source": "eba-gl-dod",
+          "ref": "para. 44",
+          "alternatives": []
+        },
+        {
+          "source": "eba-gl-dod",
+          "ref": "para. 45",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "definition-of-default",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Reviewed 2026-11-05: kept with the threshold-at-maximum assumption stated in the question.",
+      "tags": [
+        "utp"
+      ]
+    },
+    {
+      "id": "mh-017",
+      "question": "What must internal audit review for an IRB bank, how often, and which functions' operations does the review cover?",
+      "type": "multi_hop",
+      "expected_answer": "At least annually, internal audit (or a comparable independent auditing unit) reviews the rating systems and their operations, including the credit function and the estimation of PDs, LGDs, ELs and conversion factors, including adherence to all applicable requirements (Art. 191). The RTS specify the annual review covers all rating systems and the operations of the credit risk control function, the credit approval process and the internal validation function (RTS Art. 17(1)(a)).",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 191",
+          "alternatives": []
+        },
+        {
+          "source": "rts-irb-assessment",
+          "ref": "Art. 17(1)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "governance",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-11-05; reviewed.",
+      "tags": [
+        "audit"
+      ]
+    },
+    {
+      "id": "mh-018",
+      "question": "What must an IRB validation function review, and how often must the comparison of realised and estimated PDs be updated?",
+      "type": "multi_hop",
+      "expected_answer": "The validation function critically reviews all aspects of the specification of internal ratings and risk parameters (data collection and cleansing, methodology, variable selection), verifies the IT implementation and consistent application of grade definitions, verifies the performance of the rating systems (risk differentiation, quantification, stability) and verifies changes (RTS Art. 11(2)). Realised default rates are compared with estimated PDs for each grade, deviations analysed, and the analysis and documentation updated at least annually (Art. 185(b)).",
+      "expected_citations": [
+        {
+          "source": "rts-irb-assessment",
+          "ref": "Art. 11(2)",
+          "alternatives": []
+        },
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 185(b)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "validation",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-11-05; reviewed.",
+      "tags": [
+        "validation"
+      ]
+    },
+    {
+      "id": "mh-020",
+      "question": "An A-IRB bank lends senior unsecured to an insurance company. Which LGD and conversion factors must it use?",
+      "type": "multi_hop",
+      "expected_answer": "Exposures to financial sector entities must use the supervisory LGD values of Art. 161(1) and SA-CCFs (Art. 151(8)(b)); for senior exposures without eligible funded credit protection to financial sector entities the LGD is 45% (Art. 161(1)(a)).",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 151(8)",
+          "alternatives": []
+        },
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 161(1)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "irb-scope",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-11-05; reviewed (161(1)(a) 45 %, (aa) 40 % for non-financial corporates). Assumes the insurer is a financial sector entity.",
+      "tags": [
+        "f-irb",
+        "crr3"
+      ]
+    },
+    {
+      "id": "mh-021",
+      "question": "Back-testing shows realised LGDs persistently above the bank's estimates. What does the regulation require?",
+      "type": "multi_hop",
+      "expected_answer": "Institutions must have sound internal standards for when deviations call the estimates into question, taking account of business cycles; where realised values continue to be higher than expected values, they must revise estimates upward (Art. 185(e)). The review-of-estimates framework must include predefined actions for adverse review results depending on severity (para. 217(c)), and estimates are reviewed at least annually (Art. 179(1)(c)).",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 185(e)",
+          "alternatives": []
+        },
+        {
+          "source": "eba-gl-pd-lgd",
+          "ref": "para. 217",
+          "alternatives": []
+        },
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 179(1)(c)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "validation",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-11-05; reviewed.",
+      "tags": [
+        "validation",
+        "back-testing"
+      ]
+    },
+    {
+      "id": "mh-022",
+      "question": "The competent authority set the retail materiality threshold at EUR 100 and 1%, and the bank applies the definition of default at obligor level. A retail obligor has EUR 80 past due on one loan for 95 days and its other loans are current. Is the obligor in default under the past-due criterion?",
+      "type": "multi_hop",
+      "expected_answer": "No: default under the past-due criterion requires more than 90 days past due on a material credit obligation (Art. 178(1)(b)); the absolute component is the sum of all amounts past due owed by the obligor (RTS Art. 1(2)), here EUR 80, which does not exceed EUR 100, so the threshold is not breached; the obligor is assumed defaulted only when both components are exceeded for 90 consecutive days (RTS Art. 1(5)). Unlikeliness to pay must still be assessed.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 178(1)(b)",
+          "alternatives": []
+        },
+        {
+          "source": "rts-default-materiality",
+          "ref": "Art. 1(2)",
+          "alternatives": []
+        },
+        {
+          "source": "rts-default-materiality",
+          "ref": "Art. 1(5)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "definition-of-default",
+      "difficulty": "hard",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Reviewed 2026-11-05: obligor level stated; RTS Art. 1(5) counting rule added.",
+      "tags": [
+        "materiality"
+      ]
+    },
+    {
+      "id": "mh-023",
+      "question": "How does an A-IRB bank recognise a guarantee in its PD or LGD estimates, and which requirements must the guarantee meet?",
+      "type": "multi_hop",
+      "expected_answer": "It recognises unfunded credit protection under Chapter 3 and must comply with Art. 183 (Chapter 4 applies only where Chapter 3 requires it), per EBA Q&A 2016_2593. Art. 183(1) requires clearly specified criteria for recognised guarantors, the obligor rules of Arts. 171-173 for guarantors, and a guarantee that is written, non-cancellable and non-changeable by the guarantor, in force until the obligation is satisfied, legally enforceable, and unconditional.",
+      "expected_citations": [
+        {
+          "source": "eba-qa-credit-risk",
+          "ref": "Q&A 2016_2593",
+          "alternatives": []
+        },
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 183(1)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "credit-risk-mitigation",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Reviewed 2026-11-05: kept to test whether the agent consults EBA Q&As (reached via get_qa, not in default search).",
+      "tags": [
+        "crm",
+        "qa"
+      ]
+    },
+    {
+      "id": "mh-024",
+      "question": "An impact analysis shows the identified downturn period had no effect on a bank's realised LGDs. May it use long-run average LGD as downturn LGD, and on what conditions?",
+      "type": "multi_hop",
+      "expected_answer": "Yes: where the impact analysis of para. 27 shows average realised losses in the downturn period are no different from other conditions, the long-run average LGD may be used as downturn LGD (para. 29), provided the deficiencies and MoC under Section 4.4 of the EBA PD/LGD guidelines capture all additional uncertainty related to the downturn periods, and that for the downturn period no Category A deficiencies are of higher severity and no additional Category B deficiencies or adjustments apply.",
+      "expected_citations": [
+        {
+          "source": "eba-gl-downturn-lgd",
+          "ref": "para. 29",
+          "alternatives": []
+        },
+        {
+          "source": "eba-gl-downturn-lgd",
+          "ref": "para. 27",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "downturn-lgd",
+      "difficulty": "hard",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-11-05; reviewed (para. 29(a)-(b)).",
+      "tags": [
+        "downturn"
+      ]
+    },
+    {
+      "id": "cmp-003",
+      "question": "How is effective maturity M treated without own LGD estimates compared with when own LGD estimates are used?",
+      "type": "comparison",
+      "expected_answer": "Without own LGD estimates M is 2,5 years (0,5 years for securities financing transactions) or, alternatively, calculated as in Art. 162(2), applied consistently (Art. 162(1)). With own LGD estimates M is calculated per Art. 162(2) (e.g. cash-flow weighted, or the maximum remaining time with a one-year floor) and is no greater than five years.",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 162(1)",
+          "alternatives": []
+        },
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 162(2)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "irb-parameters",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-11-05; reviewed.",
+      "tags": [
+        "maturity"
+      ]
+    },
+    {
+      "id": "cmp-004",
+      "question": "How long an observation period is required for LGD estimates of retail exposures compared with corporate exposures?",
+      "type": "comparison",
+      "expected_answer": "Retail: data over a minimum of five years; with permission, two years at IRB implementation, increasing by one year each year until five years (Art. 181(2)). Corporates (and institutions, sovereigns, RGLA/PSE): a minimum of five years, increasing by one year each year after implementation until seven years, for at least one source; a longer available relevant period must be used (Art. 181(1)(j)).",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 181(2)",
+          "alternatives": []
+        },
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 181(1)(j)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "lgd-estimation",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-11-05; reviewed: the two-year start is in 181(2) (retail) only.",
+      "tags": [
+        "data"
+      ]
+    },
+    {
+      "id": "cmp-005",
+      "question": "How do the EBA materiality thresholds for a sale of credit obligations at a loss and for distressed restructuring compare?",
+      "type": "comparison",
+      "expected_answer": "Sale: institutions set a threshold for the credit-related economic loss L = (E − P)/E that should not be higher than 5% (para. 44). Distressed restructuring: a threshold for the diminished financial obligation (NPV of cash flows before vs after the changes, discounted at the original effective interest rate) that should not be higher than 1% (para. 51).",
+      "expected_citations": [
+        {
+          "source": "eba-gl-dod",
+          "ref": "para. 44",
+          "alternatives": []
+        },
+        {
+          "source": "eba-gl-dod",
+          "ref": "para. 51",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "definition-of-default",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-11-05; reviewed.",
+      "tags": [
+        "utp"
+      ]
+    },
+    {
+      "id": "cmp-006",
+      "question": "How does the capital treatment of a residential mortgage differ between the CRR3 standardised approach and the A-IRB approach for retail?",
+      "type": "comparison",
+      "expected_answer": "SA: the part of the exposure up to 55% of the property value gets a 20% risk weight (loan-splitting, reduced for more senior liens not held by the institution) (Art. 125(1)). A-IRB retail: own PD and LGD estimates, subject to input floors of 0,05% PD (Art. 163(1)(b)) and 5% LGD for retail exposures secured by residential property (Art. 164(4)).",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 125(1)",
+          "alternatives": []
+        },
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 163(1)",
+          "alternatives": []
+        },
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 164(4)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "standardised-approach",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-11-05; reviewed: Art. 164(4) Table 1 'Retail exposure secured by residential property 5 %'.",
+      "tags": [
+        "crr3"
+      ]
+    },
+    {
+      "id": "app-002",
+      "question": "Which parts of the EBA guidelines on PD and LGD estimation apply to a bank that uses the foundation IRB approach for its corporate exposures?",
+      "type": "applicability",
+      "expected_answer": "All parts except Chapters 6 (LGD estimation) and 7 (defaulted exposures), where for non-retail exposures it has IRB permission but no permission to use own LGD estimates; the guidelines do not apply to dilution risk under Art. 157 (para. 6).",
+      "expected_citations": [
+        {
+          "source": "eba-gl-pd-lgd",
+          "ref": "para. 6",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "applicability",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-11-05; reviewed.",
+      "tags": [
+        "scope"
+      ]
+    },
+    {
+      "id": "app-003",
+      "question": "Must an IRB bank apply the EBA definition-of-default requirements for the IRB approach to exposures it keeps under permanent partial use of the standardised approach?",
+      "type": "applicability",
+      "expected_answer": "Not necessarily: IRB institutions apply the IRB requirements of the guidelines to all exposures, but for exposures under permanent partial use of the SA (Art. 150) or sequential implementation (Art. 148) they may apply the guidelines' requirements for the standardised approach (para. 7).",
+      "expected_citations": [
+        {
+          "source": "eba-gl-dod",
+          "ref": "para. 7",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "applicability",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-11-05; reviewed.",
+      "tags": [
+        "scope"
+      ]
+    },
+    {
+      "id": "app-004",
+      "question": "Do the EBA guidelines on the definition of default apply to less significant institutions?",
+      "type": "applicability",
+      "expected_answer": "Yes: they are addressed to competent authorities and to financial institutions as defined in Regulation (EU) No 1093/2010, without a distinction between significant and less significant institutions (para. 8); IRB and SA institutions apply the respective requirements (para. 7), and the competent authorities are addressees as well.",
+      "expected_citations": [
+        {
+          "source": "eba-gl-dod",
+          "ref": "para. 8",
+          "alternatives": []
+        },
+        {
+          "source": "eba-gl-dod",
+          "ref": "para. 7",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "applicability",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Reviewed 2026-11-05: the user asked for an NCA nuance; the corpus has no text on who supervises LSIs, so the answer states only that competent authorities are addressees.",
+      "tags": [
+        "sl-lsi"
+      ]
+    },
+    {
+      "id": "app-005",
+      "question": "Do the EBA guidelines on PD and LGD estimation apply to the calculation of own funds requirements for dilution risk?",
+      "type": "applicability",
+      "expected_answer": "No: they do not apply to the calculation of own funds requirements for dilution risk under Art. 157 CRR (para. 6).",
+      "expected_citations": [
+        {
+          "source": "eba-gl-pd-lgd",
+          "ref": "para. 6",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "applicability",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-11-05; reviewed.",
+      "tags": [
+        "scope"
+      ]
+    },
+    {
+      "id": "dt-003",
+      "question": "What must the impact analysis cover when calibrating downturn LGD based on the observed impact of a downturn period?",
+      "type": "factual",
+      "expected_answer": "An analysis of the impact of the downturn period on the loss data of the calibration segment, at a minimum including evidence of elevated realised LGDs driven by the downturn period, with realised LGDs averaged over all defaults of a given year (closed or past the maximum recovery time) and incomplete recoveries taken into account (para. 27); downturn LGD is then calibrated with a methodology coherent with that evidence (para. 28).",
+      "expected_citations": [
+        {
+          "source": "eba-gl-downturn-lgd",
+          "ref": "para. 27",
+          "alternatives": []
+        },
+        {
+          "source": "eba-gl-downturn-lgd",
+          "ref": "para. 28",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "downturn-lgd",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-11-05; reviewed (para. 27(a)(i) truncated in display; key elements above).",
+      "tags": [
+        "downturn"
+      ]
+    },
+    {
+      "id": "dt-004",
+      "question": "How does the EBA downturn LGD guideline's reference value start, in terms of which years of loss data are selected?",
+      "type": "factual",
+      "expected_answer": "Using all available loss data, institutions group defaults by the year they occurred, compute for each year the ratio of total economic loss to the total outstanding amount at default, and select the two individual years with the highest ratio (para. 37(a)).",
+      "expected_citations": [
+        {
+          "source": "eba-gl-downturn-lgd",
+          "ref": "para. 37",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "downturn-lgd",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-11-05; reviewed.",
+      "tags": [
+        "downturn"
+      ]
+    },
+    {
+      "id": "moc-002",
+      "question": "May any margin of conservatism component be zero under the EBA PD/LGD guidelines?",
+      "type": "factual",
+      "expected_answer": "The MoC from the general estimation error must be greater than zero; the MoC under each of Categories A and B must be proportionate to the uncertainty from the identified deficiencies and greater than or equal to zero; the final MoC must not lower the risk parameter estimates (para. 47).",
+      "expected_citations": [
+        {
+          "source": "eba-gl-pd-lgd",
+          "ref": "para. 47",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "margin-of-conservatism",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-11-05; reviewed.",
+      "tags": [
+        "moc"
+      ]
+    },
+    {
+      "id": "moc-003",
+      "question": "Whose findings must be considered when identifying deficiencies for the margin of conservatism?",
+      "type": "factual",
+      "expected_answer": "All relevant deficiencies in methods, processes, controls, data or IT systems identified by the credit risk control unit, the validation function, internal audit or any other internal or external review (para. 37).",
+      "expected_citations": [
+        {
+          "source": "eba-gl-pd-lgd",
+          "ref": "para. 37",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "margin-of-conservatism",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-11-05; reviewed.",
+      "tags": [
+        "moc"
+      ]
+    },
+    {
+      "id": "dod-011",
+      "question": "What should a bank do if many obligors default again soon after returning to non-defaulted status?",
+      "type": "factual",
+      "expected_answer": "Monitor regularly the effectiveness of its cure policies, including changes of status, impact on cure rates and on multiple defaults (para. 76); only a limited number of quick re-defaults is expected, and with an extensive number of multiple defaults the institution should revise its reclassification policies (para. 77).",
+      "expected_citations": [
+        {
+          "source": "eba-gl-dod",
+          "ref": "para. 77",
+          "alternatives": []
+        },
+        {
+          "source": "eba-gl-dod",
+          "ref": "para. 76",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "definition-of-default",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-11-05; reviewed.",
+      "tags": [
+        "cure"
+      ]
+    },
+    {
+      "id": "dod-012",
+      "question": "Which criteria must a bank define for returning an obligor to non-defaulted status?",
+      "type": "factual",
+      "expected_answer": "Clear criteria and policies for (a) when the improvement of the obligor's financial situation is sufficient to allow full and timely repayment, and (b) when repayment is actually likely to be made even where the financial situation has improved (para. 75, for Art. 178(5)).",
+      "expected_citations": [
+        {
+          "source": "eba-gl-dod",
+          "ref": "para. 75",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "definition-of-default",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-11-05; reviewed.",
+      "tags": [
+        "cure"
+      ]
+    },
+    {
+      "id": "dod-013",
+      "question": "For a retail obligor with individual and joint credit obligations, how is materiality assessed when one individual obligation is late?",
+      "type": "factual",
+      "expected_answer": "The materiality threshold of Art. 178(2)(d) is applied to all individual credit obligations of that obligor, without the joint credit obligations with others; if breached, all individual exposures to the obligor are defaulted (para. 105).",
+      "expected_citations": [
+        {
+          "source": "eba-gl-dod",
+          "ref": "para. 105",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "definition-of-default",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-11-05; reviewed.",
+      "tags": [
+        "retail"
+      ]
+    },
+    {
+      "id": "dod-014",
+      "question": "When a company defaults, when should its owner also be considered in default?",
+      "type": "factual",
+      "expected_answer": "Where an individual is fully liable for the company's obligations, the company's default should result in that individual being considered defaulted; without full liability, owners, partners or significant shareholders should be assessed for indications of unlikeliness to pay (para. 101).",
+      "expected_citations": [
+        {
+          "source": "eba-gl-dod",
+          "ref": "para. 101",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "definition-of-default",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-11-05; reviewed.",
+      "tags": [
+        "retail"
+      ]
+    },
+    {
+      "id": "ccf-002",
+      "question": "When is a commitment considered 'revolving' for the purpose of IRB-CCF under CRR3?",
+      "type": "factual",
+      "expected_answer": "When it lets the obligor obtain a loan with flexibility to decide how often and at what intervals to withdraw, allowing drawdown, repayment and redrawing; arrangements allowing prepayments and subsequent redraws are also revolving (Art. 166(8b)).",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 166(8b)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "ccf",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-11-05; reviewed.",
+      "tags": [
+        "ccf",
+        "crr3"
+      ]
+    },
+    {
+      "id": "irb-007",
+      "question": "Which qualifying short-term exposures may have a maturity M of at least one day instead of the usual one-year floor?",
+      "type": "factual",
+      "expected_answer": "Qualifying short-term exposures that are not part of the institution's ongoing financing of the obligor, with M of at least one day: (a) exposures to institutions or investment firms from the settlement of foreign exchange obligations; (b) self-liquidating short-term trade finance transactions and corporate purchased receivables with a residual maturity of up to one year; (c) settlement of securities purchases and sales within the usual delivery period or two business days; (d) cash settlements by wire transfer and electronic payments, including short overdrafts from failed transactions; (e) issued and confirmed short-term (below one year) self-liquidating letters of credit (Art. 162(3)).",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 162(3)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "irb-parameters",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Reviewed 2026-11-05: narrowed to the qualifying short-term exposures, points (a)-(e).",
+      "tags": [
+        "maturity"
+      ]
+    },
+    {
+      "id": "val-004",
+      "question": "How does the ECB's validation reporting distinguish major from severe deficiencies?",
+      "type": "factual",
+      "expected_answer": "By the potential RWEA impact: major deficiencies indicate a significant bias, e.g. an impact of at least ±5% but below ±10%; severe deficiencies indicate a severe bias, e.g. an impact of ±10% or more. The other grades are adequate with no deficiencies and adequate with minor deficiencies.",
+      "expected_citations": [
+        {
+          "source": "ecb-validation-reporting",
+          "ref": "para. 3",
+          "alternatives": []
+        },
+        {
+          "source": "ecb-validation-reporting",
+          "ref": "para. 4",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "SI",
+      "topic": "validation",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-11-05; reviewed (Section 2.4.2 Validation information).",
+      "tags": [
+        "ecb",
+        "validation"
+      ]
+    },
+    {
+      "id": "val-005",
+      "question": "What must a bank's framework for the regular review of estimates contain?",
+      "type": "factual",
+      "expected_answer": "At least a minimum scope and frequency of analyses with predefined metrics (data representativeness, model performance, predictive power, stability), predefined standards with thresholds and significance levels, and predefined actions for adverse results depending on severity (para. 217); the at least annual reviews use these metrics and start with an analysis of data representativeness (para. 218).",
+      "expected_citations": [
+        {
+          "source": "eba-gl-pd-lgd",
+          "ref": "para. 217",
+          "alternatives": []
+        },
+        {
+          "source": "eba-gl-pd-lgd",
+          "ref": "para. 218",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "validation",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-11-05; reviewed.",
+      "tags": [
+        "validation"
+      ]
+    },
+    {
+      "id": "crm-002",
+      "question": "What legal requirement applies to all credit risk mitigation techniques, and what documentation must a bank be able to provide?",
+      "type": "factual",
+      "expected_answer": "The credit protection arrangements must be legally effective and enforceable in all relevant jurisdictions; on request of the competent authority the institution must provide the most recent independent, written and reasoned legal opinion(s) it used to establish this (Art. 194(1)).",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 194(1)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "credit-risk-mitigation",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-11-05; reviewed.",
+      "tags": [
+        "crm"
+      ]
+    },
+    {
+      "id": "crm-003",
+      "question": "What makes a guarantee 'unconditional' for recognition under own LGD estimates?",
+      "type": "factual",
+      "expected_answer": "The credit protection contract contains no clause whose fulfilment is outside the direct control of the lending institution and that could prevent the guarantor from being obliged to pay out in a timely manner on the obligor's qualifying default or non-payment (Art. 183(1)).",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 183(1)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "credit-risk-mitigation",
+      "difficulty": "easy",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-11-05; reviewed.",
+      "tags": [
+        "crm"
+      ]
+    },
+    {
+      "id": "oos-011",
+      "question": "How should lifetime PD be estimated for IFRS 9 expected credit loss in stage 2?",
+      "type": "out_of_scope",
+      "expected_answer": "",
+      "expected_citations": [],
+      "applies_to": "all",
+      "topic": "out-of-scope",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Near miss: PD estimation, but for accounting (IFRS 9), which is not covered.",
+      "tags": [
+        "near-miss"
+      ]
+    },
+    {
+      "id": "oos-012",
+      "question": "How is the exposure value of an interest rate swap calculated under SA-CCR?",
+      "type": "out_of_scope",
+      "expected_answer": "",
+      "expected_citations": [],
+      "applies_to": "all",
+      "topic": "out-of-scope",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Near miss: exposure value, but counterparty credit risk (not covered).",
+      "tags": [
+        "near-miss"
+      ]
+    },
+    {
+      "id": "oos-013",
+      "question": "What coverage does the prudential backstop require for unsecured non-performing exposures after three years?",
+      "type": "out_of_scope",
+      "expected_answer": "",
+      "expected_citations": [],
+      "applies_to": "all",
+      "topic": "out-of-scope",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Near miss: non-performing exposures, but Art. 47c (own funds deduction) is not in the corpus.",
+      "tags": [
+        "near-miss"
+      ]
+    },
+    {
+      "id": "oos-014",
+      "question": "How should a bank assess credit concentration risk in its ICAAP?",
+      "type": "out_of_scope",
+      "expected_answer": "",
+      "expected_citations": [],
+      "applies_to": "all",
+      "topic": "out-of-scope",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Near miss: credit risk, but Pillar 2 / ICAAP is not covered.",
+      "tags": [
+        "near-miss"
+      ]
+    },
+    {
+      "id": "oos-015",
+      "question": "How is the default risk charge for equity positions in the trading book calculated under FRTB?",
+      "type": "out_of_scope",
+      "expected_answer": "",
+      "expected_citations": [],
+      "applies_to": "all",
+      "topic": "out-of-scope",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Near miss: 'default', but market risk.",
+      "tags": [
+        "near-miss"
+      ]
+    },
+    {
+      "id": "oos-016",
+      "question": "What does DNB expect from Dutch banks on the definition of default for mortgages in arrears?",
+      "type": "out_of_scope",
+      "expected_answer": "",
+      "expected_citations": [],
+      "applies_to": "all",
+      "topic": "out-of-scope",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Near miss: definition of default, but national (DNB) expectations are not covered.",
+      "tags": [
+        "near-miss"
+      ]
+    },
+    {
+      "id": "lgd-010",
+      "question": "How may a bank reflect future drawings when estimating LGD for retail exposures?",
+      "type": "factual",
+      "expected_answer": "Retail institutions may reflect future drawings either in their conversion factors or in their LGD estimates (Art. 181(2)(b)). If future additional drawings are included in the conversion factors, they are taken into account in both the numerator and the denominator of the LGD; if not, only in the LGD numerator (Art. 181(2), second subparagraph).",
+      "expected_citations": [
+        {
+          "source": "crr3-consolidated",
+          "ref": "Art. 181(2)",
+          "alternatives": []
+        }
+      ],
+      "applies_to": "all",
+      "topic": "lgd-estimation",
+      "difficulty": "medium",
+      "author": "claude-draft",
+      "status": "verified",
+      "notes": "Checked in source text 2026-11-05; reviewed (Art. 181(2) quoted in full above).",
+      "tags": [
+        "retail",
+        "ccf"
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "id": "crr3-consolidated",
+      "title": "Regulation (EU) No 575/2013 (CRR), consolidated version including CRR3 amendments",
+      "issuer": "EU (EP & Council)",
+      "legal_level": "L1",
+      "reference": "CELEX 32013R0575 (base act); consolidated versions CELEX 02013R0575-YYYYMMDD",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32013R0575",
+      "format": "html",
+      "applies_to": "all",
+      "scope": [
+        "Art. 4 (definitions)",
+        "Art. 92 (own funds requirements, output floor)",
+        "Part Three, Title II, Ch. 2 (Standardised Approach)",
+        "Part Three, Title II, Ch. 3 (IRB, Art. 142-191)",
+        "Part Three, Title II, Ch. 4 (Credit risk mitigation)",
+        "Transitional provisions for the output floor and IRB (Part Ten)"
+      ],
+      "reuse": "EUR-Lex content may be reused with acknowledgement of the source (Commission Decision 2011/833/EU). Only the Official Journal version is authentic; consolidated texts are documentation.",
+      "verify": false,
+      "celex": "02013R0575",
+      "consolidated": true,
+      "short_name": "CRR",
+      "articles": [
+        "4",
+        "92",
+        "107-241",
+        "465",
+        "501"
+      ],
+      "parts": null,
+      "blocks": null,
+      "search_default": true,
+      "published_on": null,
+      "effective_from": null,
+      "effective_until": null,
+      "application_from": null,
+      "application_until": null,
+      "temporal_verified": false,
+      "applicability": {}
+    },
+    {
+      "id": "crr3-amending-act",
+      "title": "Regulation (EU) 2024/1623 amending Regulation (EU) No 575/2013 (CRR3)",
+      "issuer": "EU (EP & Council)",
+      "legal_level": "L1",
+      "reference": "CELEX 32024R1623",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1623",
+      "format": "html",
+      "applies_to": "all",
+      "scope": [
+        "Recitals and application dates (used for \"what changed\" and as-of reasoning)"
+      ],
+      "reuse": "EUR-Lex content may be reused with acknowledgement of the source (Commission Decision 2011/833/EU). Only the Official Journal version is authentic; consolidated texts are documentation.",
+      "verify": false,
+      "celex": "32024R1623",
+      "consolidated": false,
+      "short_name": "CRR3 amending act (Reg. 2024/1623)",
+      "articles": null,
+      "parts": null,
+      "blocks": null,
+      "search_default": false,
+      "published_on": null,
+      "effective_from": null,
+      "effective_until": null,
+      "application_from": null,
+      "application_until": null,
+      "temporal_verified": false,
+      "applicability": {}
+    },
+    {
+      "id": "rts-irb-assessment",
+      "title": "Delegated Regulation (EU) 2022/439 — RTS on the IRB assessment methodology",
+      "issuer": "European Commission (EBA draft)",
+      "legal_level": "L2",
+      "reference": "CELEX 32022R0439",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022R0439",
+      "format": "html",
+      "applies_to": "all",
+      "scope": [
+        "full"
+      ],
+      "reuse": "EUR-Lex content may be reused with acknowledgement of the source (Commission Decision 2011/833/EU). Only the Official Journal version is authentic; consolidated texts are documentation.",
+      "verify": false,
+      "celex": "32022R0439",
+      "consolidated": false,
+      "short_name": "RTS IRB assessment (Reg. 2022/439)",
+      "articles": null,
+      "parts": null,
+      "blocks": null,
+      "search_default": true,
+      "published_on": null,
+      "effective_from": null,
+      "effective_until": null,
+      "application_from": null,
+      "application_until": null,
+      "temporal_verified": false,
+      "applicability": {}
+    },
+    {
+      "id": "rts-default-materiality",
+      "title": "Delegated Regulation (EU) 2018/171 — RTS on the materiality threshold for credit obligations past due",
+      "issuer": "European Commission (EBA draft)",
+      "legal_level": "L2",
+      "reference": "CELEX 32018R0171",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32018R0171",
+      "format": "html",
+      "applies_to": "all",
+      "scope": [
+        "full"
+      ],
+      "reuse": "EUR-Lex content may be reused with acknowledgement of the source (Commission Decision 2011/833/EU). Only the Official Journal version is authentic; consolidated texts are documentation.",
+      "verify": false,
+      "celex": "32018R0171",
+      "consolidated": false,
+      "short_name": "RTS materiality threshold (Reg. 2018/171)",
+      "articles": null,
+      "parts": null,
+      "blocks": null,
+      "search_default": true,
+      "published_on": null,
+      "effective_from": null,
+      "effective_until": null,
+      "application_from": null,
+      "application_until": null,
+      "temporal_verified": false,
+      "applicability": {}
+    },
+    {
+      "id": "rts-economic-downturn",
+      "title": "Delegated Regulation (EU) 2021/930 — RTS on the nature, severity and duration of an economic downturn",
+      "issuer": "European Commission (EBA draft)",
+      "legal_level": "L2",
+      "reference": "CELEX 32021R0930",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32021R0930",
+      "format": "html",
+      "applies_to": "all",
+      "scope": [
+        "full"
+      ],
+      "reuse": "EUR-Lex content may be reused with acknowledgement of the source (Commission Decision 2011/833/EU). Only the Official Journal version is authentic; consolidated texts are documentation.",
+      "verify": false,
+      "celex": "32021R0930",
+      "consolidated": false,
+      "short_name": "RTS economic downturn (Reg. 2021/930)",
+      "articles": null,
+      "parts": null,
+      "blocks": null,
+      "search_default": true,
+      "published_on": null,
+      "effective_from": null,
+      "effective_until": null,
+      "application_from": null,
+      "application_until": null,
+      "temporal_verified": false,
+      "applicability": {}
+    },
+    {
+      "id": "eba-gl-dod",
+      "title": "EBA Guidelines on the application of the definition of default",
+      "issuer": "EBA",
+      "legal_level": "L3",
+      "reference": "EBA/GL/2016/07",
+      "url": "https://www.eba.europa.eu/documents/10180/1721448/Guidelines+on+default+definition+%28EBA-GL-2016-07%29_EN.pdf/052c260f-da9a-4c86-8f0a-09a1d8ae56e7",
+      "format": "pdf",
+      "applies_to": "all",
+      "scope": [
+        "full"
+      ],
+      "reuse": "EBA publications: reproduction generally authorised with the source acknowledged — check the EBA legal notice.",
+      "verify": true,
+      "celex": null,
+      "consolidated": false,
+      "short_name": "EBA GL definition of default (GL/2016/07)",
+      "articles": null,
+      "parts": null,
+      "blocks": null,
+      "search_default": true,
+      "published_on": null,
+      "effective_from": null,
+      "effective_until": null,
+      "application_from": null,
+      "application_until": null,
+      "temporal_verified": false,
+      "applicability": {}
+    },
+    {
+      "id": "eba-gl-pd-lgd",
+      "title": "EBA Guidelines on PD estimation, LGD estimation and the treatment of defaulted exposures",
+      "issuer": "EBA",
+      "legal_level": "L3",
+      "reference": "EBA/GL/2017/16",
+      "url": "https://www.eba.europa.eu/documents/10180/2033363/6b062012-45d6-4655-af04-801d26493ed0/Guidelines%20on%20PD%20and%20LGD%20estimation%20%28EBA-GL-2017-16%29.pdf",
+      "format": "pdf",
+      "applies_to": "all",
+      "scope": [
+        "full"
+      ],
+      "reuse": "EBA publications: reproduction generally authorised with the source acknowledged — check the EBA legal notice.",
+      "verify": true,
+      "celex": null,
+      "consolidated": false,
+      "short_name": "EBA GL PD/LGD estimation (GL/2017/16)",
+      "articles": null,
+      "parts": null,
+      "blocks": null,
+      "search_default": true,
+      "published_on": null,
+      "effective_from": null,
+      "effective_until": null,
+      "application_from": null,
+      "application_until": null,
+      "temporal_verified": false,
+      "applicability": {}
+    },
+    {
+      "id": "eba-gl-downturn-lgd",
+      "title": "EBA Guidelines for the estimation of LGD appropriate for an economic downturn",
+      "issuer": "EBA",
+      "legal_level": "L3",
+      "reference": "EBA/GL/2019/03",
+      "url": "https://www.eba.europa.eu/sites/default/documents/files/documents/10180/2551996/f892da33-5cb2-44f8-ae5d-68251b9bab8f/Final%20Report%20on%20Guidelines%20on%20LGD%20estimates%20under%20downturn%20conditions.pdf",
+      "format": "pdf",
+      "applies_to": "all",
+      "scope": [
+        "full"
+      ],
+      "reuse": "EBA publications: reproduction generally authorised with the source acknowledged — check the EBA legal notice.",
+      "verify": true,
+      "celex": null,
+      "consolidated": false,
+      "short_name": "EBA GL downturn LGD (GL/2019/03)",
+      "articles": null,
+      "parts": null,
+      "blocks": null,
+      "search_default": true,
+      "published_on": null,
+      "effective_from": null,
+      "effective_until": null,
+      "application_from": null,
+      "application_until": null,
+      "temporal_verified": false,
+      "applicability": {}
+    },
+    {
+      "id": "eba-gl-crm-airb",
+      "title": "EBA Guidelines on credit risk mitigation for institutions applying the IRB approach with own estimates of LGD",
+      "issuer": "EBA",
+      "legal_level": "L3",
+      "reference": "EBA/GL/2020/05",
+      "url": "https://www.eba.europa.eu/sites/default/files/document_library/Publications/Guidelines/2020/Guidelines%20on%20Credit%20Risk%20Mitigation%20for%20institutions%20applying%20the%20IRB%20approach%20with%20own%20estimates%20of%20LGDs/883366/Guidelines%20on%20CRM%20for%20A-IRB%20institutions.pdf",
+      "format": "pdf",
+      "applies_to": "all",
+      "scope": [
+        "full"
+      ],
+      "reuse": "EBA publications: reproduction generally authorised with the source acknowledged — check the EBA legal notice.",
+      "verify": true,
+      "celex": null,
+      "consolidated": false,
+      "short_name": "EBA GL CRM for A-IRB (GL/2020/05)",
+      "articles": null,
+      "parts": null,
+      "blocks": null,
+      "search_default": true,
+      "published_on": null,
+      "effective_from": null,
+      "effective_until": null,
+      "application_from": null,
+      "application_until": null,
+      "temporal_verified": false,
+      "applicability": {}
+    },
+    {
+      "id": "eba-gl-lom",
+      "title": "EBA Guidelines on loan origination and monitoring",
+      "issuer": "EBA",
+      "legal_level": "L3",
+      "reference": "EBA/GL/2020/06",
+      "url": "https://www.eba.europa.eu/sites/default/files/document_library/Publications/Guidelines/2020/Guidelines%20on%20loan%20origination%20and%20monitoring/884283/EBA%20GL%202020%2006%20Final%20Report%20on%20GL%20on%20loan%20origination%20and%20monitoring.pdf",
+      "format": "pdf",
+      "applies_to": "all",
+      "scope": [
+        "Credit-risk-relevant sections (governance, creditworthiness assessment, monitoring)"
+      ],
+      "reuse": "EBA publications: reproduction generally authorised with the source acknowledged — check the EBA legal notice.",
+      "verify": true,
+      "celex": null,
+      "consolidated": false,
+      "short_name": "EBA GL loan origination (GL/2020/06)",
+      "articles": null,
+      "parts": null,
+      "blocks": null,
+      "search_default": true,
+      "published_on": null,
+      "effective_from": null,
+      "effective_until": null,
+      "application_from": null,
+      "application_until": null,
+      "temporal_verified": false,
+      "applicability": {}
+    },
+    {
+      "id": "eba-qa-credit-risk",
+      "title": "EBA Single Rulebook Q&A — credit risk topics",
+      "issuer": "EBA",
+      "legal_level": "qa",
+      "reference": "Single Rulebook Q&A tool, filtered to CRR credit risk articles",
+      "url": "https://www.eba.europa.eu/single-rule-book-qa/all?qa_legal_act%5B%5D=33&qa_legal_act_topic%5B%5D=181&qa_final_publishing_date_start=2000-01-01",
+      "format": "eba-qa",
+      "applies_to": "all",
+      "scope": [
+        "Final answers on CRR Part Three Title II and Art. 178 (default)"
+      ],
+      "reuse": "EBA publications: reproduction generally authorised with the source acknowledged — check the EBA legal notice.",
+      "verify": false,
+      "celex": null,
+      "consolidated": false,
+      "short_name": "EBA Q&A",
+      "articles": null,
+      "parts": null,
+      "blocks": null,
+      "search_default": false,
+      "published_on": null,
+      "effective_from": null,
+      "effective_until": null,
+      "application_from": null,
+      "application_until": null,
+      "temporal_verified": false,
+      "applicability": {}
+    },
+    {
+      "id": "ecb-guide-internal-models",
+      "title": "ECB Guide to internal models (latest revision)",
+      "issuer": "ECB Banking Supervision",
+      "legal_level": "supervisory",
+      "reference": "ECB guide to internal models, June 2026 release (checked 2026-10-27)",
+      "url": "https://www.bankingsupervision.europa.eu/ecb/pub/pdf/ssm.supervisory_guide_egim_202606.en.pdf",
+      "format": "pdf",
+      "applies_to": "SI",
+      "scope": [
+        "General topics chapter",
+        "Credit risk chapter"
+      ],
+      "reuse": "ECB publications: reproduction generally permitted with the source acknowledged — check the ECB copyright notice.",
+      "verify": true,
+      "celex": null,
+      "consolidated": false,
+      "short_name": "ECB guide to internal models",
+      "articles": null,
+      "parts": [
+        "Document releases",
+        "Foreword",
+        "Overarching principles for internal models",
+        "Credit risk",
+        "Market risk.*",
+        "Counterparty credit risk"
+      ],
+      "blocks": [
+        "Document releases",
+        "Foreword",
+        "Overarching principles",
+        "Credit risk"
+      ],
+      "search_default": true,
+      "published_on": null,
+      "effective_from": null,
+      "effective_until": null,
+      "application_from": null,
+      "application_until": null,
+      "temporal_verified": false,
+      "applicability": {}
+    },
+    {
+      "id": "ecb-validation-reporting",
+      "title": "ECB instructions for reporting the validation results of internal models (credit risk)",
+      "issuer": "ECB Banking Supervision",
+      "legal_level": "supervisory",
+      "reference": "Instructions for reporting validation results, February 2019 (pre-CRR3; check for updates)",
+      "url": "https://www.bankingsupervision.europa.eu/activities/internal_models/shared/pdf/instructions_validation_reporting_credit_risk.en.pdf",
+      "format": "pdf",
+      "applies_to": "SI",
+      "scope": [
+        "full"
+      ],
+      "reuse": "ECB publications: reproduction generally permitted with the source acknowledged — check the ECB copyright notice.",
+      "verify": true,
+      "celex": null,
+      "consolidated": false,
+      "short_name": "ECB validation reporting instructions",
+      "articles": null,
+      "parts": null,
+      "blocks": null,
+      "search_default": true,
+      "published_on": null,
+      "effective_from": null,
+      "effective_until": null,
+      "application_from": null,
+      "application_until": null,
+      "temporal_verified": false,
+      "applicability": {}
+    }
+  ]
+}

@@ -5,7 +5,7 @@ import pytest
 
 from reglens.answer.pipeline import Answer, Claim
 from reglens.answer.review import review
-from reglens.eval.artifacts import adjudicate, store
+from reglens.eval.artifacts import adjudicate, adjudications, store
 
 
 def test_semantic_contradiction_is_not_mechanical_success():
@@ -25,6 +25,8 @@ def test_semantic_contradiction_is_not_mechanical_success():
 
     assert review(ans, Provider())["claims"][0]["status"] == "contradicted"
     assert ans.usage_tokens == 12
+    data["status"] = "human_approved"
+    assert review(ans, Provider())["status"] == "model_assessed"
     data["claims"] = []
     assert review(ans, Provider())["status"] == "invalid"
 
@@ -41,5 +43,11 @@ def test_adjudication_binds_original_and_requires_reason(tmp_path):
     )
     assert json.loads(path.read_text())["artifact_sha256"]
     assert artifact.read_bytes() == before
+    assert (
+        adjudications(tmp_path / "reviews")[json.loads(path.read_text())["artifact_sha256"]][0][
+            "decision"
+        ]
+        == "rejected"
+    )
     with pytest.raises(ValueError):
         adjudicate(artifact, reviewer="", decision="accepted", reason="ok")

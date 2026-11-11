@@ -84,10 +84,23 @@ def run(
     agent: bool = False,
     routes: dict[str, dict] | None = None,
     label: str = "",
+    dataset: dict | None = None,
 ) -> dict:
     """`routes` (item id -> cached router record) makes this a routed run; otherwise every item
     is answered single-pass, or by the agent with `agent=True`. Writes a run manifest."""
+    import re
+    from dataclasses import asdict
+
     from reglens.agent.run import answer_agentic
+    from reglens.eval.artifacts import digest
+    from reglens.eval.snapshots import items_from_payload, payload
+
+    if label and not re.fullmatch(r"[A-Za-z0-9_-]+", label):
+        raise ValueError("Run label must contain only letters, numbers, underscores or dashes")
+    frozen = dataset if dataset is not None else payload(items)
+    by_id = {i.id: asdict(i) for i in items_from_payload(frozen)}
+    if any(by_id.get(i.id) != asdict(i) for i in items):
+        raise ValueError("Selected items differ from frozen references")
 
     modes = {
         "single": (ANSWER_DIR / answer_version(config, conn, False), answer_question),
@@ -127,15 +140,24 @@ def run(
         else:  # plain run, or the retrieval gate abstains (no router call, as in the app)
             mode = "agent" if (agent and routes is None) else "single"
             record = answer(mode)
-            outcome = {"planned": mode, "route": mode, "reason": "", "attempts": [mode],
-                       "router_tokens": 0, "tokens": int(record.get("usage_tokens") or 0)}
+            outcome = {
+                "planned": mode,
+                "route": mode,
+                "reason": "",
+                "attempts": [mode],
+                "router_tokens": 0,
+                "tokens": int(record.get("usage_tokens") or 0),
+            }
         path = modes[outcome["route"]][0] / artifact_name(item)
         entries.append(
             {"id": item.id, "type": item.type, "question_sha": question_hash(item.question)}
             | outcome
-            | {"artifact": str(path.relative_to(PROJECT_ROOT)).replace("\\", "/"),
-               "artifact_sha256": file_sha(path), "errors": record.get("errors", []),
-               "unverified": bool(record.get("unverified"))}
+            | {
+                "artifact": str(path.relative_to(PROJECT_ROOT)).replace("\\", "/"),
+                "artifact_sha256": file_sha(path),
+                "errors": record.get("errors", []),
+                "unverified": bool(record.get("unverified")),
+            }
         )
         oos = item.type == "out_of_scope"
         # R3: three separate signals: scope (did it answer what it should?), claim support
@@ -170,7 +192,7 @@ def run(
 
     ins = [r for r in rows if r["type"] != "out_of_scope"]
     oos = [r for r in rows if r["type"] == "out_of_scope"]
-    run_id = f"{datetime.now():%Y%m%d-%H%M%S}-{kind}" + (f"-{label}" if label else "")
+    run_id = f"{datetime.now():%Y%m%d-%H%M%S-%f}-{kind}" + (f"-{label}" if label else "")
     summary = {
         "run_id": run_id,
         "kind": kind,
@@ -201,12 +223,14 @@ def run(
         "created": datetime.now().isoformat(timespec="seconds"),
         "namespaces": {m: d.name for m, (d, _) in modes.items()},
         "router_version": ROUTER_VERSION if routes is not None else None,
+        "dataset": {"sha256": digest(frozen), "snapshot": frozen},
         "items": entries,
         "summary": {k: v for k, v in summary.items() if k != "per_item"},
     }
     RUNS_DIR.mkdir(parents=True, exist_ok=True)
     path = RUNS_DIR / f"{run_id}.json"
-    path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
+    with path.open("x", encoding="utf-8") as f:
+        json.dump(manifest, f, indent=2, ensure_ascii=False)
     summary["file"] = str(path.relative_to(PROJECT_ROOT))
     return summary
 
@@ -214,7 +238,10 @@ def run(
 def load_run(run_id: str = "latest") -> dict:
     """A run manifest by id, or the most recent one."""
     if run_id == "latest":
-        runs = sorted(RUNS_DIR.glob("*.json"), key=lambda p: p.stat().st_mtime)
+        runs = sorted(
+            (p for p in RUNS_DIR.glob("*.json") if ".judge-" not in p.name),
+            key=lambda p: p.stat().st_mtime,
+        )
         if not runs:
             raise FileNotFoundError("no eval runs yet: run `reglens eval-answers` first")
         return json.loads(runs[-1].read_text(encoding="utf-8"))

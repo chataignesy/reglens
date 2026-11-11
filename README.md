@@ -162,7 +162,7 @@ stays in the page's memory and goes, via your local RegLens API, only to the Ant
 Quick answers take a few
 seconds. Research-agent answers take up to a minute or two, with each step shown live.
 
-To stop, press Ctrl+C in both terminals, then run `docker compose stop`.
+To stop, press Ctrl+C in the API, inference-service and web terminals, then run `docker compose stop`.
 
 More on the front end: [web/README.md](web/README.md). The earlier Streamlit UI still works as a fallback
 (`uv sync --extra ui`, then `uv run streamlit run src/reglens/ui/app.py`).

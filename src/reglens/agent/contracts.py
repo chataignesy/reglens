@@ -90,6 +90,16 @@ TOOL_SCHEMAS: list[dict] = [
     },
 ]
 
+# The same bounds are advertised to the SDK and enforced for both transports below.
+for tool in TOOL_SCHEMAS:
+    schema = tool["input_schema"]
+    schema["additionalProperties"] = False
+    for name, prop in schema["properties"].items():
+        if name == "k":
+            prop.update(minimum=1, maximum=8)
+        elif name == "offset":
+            prop["minimum"] = 0
+
 # Toolbox method arguments in call order, with defaults for optional ones.
 _ARGS: dict[str, list[tuple[str, object]]] = {
     "search": [("query", ""), ("k", 6), ("source", None)],

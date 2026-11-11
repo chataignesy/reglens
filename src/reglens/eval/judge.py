@@ -133,6 +133,9 @@ def _deterministic(item: GoldenItem, rec: dict) -> dict | None:
 
 def plan(manifest: dict, items: list[GoldenItem], model: str) -> dict:
     """Which items need a judge call (for the dry-run estimate)."""
+    from reglens.eval.snapshots import run_items
+
+    items = run_items(manifest, items)
     by_id = {e["id"]: e for e in manifest["items"]}
     needs, deterministic, cached, problems = [], [], [], []
     for item in items:
@@ -154,7 +157,13 @@ def judge(
 ) -> dict:
     JUDGE_DIR.mkdir(parents=True, exist_ok=True)
     model = config.model("bulk")
+    from reglens.eval.snapshots import run_items
+
+    items = run_items(manifest, items)
     by_id = {e["id"]: e for e in manifest["items"]}
+    from reglens.eval.artifacts import adjudications
+
+    reviews = adjudications()
     rows, new_tokens, problems = [], 0, []
     for item in items:
         entry = by_id.get(item.id)
@@ -206,6 +215,10 @@ def judge(
         "with_contradictions": [r["id"] for r in rows if r.get("contradictions")],
         # R2: verdicts that disagree with themselves; check these by hand before quoting a score
         "inconsistent_verdicts": {r["id"]: r["flags"] for r in rows if r.get("flags")},
+        "practitioner_reviews": {entry["id"]: reviews[entry["artifact_sha256"]]
+                                 for entry in manifest["items"]
+                                 if entry["artifact_sha256"] in reviews},
+        "reference_basis": "frozen" if manifest.get("dataset") else "legacy_current",
         "new_tokens": new_tokens,
         "per_item": rows,
     }

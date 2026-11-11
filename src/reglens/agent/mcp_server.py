@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import os
+import threading
 
 from mcp.server.mcpserver import MCPServer
 from mcp.types import ToolAnnotations
@@ -29,6 +30,7 @@ get_article / get_definition -> get_qa for EBA interpretations of a CRR article.
 server = MCPServer("reglens", instructions=INSTRUCTIONS)
 READ_ONLY = ToolAnnotations(readOnlyHint=True, openWorldHint=False)
 _box: Toolbox | None = None
+_call_lock = threading.Lock()
 
 
 def box() -> Toolbox:
@@ -48,6 +50,13 @@ def box() -> Toolbox:
 
 
 def _call(tool: str, *args) -> str:
+    # MCP may schedule independent synchronous tools on multiple threads. Keep the shared
+    # toolbox's budget, connection and per-call evidence trace together.
+    with _call_lock:
+        return _call_serial(tool, *args)
+
+
+def _call_serial(tool: str, *args) -> str:
     """Run a Toolbox method and append it to the trace file (if any)."""
     from reglens.agent.contracts import invoke, positional
 

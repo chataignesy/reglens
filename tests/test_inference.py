@@ -59,3 +59,27 @@ def test_endpoint_cannot_silently_use_remote_or_fallback(monkeypatch):
     )
     with pytest.raises(ConnectionError):
         models.embed(["rule"])
+
+
+def test_api_readiness_tracks_live_service_recovery(monkeypatch):
+    import json
+    from contextlib import contextmanager
+    from types import SimpleNamespace
+
+    from reglens.api import app as api
+
+    @contextmanager
+    def connection():
+        yield SimpleNamespace(execute=lambda *args: None)
+
+    monkeypatch.setattr("reglens.index.db.connect", connection)
+    monkeypatch.setenv("REGLENS_INFERENCE_URL", "http://127.0.0.1:8001")
+    monkeypatch.setitem(api.WARMUP, "state", "failed")
+    monkeypatch.setitem(api.WARMUP, "error", "Old startup failure")
+    monkeypatch.setattr("reglens.inference_client.ready", lambda: {"ready": True})
+    response = api.ready()
+    assert response.status_code == 200
+    assert json.loads(response.body)["models"] == "ready"
+    assert json.loads(response.body)["error"] is None
+    monkeypatch.setattr("reglens.inference_client.ready", lambda: {"ready": False})
+    assert api.ready().status_code == 503

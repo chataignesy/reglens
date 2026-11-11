@@ -206,6 +206,11 @@ export function AnswerView({ result }: { result: AnswerPayload }) {
                 : "no gaps reported. A judged completeness score exists only in the evaluation."}
           </span>
         </li>
+        {(result.coverage?.temporal === "unknown" || result.coverage?.applicability === "unknown") && (
+          <li className="text-amber-700">Requested date or applicability is not verified for every source. Check the official provisions before relying on this answer.</li>
+        )}
+        <li>Semantic evidence assessment: {result.semantic_review?.status === "model_assessed" ? "model assessment available; practitioner review still required" : "not performed"}.</li>
+        {!!result.research?.unresolved?.length && <li className="text-amber-700">Research checks still unresolved: {result.research.unresolved.join(", ")}.</li>}
       </ul>
 
       {result.sources.length > 0 && (

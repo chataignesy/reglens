@@ -46,3 +46,14 @@ def adjudicate(
         "recorded_at": datetime.now(UTC).isoformat(),
     }
     return store(directory or PROJECT_ROOT / "data/evals/adjudications", record)
+
+
+def adjudications(directory: Path | None = None) -> dict[str, list[dict]]:
+    """Read verified records by artifact hash; conflicting opinions remain visible."""
+    out: dict[str, list[dict]] = {}
+    for path in (directory or PROJECT_ROOT / "data/evals/adjudications").glob("*.json"):
+        record = json.loads(path.read_text(encoding="utf-8"))
+        if path.stem != digest(record):
+            raise ValueError(f"Adjudication was modified: {path.name}")
+        out.setdefault(record["artifact_sha256"], []).append(record)
+    return out

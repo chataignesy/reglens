@@ -17,6 +17,8 @@ CONDITIONS = {"approach", "exposure_class", "jurisdiction", "national_option"}
 
 def validate_metadata(data: dict) -> dict:
     out = {k: data[k] for k in METADATA if k in data}
+    if "temporal_verified" in out and type(out["temporal_verified"]) is not bool:
+        raise ValueError("temporal_verified must be true or false")
     for key in DATES:
         if out.get(key) is not None:
             out[key] = date.fromisoformat(str(out[key])).isoformat()

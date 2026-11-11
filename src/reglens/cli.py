@@ -194,14 +194,20 @@ def _cmd_index(args: argparse.Namespace) -> None:
     from reglens.ingest.chunks import load_chunks
     from reglens.ingest.xrefs import build_edges
 
-    chunks = load_chunks()
     conn = db.connect()
-    gid = generations.begin(conn, model_identity())
-    n = db.upsert_chunks(conn, chunks)
-    edges = build_edges(chunks)
-    db.replace_edges(conn, edges)
-    reused = generations.reuse_vectors(conn)
-    print(f"Generation {gid}: {n} chunks, {len(edges)} edges, {reused} vectors reused")
+    if args.resume:
+        gid = args.resume
+        identity = generations.resume(conn, gid)["models"]
+        print(f"Resuming private generation {gid}; using its stored text and model identity")
+    else:
+        chunks = load_chunks()
+        identity = model_identity()
+        gid = generations.begin(conn, identity)
+        n = db.upsert_chunks(conn, chunks)
+        edges = build_edges(chunks)
+        db.replace_edges(conn, edges)
+        reused = generations.reuse_vectors(conn)
+        print(f"Generation {gid}: {n} chunks, {len(edges)} edges, {reused} vectors reused")
     if args.no_embed:
         print("Staged only; not published. Active readers are unchanged.")
         conn.close()
@@ -209,14 +215,13 @@ def _cmd_index(args: argparse.Namespace) -> None:
 
     from reglens.index.embed import embed
 
-    have = db.existing_hashes(conn)
-    todo = [c for c in chunks if not have.get(c.id, ("", False))[1]]
+    todo = conn.execute("SELECT id,text FROM chunks WHERE embedding IS NULL ORDER BY id").fetchall()
     print(f"embedding {len(todo)} chunks (local BGE-M3, no token cost)")
     batch = 256
     for i in range(0, len(todo), batch):
         part = todo[i : i + batch]
-        vectors = embed([c.text for c in part])
-        db.set_embeddings(conn, list(zip([c.id for c in part], vectors, strict=True)))
+        vectors = embed([text for _, text in part], identity=identity)
+        db.set_embeddings(conn, list(zip([id for id, _ in part], vectors, strict=True)))
         print(f"  {min(i + batch, len(todo))}/{len(todo)}", flush=True)
     print("Published:", generations.publish(conn, gid))
     conn.close()
@@ -327,7 +332,13 @@ def _golden_items(args: argparse.Namespace) -> list:
     from reglens.eval.golden import GOLDEN_DIR, load_golden
 
     paths = [GOLDEN_DIR / f"{args.set}.jsonl"] if args.set != "all" else None
-    items = [i for i in load_golden(paths) if i.status == "verified"]
+    if getattr(args, "snapshot", None):
+        from reglens.eval.snapshots import load
+
+        _, loaded = load(args.snapshot)
+    else:
+        loaded = load_golden(paths)
+    items = [i for i in loaded if i.status == "verified"]
     if getattr(args, "type", None):
         items = [i for i in items if i.type == args.type]
     if getattr(args, "id", None):
@@ -382,6 +393,7 @@ def _cmd_eval_answers(args: argparse.Namespace) -> None:
         print("Dry run. Re-run with --yes to call the model.")
         return
 
+    from reglens.eval.snapshots import load as load_snapshot
     from reglens.llm.provider import get_provider
 
     s = run(
@@ -393,6 +405,7 @@ def _cmd_eval_answers(args: argparse.Namespace) -> None:
         agent=args.agent,
         routes=routes,
         label=args.set,
+        dataset=(load_snapshot(args.snapshot)[0] if args.snapshot else None),
     )
     print(
         f"\nrun {s['run_id']}\n"
@@ -606,7 +619,18 @@ def _cmd_judge(args: argparse.Namespace) -> None:
         raise SystemExit(f"{e}" if args.run == "latest" else f"no run '{args.run}'") from None
     in_run = {e["id"] for e in manifest["items"]}
     args.set = "all"  # the run decides which items are graded; --type / --id narrow it
-    items = [i for i in _golden_items(args) if i.id in in_run]
+    from reglens.eval.snapshots import run_items
+
+    if manifest.get("dataset"):
+        items = run_items(manifest)
+        if args.type:
+            items = [i for i in items if i.type == args.type]
+        if args.id:
+            items = [i for i in items if i.id in set(args.id.split(","))]
+    else:
+        print("Legacy run: frozen references unavailable; using current golden set.")
+        items = _golden_items(args)
+    items = [i for i in items if i.id in in_run]
     p = plan(manifest, items, cfg.model("bulk"))
     est = len(p["needs_call"]) * args.tokens_per_call
     print(
@@ -695,6 +719,7 @@ def main(argv: list[str] | None = None) -> None:
 
     idx = sub.add_parser("index", help="load chunks + edges into Postgres and embed new chunks")
     idx.add_argument("--no-embed", action="store_true", help="skip embedding")
+    idx.add_argument("--resume", help="resume an unfinished generation using its stored corpus")
     idx.set_defaults(func=_cmd_index)
 
     corpus = sub.add_parser("corpus", help="list, publish, or roll back corpus snapshots")
@@ -757,6 +782,7 @@ def main(argv: list[str] | None = None) -> None:
     eva.add_argument(
         "--agent-tokens-per-call", type=int, default=50000, help="for the routed estimate"
     )
+    eva.add_argument("--snapshot", type=Path, help="content-addressed frozen evaluation JSON")
     eva.set_defaults(func=_cmd_eval_answers)
 
     rte = sub.add_parser("eval-route", help="router accuracy: agent vs single-pass (bulk tier)")
@@ -765,6 +791,7 @@ def main(argv: list[str] | None = None) -> None:
     rte.add_argument("--yes", action="store_true", help="actually call the router model")
     rte.add_argument("--type", help="only this golden type")
     rte.add_argument("--id", help="only these golden ids, comma-separated")
+    rte.add_argument("--snapshot", type=Path, help="content-addressed frozen evaluation JSON")
     rte.set_defaults(func=_cmd_eval_route)
 
     jdg = sub.add_parser("judge", help="LLM judge of one eval run's answers (bulk tier, cached)")
@@ -796,6 +823,24 @@ def main(argv: list[str] | None = None) -> None:
         "rules and rewrite it (no LLM calls)",
     )
     gp.set_defaults(func=_cmd_gap)
+
+    frozen = sub.add_parser(
+        "eval-freeze", help="freeze verified references; audit future holdout overlap"
+    )
+    frozen.add_argument(
+        "--input", type=Path, nargs="+", help="golden JSONL files; defaults to development set"
+    )
+    frozen.add_argument("--role", choices=["development", "holdout"], default="development")
+
+    def freeze_evaluation(args):
+        from reglens.eval.golden import load_golden
+        from reglens.eval.snapshots import freeze
+
+        print(
+            freeze([i for i in load_golden(args.input) if i.status == "verified"], role=args.role)
+        )
+
+    frozen.set_defaults(func=freeze_evaluation)
 
     adjud = sub.add_parser("adjudicate", help="record an immutable practitioner review")
     adjud.add_argument("artifact", type=Path)

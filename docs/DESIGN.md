@@ -1,5 +1,9 @@
 # RegLens — design choices
 
+Architecture update (11 November 2026): staged corpus publication, explicit legal constraints,
+shared inference and frozen evaluations are implemented. See [implementation steps](ARCHITECTURE-IMPLEMENTATION.md)
+and [operation and remaining limits](ARCHITECTURE-OPERATIONS.md).
+
 RegLens answers questions about EU credit risk regulation (CRR3, RTS, EBA guidelines and Q&A,
 ECB guide to internal models) with paragraph-level citations. This document records each design
 choice, what it replaced, the tools used and — where we measured it — the evidence.

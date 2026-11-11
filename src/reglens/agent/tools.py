@@ -131,8 +131,9 @@ def _format(rows: list[Row], max_chars: int) -> str:
         if len(body) > max_chars:  # search snippets: the full text is one get_passage call away
             body = body[:max_chars] + f" …[truncated; get_passage('{key}') for the full text]"
         meta = {k: str(getattr(r, k)) for k in METADATA if getattr(r, k)}
-        out.append(f"[{key}] ({level})\nMetadata: {meta}; "
-                   f"temporal verified: {r.temporal_verified}\n{body}")
+        out.append(
+            f"[{key}] ({level})\nMetadata: {meta}; temporal verified: {r.temporal_verified}\n{body}"
+        )
     return "\n\n".join(out) if out else "No passages found."
 
 
@@ -397,8 +398,11 @@ class Toolbox:
             return f"No EBA Q&A found for CRR Art. {art}."
         if query and len(rows) > k:
             from reglens.index.embed import rerank
+            from reglens.index.generations import metadata
 
-            scores = rerank(query, [r.text for r in rows])
+            scores = rerank(
+                query, [r.text for r in rows], identity=metadata(self.conn).get("models") or None
+            )
             rows = [r for _, r in sorted(zip(scores, rows, strict=True), key=lambda x: -x[0])]
         note = f"{len(rows)} Q&As on CRR Art. {art}."
         return self._out(rows[: min(int(k), 6)], note=note, snippets=True)

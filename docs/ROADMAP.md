@@ -1,5 +1,9 @@
 # RegLens — plan & roadmap
 
+Architecture update (11 November 2026): staged corpus publication, explicit legal constraints,
+shared inference and frozen evaluations are implemented. See [implementation steps](ARCHITECTURE-IMPLEMENTATION.md)
+and [operation and remaining limits](ARCHITECTURE-OPERATIONS.md).
+
 Project rules and budget policy: [../CLAUDE.md](../CLAUDE.md). Last updated: 2026-11-08.
 
 ## Goal

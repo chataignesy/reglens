@@ -139,3 +139,35 @@ def test_date_boundaries_and_strict_unknown_filtering(database):
         }
         hit = _fetch(conn, [("valid", 1.0)])[0]
         assert hit.effective_from == "2025-01-01" and hit.temporal_verified
+
+
+def test_publication_waits_for_writers_then_validates_current_data(database):
+    import concurrent.futures
+    import threading
+
+    with db.connect(database) as builder:
+        gid = build(builder)
+        with db.connect(database) as writer:
+            gen.resume(writer, gid)
+            gen.writable(writer)
+            writer.execute("UPDATE chunks SET embedding=NULL")
+            started = threading.Event()
+
+            def publish():
+                with db.connect(database) as publisher:
+                    started.set()
+                    return gen.publish(publisher, gid)
+
+            with concurrent.futures.ThreadPoolExecutor(1) as pool:
+                task = pool.submit(publish)
+                assert started.wait(5)
+                with pytest.raises(concurrent.futures.TimeoutError):
+                    task.result(timeout=.15)
+                writer.commit()
+                with pytest.raises(ValueError, match="Incomplete corpus"):
+                    task.result(timeout=5)
+            assert gen.active(builder) == "legacy"
+        db.set_embeddings(builder, [("one", [1.0] * db.DIM)])
+        gen.publish(builder, gid)
+        with pytest.raises(ValueError, match="unfinished"):
+            gen.resume(builder, gid)

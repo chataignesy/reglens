@@ -64,4 +64,10 @@ def review(ans: Answer, provider, *, tier: str = "bulk") -> dict:
             "model": result.model,
             "reason": "Reviewer response broke the contract; no semantic assessment available",
         }
-    return {"status": "model_assessed", "model": result.model, **data}
+    return {
+        "status": "model_assessed",
+        "model": result.model,
+        "claims": rows,
+        "prose_alignment": data["prose_alignment"],
+        "issues": data["issues"],
+    }

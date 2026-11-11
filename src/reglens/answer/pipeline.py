@@ -56,6 +56,7 @@ class Answer:
     partial_cids: list[str] = field(default_factory=list)
     coverage: dict = field(default_factory=dict)
     corpus_generation: str = "legacy"
+    source_registry: dict | None = None
     research: dict = field(default_factory=dict)
     semantic_review: dict = field(default_factory=lambda: {"status": "not_run"})
 
@@ -65,7 +66,18 @@ class Answer:
         return [h for i, h in enumerate(self.context, 1) if f"C{i}" in ids]
 
     def to_dict(self) -> dict:
+        import hashlib
+
         d = asdict(self)
+        d["evidence"] = [
+            {
+                "id": h.id,
+                "generation": self.corpus_generation,
+                "sha256": hashlib.sha256(h.text.encode()).hexdigest(),
+                "text": h.text,
+            }
+            for h in self.context
+        ]
         d["context"] = [{k: v for k, v in asdict(h).items() if k != "text"} for h in self.context]
         return d
 
@@ -196,6 +208,9 @@ def answer_question(
     prompt = user_prompt(question + instruction(filters), format_context(hits))
     ans = Answer(question, False, "", "", [], hits, as_of)
     ans.coverage = coverage(hits, filters)
+    from reglens.sources import load_sources
+
+    ans.source_registry = {s.id: asdict(s) for s in load_sources(conn=conn)}
     ans.corpus_generation = current(conn)
     found: list[str] = []
     for attempt in range(2):  # one retry when the reply breaks the answer contract

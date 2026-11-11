@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 from datetime import date, datetime
+from pathlib import Path
 
 from reglens.config import PROJECT_ROOT, load_config
 from reglens.llm.ledger import Ledger, Usage
@@ -305,6 +306,14 @@ def _cmd_ask(args: argparse.Namespace) -> None:
         ans = answer_agentic(db.connect(), get_provider(cfg), cfg, args.question, filters=filters)
     else:
         ans = answer_question(db.connect(), get_provider(cfg), cfg, args.question, filters=filters)
+    if args.semantic_review:
+        from reglens.answer.review import estimate_tokens, review
+
+        print(
+            f"Semantic review estimate: ~{estimate_tokens(ans):,} additional tokens",
+            file=__import__("sys").stderr,
+        )
+        ans.semantic_review = review(ans, get_provider(cfg))
     summary = check_answer(ans)
     if args.json:
         print(json.dumps(ans.to_dict() | {"check": summary}, indent=2, ensure_ascii=False))
@@ -710,6 +719,11 @@ def main(argv: list[str] | None = None) -> None:
 
     ask = sub.add_parser("ask", help="answer a question with citations (one LLM call)")
     ask.add_argument("question")
+    ask.add_argument(
+        "--semantic-review",
+        action="store_true",
+        help="request an additional model evidence assessment (extra tokens)",
+    )
     ask.add_argument("--as-of", help="requested legal application date (YYYY-MM-DD)")
     ask.add_argument("--approach", nargs="+", help="reviewed applicability values, e.g. SA IRB")
     ask.add_argument(
@@ -782,6 +796,25 @@ def main(argv: list[str] | None = None) -> None:
         "rules and rewrite it (no LLM calls)",
     )
     gp.set_defaults(func=_cmd_gap)
+
+    adjud = sub.add_parser("adjudicate", help="record an immutable practitioner review")
+    adjud.add_argument("artifact", type=Path)
+    adjud.add_argument("--reviewer", required=True)
+    adjud.add_argument(
+        "--decision", required=True, choices=["accepted", "rejected", "needs_evidence"]
+    )
+    adjud.add_argument("--reason", required=True)
+
+    def record_adjudication(args):
+        from reglens.eval.artifacts import adjudicate
+
+        print(
+            adjudicate(
+                args.artifact, reviewer=args.reviewer, decision=args.decision, reason=args.reason
+            )
+        )
+
+    adjud.set_defaults(func=record_adjudication)
 
     gold = sub.add_parser("golden", help="validate the golden eval set and show its mix")
     gold.set_defaults(func=_cmd_golden)

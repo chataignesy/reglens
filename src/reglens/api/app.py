@@ -226,6 +226,7 @@ def answer_payload(ans: Answer, check: dict) -> dict:
         # R3: completeness, separate from the mechanical checks and from scope (abstained)
         "missing_info": ans.missing_info,
         "coverage": ans.coverage,
+        "semantic_review": ans.semantic_review,
         "corpus_generation": ans.corpus_generation,
         "partial_reads": len(ans.partial_cids),
         "raw_output": ans.raw_output if ans.unverified else "",

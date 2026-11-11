@@ -56,6 +56,7 @@ class Answer:
     partial_cids: list[str] = field(default_factory=list)
     coverage: dict = field(default_factory=dict)
     corpus_generation: str = "legacy"
+    semantic_review: dict = field(default_factory=lambda: {"status": "not_run"})
 
     def cited_hits(self) -> list[Hit]:
         ids = {c for cl in self.claims for c in cl.citations}

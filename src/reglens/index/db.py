@@ -43,6 +43,13 @@ CREATE TABLE IF NOT EXISTS chunks (
 );
 ALTER TABLE chunks ADD COLUMN IF NOT EXISTS cite text NOT NULL DEFAULT '';
 ALTER TABLE chunks ADD COLUMN IF NOT EXISTS source_sha256 text NOT NULL DEFAULT '';
+ALTER TABLE chunks ADD COLUMN IF NOT EXISTS published_on date;
+ALTER TABLE chunks ADD COLUMN IF NOT EXISTS effective_from date;
+ALTER TABLE chunks ADD COLUMN IF NOT EXISTS effective_until date;
+ALTER TABLE chunks ADD COLUMN IF NOT EXISTS application_from date;
+ALTER TABLE chunks ADD COLUMN IF NOT EXISTS application_until date;
+ALTER TABLE chunks ADD COLUMN IF NOT EXISTS temporal_verified boolean NOT NULL DEFAULT false;
+ALTER TABLE chunks ADD COLUMN IF NOT EXISTS applicability jsonb NOT NULL DEFAULT '{{}}';
 CREATE INDEX IF NOT EXISTS chunks_cite ON chunks (cite);
 CREATE INDEX IF NOT EXISTS chunks_tsv ON chunks USING gin (tsv);
 CREATE INDEX IF NOT EXISTS chunks_source ON chunks (source_id, article);
@@ -79,6 +86,8 @@ _COLS = [
     "part",
     "cite",
     "source_sha256",
+    "published_on", "effective_from", "effective_until", "application_from", "application_until",
+    "temporal_verified", "applicability",
 ]
 
 
@@ -101,6 +110,16 @@ def connect(url: str | None = None, *, generation: str | None = None) -> psycopg
 
     try:
         pin(conn, generation or os.environ.get("REGLENS_CORPUS_GENERATION"))
+        table = conn.execute("SELECT to_regclass('chunks')").fetchone()[0]
+        if table and not conn.execute(
+            "SELECT EXISTS(SELECT 1 FROM pg_attribute WHERE attrelid=%s::regclass "
+            "AND attname='applicability')", (table,)
+        ).fetchone()[0]:
+            # Additive compatibility migration. Release the DDL lock before answering.
+            for statement in SCHEMA.split(";"):
+                if statement.strip().startswith("ALTER TABLE chunks"):
+                    conn.execute(statement)
+            conn.commit()
     except Exception:
         conn.close()
         raise
@@ -135,6 +154,9 @@ def upsert_chunks(conn: psycopg.Connection, chunks: Iterable[Chunk]) -> int:
     with conn.cursor() as cur:
         for c in chunks:
             row = asdict(c)
+            from psycopg.types.json import Jsonb
+
+            row["applicability"] = Jsonb(row["applicability"])
             cur.execute(sql, [row[k] for k in _COLS] + [text_hash(c.text)])
             n += 1
     conn.commit()

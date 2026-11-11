@@ -79,14 +79,24 @@ Final reply: ONE JSON object and nothing else:
 """
 
 
-def _mcp_config(max_calls: int, trace_path: str, applies_to: str | None = None,
-                generation: str | None = None) -> str:
+def _mcp_config(
+    max_calls: int,
+    trace_path: str,
+    applies_to: str | None = None,
+    generation: str | None = None,
+    query_context: dict | None = None,
+) -> str:
     cfg = {
         "mcpServers": {
             "reglens": {
                 "command": sys.executable,
                 "args": ["-m", "reglens.agent.mcp_server"],
                 "env": {
+                    **(
+                        {"REGLENS_QUERY_CONTEXT": json.dumps(query_context)}
+                        if query_context
+                        else {}
+                    ),
                     **({"REGLENS_CORPUS_GENERATION": generation} if generation else {}),
                     "REGLENS_MAX_TOOL_CALLS": str(max_calls),
                     "REGLENS_TRACE_FILE": trace_path,
@@ -231,13 +241,13 @@ def _watch_trace(path: str, emit, stop: threading.Event) -> None:
             return
 
 
-def _run_once(
-    provider, question, max_calls, opts, extra, progress=None, applies_to=None
-) -> tuple:
+def _run_once(provider, question, max_calls, opts, extra, progress=None, applies_to=None) -> tuple:
     """One `claude -p` agent run with a fresh MCP server; returns (completion, tool trace)."""
     with tempfile.NamedTemporaryFile(suffix=".jsonl", delete=False) as f:
         trace_file = f.name
-    mcp_file = _mcp_config(max_calls, trace_file, applies_to, opts.get("corpus_generation"))
+    mcp_file = _mcp_config(
+        max_calls, trace_file, applies_to, opts.get("corpus_generation"), opts.get("query_context")
+    )
     stop = threading.Event()
     watcher = None
     if progress:
@@ -279,16 +289,24 @@ def answer_agentic(
     from reglens.index.generations import current
 
     opts["corpus_generation"] = current(conn)
+    from dataclasses import asdict
+
+    from reglens.context import coverage, instruction
+
+    opts["query_context"] = asdict(filters) if filters else {}
     today = today or date.today()
     max_calls = int(opts.get("max_calls", 10))
     applies = filters.applies_to if filters else None
     asked = question
+    question += instruction(filters)
     if applies:
-        question = (f"{question}\n\n(Institution type: {applies}. Search results are limited to "
-                    f"texts that apply to {applies} institutions or to all; say which applies.)")
+        question = (
+            f"{question}\n\n(Institution type: {applies}. Search results are limited to "
+            f"texts that apply to {applies} institutions or to all; say which applies.)"
+        )
 
     # Same retrieval gate as the single-pass pipeline: no LLM call for clearly unrelated questions.
-    top = search(conn, asked, mode="rerank", k=1, filters=Filters(applies_to=applies))
+    top = search(conn, asked, mode="rerank", k=1, filters=filters)
     best = top[0].score if top else 0.0
     if best < float(opts.get("abstain_below", 0.05)):
         return Answer(
@@ -299,6 +317,7 @@ def answer_agentic(
             [],
             top,
             as_of_statement(top, today),
+            coverage=coverage(top, filters), corpus_generation=current(conn),
         )
 
     system = AGENT_SYSTEM.replace("{max_calls}", str(max_calls))
@@ -319,6 +338,7 @@ def answer_agentic(
             max_tokens=int(opts.get("max_tokens_per_question", 200_000)),
             progress=progress,
             applies_to=applies,
+            filters=filters,
         )
     else:
         allowed = ",".join(f"mcp__reglens__{t}" for t in TOOLS)
@@ -346,9 +366,8 @@ def answer_agentic(
             tokens += e.tokens or 0
             errors.append(AGENT_CAP_ERROR + ("" if e.tokens is not None else " (usage unknown)"))
 
-    ans = Answer(
-        asked, False, "", "", [], [], "", model=model, usage_tokens=tokens, trace=trace
-    )
+    ans = Answer(asked, False, "", "", [], [], "", model=model, usage_tokens=tokens, trace=trace)
+    ans.corpus_generation = current(conn)
     ans.errors += errors
     if not text:
         return ans
@@ -370,8 +389,14 @@ def answer_agentic(
     got = delivered_chars(trace)
     partial: set[str] = set()
     context, mapping = _resolve(
-        conn, keys, received, delivered=set(received), undelivered=unread, canonical=canonical,
-        got=got, partial=partial,
+        conn,
+        keys,
+        received,
+        delivered=set(received),
+        undelivered=unread,
+        canonical=canonical,
+        got=got,
+        partial=partial,
     )
     text = re.sub(
         r"\[([^\[\]]+?)\]",
@@ -395,6 +420,7 @@ def answer_agentic(
     ans.abstain_reason = str(data.get("abstain_reason") or "")
     ans.answer = text
     ans.context = context
+    ans.coverage = coverage(context, filters)
     ans.as_of = as_of_statement(context, today)
     ans.claims = [
         Claim(

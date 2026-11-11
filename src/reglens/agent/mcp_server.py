@@ -38,7 +38,12 @@ def box() -> Toolbox:
 
         cap = os.environ.get("REGLENS_MAX_TOOL_CALLS")
         applies = os.environ.get("REGLENS_APPLIES_TO") or None  # "SI" / "LSI"
-        _box = Toolbox(db.connect(), max_calls=int(cap) if cap else None, applies_to=applies)
+        from reglens.retrieve.search import Filters
+
+        context = json.loads(os.environ.get("REGLENS_QUERY_CONTEXT", "{}"))
+        filters = Filters(**context) if context else Filters(applies_to=applies)
+        _box = Toolbox(db.connect(), max_calls=int(cap) if cap else None, applies_to=applies,
+                       filters=filters)
     return _box
 
 

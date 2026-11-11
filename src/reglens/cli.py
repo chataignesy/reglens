@@ -175,6 +175,11 @@ def _cmd_parse(args: argparse.Namespace) -> None:
             chars_per_token=cfg.chars_per_token,
             source_sha256=digest,
         )
+        from pathlib import Path
+
+        from reglens.ingest.metadata import annotate
+
+        annotate(chunks, Path(args.metadata) if args.metadata else None)
         write_chunks(s.id, chunks)
         toks = [len(c.text) / cfg.chars_per_token for c in chunks]
         print(f"{s.id:<26}{len(units):>7}{len(chunks):>8}{int(sum(toks)):>10,}{int(max(toks)):>7}")
@@ -224,8 +229,9 @@ def _cmd_corpus(args: argparse.Namespace) -> None:
         if args.publish:
             print(generations.publish(conn, args.publish, expected_head=generations.active(conn)))
         elif args.rollback:
-            row = conn.execute("SELECT state FROM public.corpus_generations WHERE id=%s",
-                               (args.rollback,)).fetchone()
+            row = conn.execute(
+                "SELECT state FROM public.corpus_generations WHERE id=%s", (args.rollback,)
+            ).fetchone()
             if not row or row[0] != "ready":
                 raise SystemExit("Rollback target must be a previously published snapshot")
             print(generations.publish(conn, args.rollback, expected_head=generations.active(conn)))
@@ -282,16 +288,23 @@ def _cmd_ask(args: argparse.Namespace) -> None:
     from reglens.llm.provider import get_provider
 
     cfg = load_config(args.config)
+    from reglens.retrieve.search import Filters
+
+    filters = Filters(
+        as_of=args.as_of,
+        conditions={"approach": args.approach} if args.approach else None,
+        require_known_validity=args.known_validity,
+    )
     if args.route:
         from reglens.answer.route import answer_routed
 
-        ans = answer_routed(db.connect(), get_provider(cfg), cfg, args.question)
+        ans = answer_routed(db.connect(), get_provider(cfg), cfg, args.question, filters=filters)
     elif args.agent:
         from reglens.agent.run import answer_agentic
 
-        ans = answer_agentic(db.connect(), get_provider(cfg), cfg, args.question)
+        ans = answer_agentic(db.connect(), get_provider(cfg), cfg, args.question, filters=filters)
     else:
-        ans = answer_question(db.connect(), get_provider(cfg), cfg, args.question)
+        ans = answer_question(db.connect(), get_provider(cfg), cfg, args.question, filters=filters)
     summary = check_answer(ans)
     if args.json:
         print(json.dumps(ans.to_dict() | {"check": summary}, indent=2, ensure_ascii=False))
@@ -431,8 +444,11 @@ def _cmd_register(args: argparse.Namespace) -> None:
         reg.write_register(items)
         import json
 
-        manifest = (json.loads(reg.MANIFEST_FILE.read_text(encoding="utf-8"))
-                    if reg.MANIFEST_FILE.exists() else {})
+        manifest = (
+            json.loads(reg.MANIFEST_FILE.read_text(encoding="utf-8"))
+            if reg.MANIFEST_FILE.exists()
+            else {}
+        )
         manifest["id_scheme"] = "content-sha256-v1"
         reg.MANIFEST_FILE.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
         print(f"Migrated {len(items)} obligations to stable ids; legacy aliases retained")
@@ -490,8 +506,11 @@ def _cmd_gap(args: argparse.Namespace) -> None:
     todo = m.batches(obligations)[: args.limit]
     cached = {p.stem for p in (m.MATCH_DIR / m.MATCH_VERSION).glob("*.json")}
     model = cfg.model(m.MATCH_TIER)
-    new = [b for b in todo if m.batch_id(b, m.system_prompt(m.select_clauses(b, clauses)[0]),
-                                       model) not in cached]
+    new = [
+        b
+        for b in todo
+        if m.batch_id(b, m.system_prompt(m.select_clauses(b, clauses)[0]), model) not in cached
+    ]
     est = len(new) * args.tokens_per_call
     print(
         f"{len(clauses)} policy clauses; {sum(len(b) for b in todo)} obligations in {len(todo)} "
@@ -507,7 +526,10 @@ def _cmd_gap(args: argparse.Namespace) -> None:
     from reglens.llm.provider import get_provider
 
     verdicts, tokens = m.match(
-        get_provider(cfg), obligations, clauses, limit=args.limit,
+        get_provider(cfg),
+        obligations,
+        clauses,
+        limit=args.limit,
         log=lambda s: print(s, flush=True),
     )
     s = evaluate(load_gaps(obligations), verdicts)
@@ -516,8 +538,10 @@ def _cmd_gap(args: argparse.Namespace) -> None:
         f"\nplanted-gap recall {s['recall']} ({s['gaps_assessed']} of {s['gaps']} gaps assessed)"
         f"  type accuracy {s['type_accuracy']}  by type {s['by_type']}"
     )
-    print(f"statuses {s['statuses']}  other findings {s['other_findings']}  "
-          f"quotes not verbatim {s['quotes_not_verbatim']}  new tokens {tokens:,}")
+    print(
+        f"statuses {s['statuses']}  other findings {s['other_findings']}  "
+        f"quotes not verbatim {s['quotes_not_verbatim']}  new tokens {tokens:,}"
+    )
     for r in s["per_gap"]:
         if r["assessed"] and not r["found"]:
             print(f"  missed {r['id']} ({r['type']}): {r['statuses']}")
@@ -551,11 +575,15 @@ def _rescore_gap_run(run_id: str, obligations, clauses) -> None:
     s = evaluate(load_gaps(obligations), verdicts)
     out = s | {"rows": rows, "rescored": f"{datetime.now():%Y-%m-%d}", "before_rescore": before}
     run["path"].write_text(json.dumps(out, indent=2, ensure_ascii=False), encoding="utf-8")
-    print(f"{run['label']}: recall {before['recall']} -> {s['recall']} "
-          f"({s['gaps_assessed']}/{s['gaps']} gaps assessed)")
+    print(
+        f"{run['label']}: recall {before['recall']} -> {s['recall']} "
+        f"({s['gaps_assessed']}/{s['gaps']} gaps assessed)"
+    )
     print(f"statuses before {before['statuses']}\nstatuses after  {s['statuses']}")
-    print(f"invalid verdicts {s['invalid_verdicts']}, quotes not verbatim "
-          f"{s['quotes_not_verbatim']}; written to {run['path']}")
+    print(
+        f"invalid verdicts {s['invalid_verdicts']}, quotes not verbatim "
+        f"{s['quotes_not_verbatim']}; written to {run['path']}"
+    )
 
 
 def _cmd_judge(args: argparse.Namespace) -> None:
@@ -653,6 +681,7 @@ def main(argv: list[str] | None = None) -> None:
     prs = sub.add_parser("parse", help="parse downloaded sources into chunks (no LLM calls)")
     prs.add_argument("--source", nargs="*", help="source ids (default: all downloaded)")
     prs.add_argument("--force", action="store_true", help="re-run PDF conversion (Docling)")
+    prs.add_argument("--metadata", help="reviewed YAML provision dates/applicability overrides")
     prs.set_defaults(func=_cmd_parse)
 
     idx = sub.add_parser("index", help="load chunks + edges into Postgres and embed new chunks")
@@ -681,9 +710,17 @@ def main(argv: list[str] | None = None) -> None:
 
     ask = sub.add_parser("ask", help="answer a question with citations (one LLM call)")
     ask.add_argument("question")
+    ask.add_argument("--as-of", help="requested legal application date (YYYY-MM-DD)")
+    ask.add_argument("--approach", nargs="+", help="reviewed applicability values, e.g. SA IRB")
+    ask.add_argument(
+        "--known-validity", action="store_true", help="exclude unknown legal intervals"
+    )
     ask.add_argument("--json", action="store_true", help="print the full answer record")
-    ask.add_argument("--agent", action="store_true",
-                     help="agentic retrieval via the RegLens MCP tools (several tool calls)")
+    ask.add_argument(
+        "--agent",
+        action="store_true",
+        help="agentic retrieval via the RegLens MCP tools (several tool calls)",
+    )
     ask.add_argument(
         "--route", action="store_true", help="let the Haiku router pick single-pass or agent"
     )
@@ -728,8 +765,9 @@ def main(argv: list[str] | None = None) -> None:
     rg.add_argument("--limit", type=int, help="first N batches only (a sample)")
     rg.add_argument("--overhead-tokens", type=int, default=4000, help="for the estimate")
     rg.add_argument("--yes", action="store_true", help="actually call the model")
-    rg.add_argument("--migrate-ids", action="store_true",
-                    help="assign stable IDs, retaining aliases; no LLM")
+    rg.add_argument(
+        "--migrate-ids", action="store_true", help="assign stable IDs, retaining aliases; no LLM"
+    )
     rg.set_defaults(func=_cmd_register)
 
     gp = sub.add_parser("gap", help="policy gap analysis against the obligation register")
@@ -738,7 +776,8 @@ def main(argv: list[str] | None = None) -> None:
     gp.add_argument("--tokens-per-call", type=int, default=8500, help="for the estimate")
     gp.add_argument("--yes", action="store_true", help="actually call the model")
     gp.add_argument(
-        "--rescore", metavar="RUN",
+        "--rescore",
+        metavar="RUN",
         help="re-validate a saved run ('demo', a gap-… id, or 'latest') under the current "
         "rules and rewrite it (no LLM calls)",
     )

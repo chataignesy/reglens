@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import yaml
@@ -34,6 +34,13 @@ class Source:
     parts: list[str] | None = None  # PDF: unnumbered part headings (regexes)
     blocks: list[str] | None = None  # PDF: parts in MVP scope (regexes)
     search_default: bool = True  # False: only searched when explicitly requested
+    published_on: str | None = None
+    effective_from: str | None = None
+    effective_until: str | None = None
+    application_from: str | None = None
+    application_until: str | None = None
+    temporal_verified: bool = False
+    applicability: dict[str, list[str]] = field(default_factory=dict)
 
     def label(self) -> str:
         return self.short_name or self.title
@@ -64,6 +71,10 @@ def load_sources(path: str | Path | None = None, *, conn=None) -> list[Source]:
             return [Source(**s) for s in records]
     path = Path(path or PROJECT_ROOT / "sources.yaml")
     raw = yaml.safe_load(path.read_text(encoding="utf-8"))
+    from reglens.context import validate_metadata
+
+    for record in raw["sources"]:
+        record.update(validate_metadata(record))
     sources = [Source(**s) for s in raw["sources"]]
 
     ids = [s.id for s in sources]

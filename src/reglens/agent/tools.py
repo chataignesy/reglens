@@ -8,9 +8,10 @@ Every passage is returned with a citation key in brackets, e.g. [CRR Art. 178(1)
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from reglens.answer.pipeline import LEVEL_LABEL
+from reglens.context import METADATA
 from reglens.ingest.cite import _sources, citation_key
 from reglens.retrieve.search import Filters, Hit, search
 from reglens.sources import Source
@@ -18,7 +19,9 @@ from reglens.sources import Source
 CRR = "crr3-consolidated"
 QA = "eba-qa-credit-risk"
 _COLS = (
-    "id, source_id, ref, title, text, legal_level, version, kind, article, paragraph, point, cite"
+    ("id, source_id, ref, title, text, legal_level, version, kind, article, paragraph, point, cite")
+    + ", "
+    + ", ".join(METADATA)
 )
 
 
@@ -36,6 +39,13 @@ class Row:
     paragraph: str | None
     point: str | None
     cite: str = ""  # stored citation key (unique per logical unit)
+    published_on: str | None = None
+    effective_from: str | None = None
+    effective_until: str | None = None
+    application_from: str | None = None
+    application_until: str | None = None
+    temporal_verified: bool = False
+    applicability: dict[str, list[str]] = field(default_factory=dict)
 
     def hit(self, score: float = 0.0) -> Hit:
         return Hit(
@@ -47,6 +57,12 @@ class Row:
             self.legal_level,
             self.version,
             score,
+            **{
+                k: str(getattr(self, k))
+                if k in METADATA[:5] and getattr(self, k) is not None
+                else getattr(self, k)
+                for k in METADATA
+            },
         )
 
 
@@ -114,7 +130,9 @@ def _format(rows: list[Row], max_chars: int) -> str:
         body = r.text
         if len(body) > max_chars:  # search snippets: the full text is one get_passage call away
             body = body[:max_chars] + f" …[truncated; get_passage('{key}') for the full text]"
-        out.append(f"[{key}] ({level})\n{body}")
+        meta = {k: str(getattr(r, k)) for k in METADATA if getattr(r, k)}
+        out.append(f"[{key}] ({level})\nContext metadata: {meta}; "
+                   f"temporal verified: {r.temporal_verified}\n{body}")
     return "\n\n".join(out) if out else "No passages found."
 
 
@@ -180,9 +198,11 @@ class Toolbox:
         passage_chars: int = 4000,
         result_chars: int = 14000,
         applies_to: str | None = None,
+        filters: Filters | None = None,
     ):
         self.conn = conn
         self.applies_to = applies_to  # "SI" / "LSI": search only texts that apply (or apply to all)
+        self.filters = filters or Filters(applies_to=applies_to)
         self.max_calls = max_calls
         self.snippet_chars = snippet_chars
         self.passage_chars = passage_chars
@@ -203,9 +223,24 @@ class Toolbox:
             )
         return None
 
+    def _eligible(self, rows: list[Row]) -> list[Row]:
+        if self.conn is None or not rows:
+            return rows
+        from dataclasses import replace
+
+        where, params = replace(self.filters, default_scope=False).sql(self.conn)
+        ids = {
+            r[0]
+            for r in self.conn.execute(
+                "SELECT id FROM chunks WHERE id=ANY(%s)" + where, [[r.id for r in rows], *params]
+            ).fetchall()
+        }
+        return [r for r in rows if r.id in ids]
+
     def _out(self, rows: list[Row], note: str = "", *, snippets: bool = False) -> str:
         """Whole passages up to `result_chars`; a passage is never cut by the size limit, and
         what is left out is said. Only passages actually returned count as delivered (`seen`)."""
+        rows = self._eligible(rows)
         cap = self.snippet_chars if snippets else self.passage_chars
         head = note + "\n\n" if note else ""
         blocks: list[str] = []
@@ -229,12 +264,14 @@ class Toolbox:
         """Hybrid search (BM25 + embeddings + reranker) over the corpus."""
         if msg := self._budget():
             return msg
-        filters = Filters(applies_to=self.applies_to)
+        from dataclasses import replace
+
+        filters = self.filters
         if source:
             s = source_by_name(source, self.conn)
             if not s:
                 return f"Unknown source '{source}'."
-            filters = Filters(source_ids=[s.id], applies_to=self.applies_to)
+            filters = replace(self.filters, source_ids=[s.id])
         hits = search(self.conn, query, mode="rerank", k=min(int(k), 8), filters=filters)
         ids = [h.id for h in hits]
         rows = {r.id: r for r in _rows(self.conn, "id = ANY(%s)", [ids])}
@@ -263,6 +300,11 @@ class Toolbox:
             return f"Unknown source '{source}'."
         art = str(article).strip().removeprefix("Art.").removeprefix("Article").strip()
         where, params = "source_id = %s AND article = %s AND kind = 'article'", [s.id, art]
+        from dataclasses import replace
+
+        extra, values = replace(self.filters, default_scope=False).sql(self.conn)
+        where += extra
+        params.extend(values)
         para = str(paragraph).strip("() ") if paragraph else None
         if para:
             where += " AND paragraph = %s"

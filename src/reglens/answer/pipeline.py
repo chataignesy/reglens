@@ -54,6 +54,8 @@ class Answer:
     raw_output: str = ""
     # agent answers: context passages (C#) cited after reading only a truncated snippet
     partial_cids: list[str] = field(default_factory=list)
+    coverage: dict = field(default_factory=dict)
+    corpus_generation: str = "legacy"
 
     def cited_hits(self) -> list[Hit]:
         ids = {c for cl in self.claims for c in cl.citations}
@@ -62,11 +64,7 @@ class Answer:
 
     def to_dict(self) -> dict:
         d = asdict(self)
-        d["context"] = [
-            {"id": h.id, "ref": h.ref, "source_id": h.source_id, "title": h.title,
-             "score": h.score}
-            for h in self.context
-        ]
+        d["context"] = [{k: v for k, v in asdict(h).items() if k != "text"} for h in self.context]
         return d
 
 
@@ -82,7 +80,13 @@ def format_context(hits: list[Hit]) -> str:
     blocks = []
     for i, h in enumerate(hits, 1):
         level = LEVEL_LABEL.get(h.legal_level, h.legal_level)
-        blocks.append(f"[C{i}] ({level}) {h.text}")
+        from reglens.context import METADATA
+
+        dates = {k: getattr(h, k) for k in METADATA if getattr(h, k)}
+        blocks.append(
+            f"[C{i}] ({level}; context metadata: {dates}; "
+            f"temporal verified: {h.temporal_verified}) {h.text}"
+        )
     return "\n\n".join(blocks)
 
 
@@ -164,6 +168,9 @@ def answer_question(
     emit({"stage": "retrieved", "passages": len(hits), "refs": [h.ref for h in hits[:3]]})
     as_of = as_of_statement(hits, today)
 
+    from reglens.context import coverage
+    from reglens.index.generations import current
+
     best = hits[0].score if hits else 0.0
     if best < float(opts.get("abstain_below", 0.05)):
         return Answer(
@@ -174,13 +181,20 @@ def answer_question(
             [],
             hits,
             as_of,
+            coverage=coverage(hits, filters),
+            corpus_generation=current(conn),
         )
 
     from reglens.answer.schema import parse_reply, retry_note
 
     emit({"stage": "drafting"})
-    prompt = user_prompt(question, format_context(hits))
+    from reglens.context import coverage, instruction
+    from reglens.index.generations import current
+
+    prompt = user_prompt(question + instruction(filters), format_context(hits))
     ans = Answer(question, False, "", "", [], hits, as_of)
+    ans.coverage = coverage(hits, filters)
+    ans.corpus_generation = current(conn)
     found: list[str] = []
     for attempt in range(2):  # one retry when the reply breaks the answer contract
         completion = provider.complete(
@@ -225,6 +239,8 @@ def render(ans: Answer) -> str:
     else:
         body = ans.answer
     lines = [body, "", f"_{ans.as_of}._", ""]
+    if "unknown" in (ans.coverage.get("temporal"), ans.coverage.get("applicability")):
+        lines += ["Requested date/applicability is not verified for every source.", ""]
     cited = ans.cited_hits()
     if cited:
         lines.append("**Sources**")

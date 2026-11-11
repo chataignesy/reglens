@@ -2,6 +2,7 @@
 
 import os
 import uuid
+from dataclasses import replace
 
 import psycopg
 import pytest
@@ -104,3 +105,37 @@ def test_pinned_registry_is_not_replaced_by_workspace_config(database):
         gen.publish(conn, gid)
     with db.connect(database) as conn:
         assert load_sources(conn=conn) == []
+
+
+def test_date_boundaries_and_strict_unknown_filtering(database):
+    from reglens.retrieve.search import Filters, _fetch
+
+    with db.connect(database) as conn:
+        gen.begin(conn, {"fixture": True}, source_records=[])
+        db.upsert_chunks(
+            conn,
+            [
+                replace(
+                    chunk("valid", "valid"),
+                    effective_from="2025-01-01",
+                    application_from="2026-01-01",
+                    effective_until="2027-01-01",
+                    temporal_verified=True,
+                    applicability={"approach": ["SA"]},
+                ),
+                chunk("unknown", "unknown"),
+            ],
+        )
+
+        def ids(f):
+            where, params = f.sql(conn)
+            return {r[0] for r in conn.execute("SELECT id FROM chunks WHERE true" + where, params)}
+
+        assert ids(Filters(as_of="2026-01-01")) == {"valid", "unknown"}
+        assert ids(Filters(as_of="2027-01-01")) == {"unknown"}
+        assert ids(Filters(as_of="2025-12-31", require_known_validity=True)) == set()
+        assert ids(Filters(conditions={"approach": ["SA"]}, require_known_applicability=True)) == {
+            "valid"
+        }
+        hit = _fetch(conn, [("valid", 1.0)])[0]
+        assert hit.effective_from == "2025-01-01" and hit.temporal_verified

@@ -56,6 +56,8 @@ export interface AnswerPayload {
   unverified: boolean; // the model's reply broke the answer format even after a retry
   raw_output: string; // that reply, for diagnosis only (empty unless unverified)
   missing_info: boolean; // the answer reports that information it needs is missing
+  coverage?: { temporal: string; applicability: string; requested_date?: string };
+  corpus_generation?: string;
   partial_reads: number; // cited passages the agent only saw as truncated snippets
 }
 
@@ -72,7 +74,7 @@ export async function getMeta(): Promise<Meta> {
 
 /** POST the question and read the Server-Sent Events stream until `result` or `error`. */
 export async function ask(
-  body: { question: string; mode: Mode; access: Access; applies_to: string | null },
+  body: { question: string; mode: Mode; access: Access; applies_to: string | null; as_of?: string | null; conditions?: Record<string, string[]> },
   apiKey: string | null,
   onProgress: (e: ProgressEvent) => void,
   signal?: AbortSignal,

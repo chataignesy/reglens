@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import psycopg
 
@@ -21,6 +21,14 @@ class Hit:
     legal_level: str
     version: str | None
     score: float
+    published_on: str | None = None
+    effective_from: str | None = None
+    effective_until: str | None = None
+    application_from: str | None = None
+    application_until: str | None = None
+    temporal_verified: bool = False
+    applicability: dict[str, list[str]] = field(default_factory=dict)
+    generation: str = "legacy"
 
 
 @dataclass
@@ -32,6 +40,19 @@ class Filters:
     # change-tracking sources (search_default: false in sources.yaml).
     exclude_kinds: tuple[str, ...] = ("background",)
     default_scope: bool = True
+    as_of: str | None = None
+    conditions: dict[str, list[str]] | None = None
+    require_known_validity: bool = False
+    require_known_applicability: bool = False
+
+    def __post_init__(self):
+        from datetime import date
+
+        from reglens.context import validate_metadata
+
+        if self.as_of:
+            self.as_of = date.fromisoformat(str(self.as_of)).isoformat()
+        validate_metadata({"applicability": self.conditions or {}})
 
     def sql(self, conn=None) -> tuple[str, list]:
         where, params = [], []
@@ -50,6 +71,21 @@ class Filters:
         if self.applies_to:
             where.append("applies_to IN (%s, 'all')")
             params.append(self.applies_to)
+        if self.as_of:
+            for col in ("effective_from", "application_from"):
+                where.append(f"({col} IS NULL OR {col} <= %s::date)")
+                params.append(self.as_of)
+            for col in ("effective_until", "application_until"):
+                where.append(f"({col} IS NULL OR %s::date < {col})")
+                params.append(self.as_of)
+            if self.require_known_validity:
+                where.append("temporal_verified")
+        for key, values in (self.conditions or {}).items():
+            where.append("((NOT (applicability ? %s)) OR (applicability -> %s) ?| %s)")
+            params.extend([key, key, values])
+            if self.require_known_applicability:
+                where.append("applicability ? %s")
+                params.append(key)
         return (" AND " + " AND ".join(where)) if where else "", params
 
 
@@ -69,8 +105,10 @@ def _generation_freqs(conn) -> tuple[dict[str, int], int]:
     # generations never overwrite a process-global partially populated dictionary.
     cached = getattr(conn, "_reglens_freqs", None)
     if cached is None:
-        cached = (dict(conn.execute("SELECT word, ndoc FROM ts_stat('SELECT tsv FROM chunks')")),
-                  conn.execute("SELECT count(*) FROM chunks").fetchone()[0])
+        cached = (
+            dict(conn.execute("SELECT word, ndoc FROM ts_stat('SELECT tsv FROM chunks')")),
+            conn.execute("SELECT count(*) FROM chunks").fetchone()[0],
+        )
         conn._reglens_freqs = cached
     return cached
 
@@ -92,13 +130,28 @@ def _rare_terms_query(
 def _fetch(conn: psycopg.Connection, scored: list[tuple[str, float]]) -> list[Hit]:
     if not scored:
         return []
+    from reglens.context import METADATA
+    from reglens.index.generations import current
+
     rows = conn.execute(
-        "SELECT id, source_id, ref, title, text, legal_level, version "
+        "SELECT id, source_id, ref, title, text, legal_level, version, " + ",".join(METADATA) + " "
         "FROM chunks WHERE id = ANY(%s)",
         ([i for i, _ in scored],),
     ).fetchall()
     by_id = {r[0]: r for r in rows}
-    return [Hit(*by_id[i], score=s) for i, s in scored if i in by_id]
+    return [
+        Hit(
+            *by_id[i][:7],
+            score=s,
+            generation=current(conn),
+            **{
+                k: str(v) if k in METADATA[:5] and v is not None else v
+                for k, v in zip(METADATA, by_id[i][7:], strict=True)
+            },
+        )
+        for i, s in scored
+        if i in by_id
+    ]
 
 
 def bm25(conn, question: str, k: int, filters: Filters) -> list[tuple[str, float]]:
@@ -117,8 +170,9 @@ def dense(conn, question: str, k: int, filters: Filters) -> list[tuple[str, floa
     from reglens.index.embed import embed
     from reglens.index.generations import metadata
 
-    vec = np.array(embed([question], identity=metadata(conn).get("models") or None)[0],
-                   dtype=np.float32)
+    vec = np.array(
+        embed([question], identity=metadata(conn).get("models") or None)[0], dtype=np.float32
+    )
     where, params = filters.sql(conn)
     rows = conn.execute(
         "SELECT id, 1 - (embedding <=> %s) AS s FROM chunks "

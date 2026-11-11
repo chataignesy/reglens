@@ -21,12 +21,13 @@ import threading
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import replace
+from datetime import date
 from typing import Literal
 
 from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response, StreamingResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from reglens.answer.pipeline import LEVEL_LABEL, Answer
 from reglens.answer.verify import check_answer
@@ -81,6 +82,20 @@ class AskRequest(BaseModel):
     mode: Mode = "auto"
     access: Access = "api"
     applies_to: Literal["SI", "LSI"] | None = None
+    as_of: date | None = None
+    conditions: dict[str, list[str]] | None = None
+    require_known_validity: bool = False
+    require_known_applicability: bool = False
+
+    @field_validator("conditions")
+    @classmethod
+    def validate_conditions(cls, value):
+        from reglens.context import validate_metadata
+
+        if value and (len(value) > 4 or any(len(v) > 20 for v in value.values())):
+            raise ValueError("Too many applicability conditions")
+        validate_metadata({"applicability": value or {}})
+        return value
 
 
 @app.get("/api/health")
@@ -210,6 +225,8 @@ def answer_payload(ans: Answer, check: dict) -> dict:
         "unverified": ans.unverified,
         # R3: completeness, separate from the mechanical checks and from scope (abstained)
         "missing_info": ans.missing_info,
+        "coverage": ans.coverage,
+        "corpus_generation": ans.corpus_generation,
         "partial_reads": len(ans.partial_cids),
         "raw_output": ans.raw_output if ans.unverified else "",
         "unresolved": [k for t in ans.trace for k in t.get("unresolved_keys", [])],
@@ -221,7 +238,9 @@ def _run(req: AskRequest, provider, emit) -> dict:
 
     cfg = load_config()
     conn = db.connect()
-    filters = Filters(applies_to=req.applies_to)  # SI / LSI applies in every mode
+    filters = Filters(applies_to=req.applies_to, as_of=str(req.as_of) if req.as_of else None,
+                      conditions=req.conditions, require_known_validity=req.require_known_validity,
+                      require_known_applicability=req.require_known_applicability)
     try:
         if req.mode == "agent":
             from reglens.agent.run import answer_agentic

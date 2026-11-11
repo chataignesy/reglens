@@ -8,7 +8,7 @@ acceptance checks. Unknown legal dates/conditions remain unknown rather than bei
 | Step | Deliverable | Status |
 |---|---|---|
 | 1 | Staged immutable corpus generations, validated publication/rollback, pinned model revisions, readers pinned to a generation | Done: 3 disposable-Postgres integration checks; existing 149 tests pass |
-| 2 | Stable obligation identities, compatible migration of existing references/results, bounded long-policy matching | Pending |
+| 2 | Stable obligation identities, compatible migration of existing references/results, bounded long-policy matching | Done: 752 IDs migrated with aliases; 15 planted gaps resolve; 14 focused tests pass |
 | 3 | Provision-level temporal/applicability metadata and explicit query constraints with unknown-coverage reporting | Pending |
 | 4 | Separate semantic evidence review and prose/claim alignment reporting; auditable practitioner adjudication | Pending |
 | 5 | Structured research checklist, evidence coverage, and targeted completion within the existing budgets | Pending |

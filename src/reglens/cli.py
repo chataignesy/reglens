@@ -425,6 +425,18 @@ def _cmd_register(args: argparse.Namespace) -> None:
     from reglens.gap import register as reg
     from reglens.index import db
 
+    if args.migrate_ids:
+        items = reg.load_register()
+        reg.assign_ids(items)
+        reg.write_register(items)
+        import json
+
+        manifest = (json.loads(reg.MANIFEST_FILE.read_text(encoding="utf-8"))
+                    if reg.MANIFEST_FILE.exists() else {})
+        manifest["id_scheme"] = "content-sha256-v1"
+        reg.MANIFEST_FILE.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+        print(f"Migrated {len(items)} obligations to stable ids; legacy aliases retained")
+        return
     cfg = load_config(args.config)
     conn = db.connect()
     todo = reg.batches(reg.select_passages(conn))[: args.limit]
@@ -475,10 +487,11 @@ def _cmd_gap(args: argparse.Namespace) -> None:
     if args.rescore:
         _rescore_gap_run(args.rescore, obligations, clauses)
         return
-    system = m.system_prompt(clauses)
     todo = m.batches(obligations)[: args.limit]
     cached = {p.stem for p in (m.MATCH_DIR / m.MATCH_VERSION).glob("*.json")}
-    new = [b for b in todo if m.batch_id(b, system) not in cached]
+    model = cfg.model(m.MATCH_TIER)
+    new = [b for b in todo if m.batch_id(b, m.system_prompt(m.select_clauses(b, clauses)[0]),
+                                       model) not in cached]
     est = len(new) * args.tokens_per_call
     print(
         f"{len(clauses)} policy clauses; {sum(len(b) for b in todo)} obligations in {len(todo)} "
@@ -518,13 +531,17 @@ def _rescore_gap_run(run_id: str, obligations, clauses) -> None:
     from reglens.gap import match as m
     from reglens.gap.evaluate import evaluate, find_run
     from reglens.gap.gaps import load_gaps
+    from reglens.gap.register import id_lookup
 
     run = find_run(None if run_id == "latest" else run_id)
     if run is None:
         raise SystemExit(f"no gap run '{run_id}'")
     data = json.loads(run["path"].read_text(encoding="utf-8"))
-    by_id = {r["obligation_id"]: r for r in data["rows"]}
+    lookup = id_lookup(obligations)
+    by_id = {lookup[r["obligation_id"]].id: r for r in data["rows"]}
     verdicts = m.rescore(data["rows"], clauses)
+    for v in verdicts:
+        v.obligation_id = lookup[v.obligation_id].id
     rows = m.to_rows(verdicts, obligations)
     for r in rows:  # keep any reviewer columns already filled in
         old = by_id.get(r["obligation_id"], {})
@@ -711,6 +728,8 @@ def main(argv: list[str] | None = None) -> None:
     rg.add_argument("--limit", type=int, help="first N batches only (a sample)")
     rg.add_argument("--overhead-tokens", type=int, default=4000, help="for the estimate")
     rg.add_argument("--yes", action="store_true", help="actually call the model")
+    rg.add_argument("--migrate-ids", action="store_true",
+                    help="assign stable IDs, retaining aliases; no LLM")
     rg.set_defaults(func=_cmd_register)
 
     gp = sub.add_parser("gap", help="policy gap analysis against the obligation register")

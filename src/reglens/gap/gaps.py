@@ -10,7 +10,7 @@ from pathlib import Path
 import yaml
 
 from reglens.config import PROJECT_ROOT
-from reglens.gap.register import Obligation
+from reglens.gap.register import Obligation, id_lookup
 
 GAPS_FILE = PROJECT_ROOT / "docs" / "synthetic-policy" / "gaps.yaml"
 POLICY_FILE = PROJECT_ROOT / "docs" / "synthetic-policy" / "model-validation-policy.md"
@@ -37,13 +37,13 @@ def load_gaps(obligations: list[Obligation], path: Path = GAPS_FILE) -> list[Gap
         if g["type"] not in GAP_TYPES:
             raise ValueError(f"{g['id']}: unknown type {g['type']}")
         gap = Gap(g["id"], g["type"], str(g["section"]), g["finding"], list(g["refs"]))
-        by_id = {o.id: o for o in obligations}
+        by_id = id_lookup(obligations)
         if g.get("obligations"):  # explicit links: must exist and sit under one of the refs
             for oid in g["obligations"]:
                 o = by_id.get(oid)
                 if o is None or not any(ref_covers(r, o.key) for r in gap.refs):
                     raise ValueError(f"{gap.id}: {oid} is not in the register under {gap.refs}")
-            gap.obligations = list(g["obligations"])
+            gap.obligations = list(dict.fromkeys(by_id[oid].id for oid in g["obligations"]))
         else:
             gap.obligations = [
                 o.id

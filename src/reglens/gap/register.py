@@ -18,7 +18,7 @@ import hashlib
 import json
 import re
 import unicodedata
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 import yaml
@@ -38,13 +38,33 @@ EXTRACT_EFFORT = "medium"
 MANIFEST_FILE = PROJECT_ROOT / "register" / "manifest.json"
 
 ACTORS = (
-    "management body", "senior management", "validation function", "credit risk control unit",
-    "internal audit", "model owner", "institution",
+    "management body",
+    "senior management",
+    "validation function",
+    "credit risk control unit",
+    "internal audit",
+    "model owner",
+    "institution",
 )
 TOPICS = (
-    "governance", "independence", "model-inventory", "validation-scope-frequency",
-    "data-and-default", "pd", "lgd", "downturn-lgd", "ccf", "moc", "crm-and-scope", "findings",
-    "reporting", "internal-audit", "model-changes", "documentation", "use-test", "other",
+    "governance",
+    "independence",
+    "model-inventory",
+    "validation-scope-frequency",
+    "data-and-default",
+    "pd",
+    "lgd",
+    "downturn-lgd",
+    "ccf",
+    "moc",
+    "crm-and-scope",
+    "findings",
+    "reporting",
+    "internal-audit",
+    "model-changes",
+    "documentation",
+    "use-test",
+    "other",
 )
 
 EXTRACT_SYSTEM = f"""\
@@ -108,6 +128,8 @@ class Obligation:
     topic: str
     strength: str
     validation_relevant: bool = True
+    legacy_ids: list[str] = field(default_factory=list)
+    source_sha256: str = ""
 
 
 def load_scope() -> list[dict]:
@@ -204,15 +226,38 @@ def parse_batch(batch: list[Passage], reply: str) -> list[Obligation]:
                 topic=topic if topic in TOPICS else "other",
                 strength=str(o.get("strength", "")),
                 validation_relevant=bool(o.get("validation_relevant", True)),
+                source_sha256=p.source_sha256,
             )
         )
     return out
 
 
-def assign_ids(obligations: list[Obligation]) -> None:
-    """Stable, readable IDs: 'OB-' + running number in register order."""
-    for n, o in enumerate(obligations, 1):
-        o.id = f"OB-{n:04d}"
+def stable_id(o: Obligation) -> str:
+    """Content identity, independent of extraction order, windowing, quotes and topic labels.
+    A changed requirement gets a new id; paraphrases are not guessed to be equivalent."""
+    identity = [
+        _norm(x) for x in (o.source_id, o.key, o.actor, o.obligation, o.strength, o.applies_to)
+    ]
+    return "OB-" + hashlib.sha256(json.dumps(identity).encode()).hexdigest()[:20]
+
+
+def assign_ids(obligations: list[Obligation], previous: list[Obligation] = ()) -> None:
+    aliases = {stable_id(o): sorted(set(o.legacy_ids + ([o.id] if o.id else []))) for o in previous}
+    for o in obligations:
+        new = stable_id(o)
+        old = [o.id] if o.id and o.id != new else []
+        o.legacy_ids = sorted(set(o.legacy_ids + old + aliases.get(new, [])) - {new})
+        o.id = new
+
+
+def id_lookup(obligations: list[Obligation]) -> dict[str, Obligation]:
+    out = {}
+    for o in obligations:
+        for key in [o.id, *o.legacy_ids]:
+            if key in out and out[key].id != o.id:
+                raise ValueError(f"Ambiguous obligation alias: {key}")
+            out[key] = o
+    return out
 
 
 def extract(
@@ -245,14 +290,24 @@ def extract(
             }
             path.write_text(json.dumps(record, ensure_ascii=False))
             new_tokens += c.usage.total_tokens
-            log(f"  [{n}/{len(todo)}] {batch[0].key} … {len(batch)} passages: "
-                f"{c.usage.total_tokens:,} tokens")
+            log(
+                f"  [{n}/{len(todo)}] {batch[0].key} … {len(batch)} passages: "
+                f"{c.usage.total_tokens:,} tokens"
+            )
         try:
             obligations += parse_batch(batch, reply)
         except (ValueError, json.JSONDecodeError) as e:
             log(f"  [{n}] unparseable reply: {e}")
-    assign_ids(obligations)
-    return obligations, new_tokens
+    previous = load_register() if REGISTER_FILE.exists() else []
+    assign_ids(obligations, previous)
+    # Repeated extraction of the same requirement should not create duplicate identities.
+    unique: dict[str, Obligation] = {}
+    for o in obligations:
+        if o.id in unique:
+            unique[o.id].legacy_ids = sorted(set(unique[o.id].legacy_ids + o.legacy_ids))
+        else:
+            unique[o.id] = o
+    return list(unique.values()), new_tokens
 
 
 def write_register(obligations: list[Obligation], path: Path = REGISTER_FILE) -> None:

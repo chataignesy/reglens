@@ -1,0 +1,20 @@
+{
+  "val004_unrelated_passage_credit": {
+    "chunk_id": "ecb-validation-reporting:paragraph:b11:3:",
+    "starts_with": "EAD - application portfolio statistics at portfolio level.\nAll summary",
+    "credit_for_grade_definition": 1.0
+  },
+  "mh023_missing_qa_credit": {
+    "qa_normalized": [],
+    "only_article183_retrieved_citation_recall": 1.0
+  },
+  "cmp002_unscorable": true,
+  "dod004_170_alternative_credit": 1.0,
+  "citation_variants": 186,
+  "indexed_evidence_source_hash_mismatches": [],
+  "scope001_intro_only_credit": {
+    "chunk_id": "crr3-consolidated:article:142:1:",
+    "text": "For the purposes of this Chapter, the following definitions shall apply:",
+    "credit_for_large_corporate_definition": 1.0
+  }
+}

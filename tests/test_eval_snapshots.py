@@ -24,6 +24,19 @@ def test_frozen_references_survive_reference_edits_and_detect_tampering(tmp_path
         run_items(manifest)
 
 
+def test_snapshot_alternatives_roundtrip_and_repeat_freeze_without_false_tamper(tmp_path):
+    item = next(
+        i
+        for i in load_golden()
+        if i.status == "verified" and any(c.alternatives for c in i.expected_citations)
+    )
+    path = freeze([item], directory=tmp_path)
+    before = path.read_bytes()
+    assert load(path)[1] == [item]
+    assert freeze([item], directory=tmp_path) == path
+    assert path.read_bytes() == before
+
+
 def test_future_holdouts_reject_development_and_historical_questions(tmp_path):
     item = next(i for i in load_golden() if i.status == "verified")
     with pytest.raises(ValueError, match="already used"):

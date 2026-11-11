@@ -57,14 +57,21 @@ def file_sha(path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _cited(record: dict) -> list[tuple[str, str | None, str]]:
-    """(source, part, normalised ref) of every passage the answer cites."""
+def _cited(record: dict) -> list[tuple]:
+    """(source, part, normalised ref, section hierarchy) for cited passages."""
     cited = {c for cl in record["claims"] for c in cl["citations"]}
     out = []
     for i, h in enumerate(record["context"], 1):
         if f"C{i}" in cited:
             refs = normalize_refs(h["ref"])
-            out.append((h["source_id"], h.get("title"), refs[0] if refs else h["ref"]))
+            out.append(
+                (
+                    h["source_id"],
+                    h.get("title"),
+                    refs[0] if refs else h["ref"],
+                    h.get("hierarchy") or [],
+                )
+            )
     return out
 
 

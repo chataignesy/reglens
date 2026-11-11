@@ -28,8 +28,10 @@ from reglens.eval.golden import GoldenItem
 from reglens.llm.provider import LLMError, LLMProvider
 
 JUDGE_SYSTEM = """\
-You grade answers about EU credit risk regulation against a reference answer written by a
-domain expert. Judge substance, not style or length.
+You grade answers about EU credit risk regulation against a supplied evaluation reference.
+Do not assume the reference has practitioner sign-off. Judge substance, not style or length.
+Apply the scoring guidance when supplied: require the stated core facts, not optional detail.
+Respect the question's date and scenario assumptions. Correct qualifications are not errors.
 
 Score:
 2 = correct and contains every key fact of the reference (numbers, conditions, articles may be
@@ -50,12 +52,15 @@ def judge_prompt(item: GoldenItem, answer_text: str) -> str:
     return (
         f"Question:\n{item.question}\n\n"
         f"Reference answer:\n{item.expected_answer}\n\n"
-        f"Answer to grade:\n{answer_text}"
+        + (f"Scoring guidance:\n{item.grading_notes}\n\n" if item.grading_notes else "")
+        + f"Answer to grade:\n{answer_text}"
     )
 
 
 def verdict_key(item: GoldenItem, answer_text: str, model: str) -> str:
-    raw = "|".join([JUDGE_VERSION, model, item.question, item.expected_answer, answer_text])
+    raw = "|".join(
+        [JUDGE_VERSION, model, item.question, item.expected_answer, item.grading_notes, answer_text]
+    )
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:20]
 
 

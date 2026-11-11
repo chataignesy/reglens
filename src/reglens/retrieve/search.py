@@ -29,6 +29,7 @@ class Hit:
     temporal_verified: bool = False
     applicability: dict[str, list[str]] = field(default_factory=dict)
     generation: str = "legacy"
+    hierarchy: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -135,7 +136,9 @@ def _fetch(conn: psycopg.Connection, scored: list[tuple[str, float]]) -> list[Hi
     from reglens.index.generations import current
 
     rows = conn.execute(
-        "SELECT id, source_id, ref, title, text, legal_level, version, " + ",".join(METADATA) + " "
+        "SELECT id, source_id, ref, title, text, legal_level, version, "
+        + ",".join(METADATA)
+        + ", hierarchy "
         "FROM chunks WHERE id = ANY(%s)",
         ([i for i, _ in scored],),
     ).fetchall()
@@ -146,9 +149,10 @@ def _fetch(conn: psycopg.Connection, scored: list[tuple[str, float]]) -> list[Hi
             *by_id[i][:7],
             score=s,
             generation=generation,
+            hierarchy=by_id[i][-1],
             **{
                 k: str(v) if k in METADATA[:5] and v is not None else v
-                for k, v in zip(METADATA, by_id[i][7:], strict=True)
+                for k, v in zip(METADATA, by_id[i][7:-1], strict=True)
             },
         )
         for i, s in scored

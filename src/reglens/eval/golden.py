@@ -41,14 +41,18 @@ class GoldenItem:
     status: str
     notes: str = ""
     tags: list[str] = field(default_factory=list)
+    grading_notes: str = ""  # required/optional facts and explicit scenario assumptions
+
+
+def _citation(raw: dict) -> Citation:
+    return Citation(
+        raw["source"], raw["ref"], tuple(_citation(a) for a in raw.get("alternatives", []))
+    )
 
 
 def _parse(raw: dict, where: str, source_ids: set[str]) -> GoldenItem:
     raw = dict(raw)
-    raw["expected_citations"] = [
-        Citation(c["source"], c["ref"], tuple(Citation(**a) for a in c.get("alternatives", [])))
-        for c in raw.get("expected_citations", [])
-    ]
+    raw["expected_citations"] = [_citation(c) for c in raw.get("expected_citations", [])]
     item = GoldenItem(**raw)
     errors = []
     if item.type not in TYPES:

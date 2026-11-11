@@ -17,6 +17,9 @@ def digest(value) -> str:
 
 
 def store(directory: Path, value: dict) -> Path:
+    # JSON arrays have one representation. Dataclass tuples (e.g. citation alternatives)
+    # must compare equal to the lists read back from an unchanged artifact.
+    value = json.loads(json.dumps(value, ensure_ascii=False))
     directory.mkdir(parents=True, exist_ok=True)
     path = directory / f"{digest(value)}.json"
     try:

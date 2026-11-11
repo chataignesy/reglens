@@ -22,6 +22,7 @@ _COLS = (
     ("id, source_id, ref, title, text, legal_level, version, kind, article, paragraph, point, cite")
     + ", "
     + ", ".join(METADATA)
+    + ", hierarchy"
 )
 
 
@@ -46,6 +47,7 @@ class Row:
     application_until: str | None = None
     temporal_verified: bool = False
     applicability: dict[str, list[str]] = field(default_factory=dict)
+    hierarchy: list[str] = field(default_factory=list)
 
     def hit(self, score: float = 0.0) -> Hit:
         return Hit(
@@ -57,6 +59,7 @@ class Row:
             self.legal_level,
             self.version,
             score,
+            hierarchy=self.hierarchy,
             **{
                 k: str(getattr(self, k))
                 if k in METADATA[:5] and getattr(self, k) is not None

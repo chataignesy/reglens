@@ -19,6 +19,14 @@ def item(id, type="factual"):
                       "verified")
 
 
+def test_required_optional_guidance_is_used_and_invalidates_cached_verdicts():
+    original = item("guide")
+    revised = replace(original, grading_notes="Require the PD floor; phase-in history is optional.")
+    assert revised.grading_notes in j.judge_prompt(revised, "Answer")
+    assert j.verdict_key(original, "Answer", MODEL) != j.verdict_key(revised, "Answer", MODEL)
+    assert "domain expert" not in j.JUDGE_SYSTEM
+
+
 class FakeJudge:
     def __init__(self, reply):
         self.reply, self.calls = reply, []

@@ -1,0 +1,1078 @@
+{
+  "review_date": "2026-11-11",
+  "basis": "Complete item-level source audit; not practitioner sign-off",
+  "all_records": {
+    "needs_correction": 28,
+    "supported_in_snapshot": 93,
+    "unresolved": 2
+  },
+  "previously_verified": {
+    "supported_in_snapshot": 92,
+    "needs_correction": 26,
+    "unresolved": 2
+  },
+  "draft_examples": {
+    "needs_correction": 2,
+    "supported_in_snapshot": 1
+  },
+  "llm_api_calls": 0,
+  "source_and_scorer_inventory": {
+    "generation": "legacy",
+    "total": 123,
+    "statuses": {
+      "draft": 3,
+      "verified": 120
+    },
+    "authors": {
+      "claude-example": 3,
+      "claude-draft": 120
+    },
+    "types": {
+      "factual": 71,
+      "multi_hop": 24,
+      "out_of_scope": 17,
+      "comparison": 6,
+      "applicability": 5
+    },
+    "duplicate_questions": [],
+    "input_sha256": {
+      "examples.jsonl": "2f1cb72df8e7a9e79ba8e08734dca1a22d950e0ff7147779280a95bfd35e1909",
+      "phase0.jsonl": "93f1396955434b7e8f39b7a444f877c93e77f4e5cfb9a625b1032e8e52c350f6",
+      "phase1.jsonl": "9e0f85ea4810474d6b44e6e02df94c99712e5de105343b98c19c46c21852113f",
+      "phase2.jsonl": "4b8827e1f1447ea3bfac0689dc67a2c32e456dddaddf05db671aafe0a2a82ef2"
+    },
+    "raw_source_provenance": {
+      "crr3-amending-act": {
+        "file": "data/raw/crr3-amending-act/32024R1623.xhtml",
+        "official_url": "http://publications.europa.eu/resource/celex/32024R1623",
+        "expected_sha256": "22715503986fac39f70062c737ad60181358a002f17c36ef5297601dd783dff8",
+        "actual_sha256": "22715503986fac39f70062c737ad60181358a002f17c36ef5297601dd783dff8",
+        "matches_lock": true
+      },
+      "crr3-consolidated": {
+        "file": "data/raw/crr3-consolidated/02013R0575-20260626.xhtml",
+        "official_url": "http://publications.europa.eu/resource/celex/02013R0575-20260626",
+        "expected_sha256": "2d041b5b32d4020fa1decb3bb64e835d6fcb747c5274a61f785b195a9dc9e6ad",
+        "actual_sha256": "2d041b5b32d4020fa1decb3bb64e835d6fcb747c5274a61f785b195a9dc9e6ad",
+        "matches_lock": true
+      },
+      "eba-gl-crm-airb": {
+        "file": "data/raw/eba-gl-crm-airb/eba-gl-crm-airb.pdf",
+        "official_url": "https://www.eba.europa.eu/sites/default/files/document_library/Publications/Guidelines/2020/Guidelines%20on%20Credit%20Risk%20Mitigation%20for%20institutions%20applying%20the%20IRB%20approach%20with%20own%20estimates%20of%20LGDs/883366/Guidelines%20on%20CRM%20for%20A-IRB%20institutions.pdf",
+        "expected_sha256": "d384a61f344a63556b73e3309caffa3a0c14006b85fe6d08259c1384db5eb596",
+        "actual_sha256": "d384a61f344a63556b73e3309caffa3a0c14006b85fe6d08259c1384db5eb596",
+        "matches_lock": true
+      },
+      "eba-gl-dod": {
+        "file": "data/raw/eba-gl-dod/eba-gl-dod.pdf",
+        "official_url": "https://www.eba.europa.eu/documents/10180/1721448/Guidelines+on+default+definition+%28EBA-GL-2016-07%29_EN.pdf/052c260f-da9a-4c86-8f0a-09a1d8ae56e7",
+        "expected_sha256": "8840d45b9867b731a8399ab1fbe3aa51aa2817962d034c6edfde71f5c2e5af93",
+        "actual_sha256": "8840d45b9867b731a8399ab1fbe3aa51aa2817962d034c6edfde71f5c2e5af93",
+        "matches_lock": true
+      },
+      "eba-gl-downturn-lgd": {
+        "file": "data/raw/eba-gl-downturn-lgd/eba-gl-downturn-lgd.pdf",
+        "official_url": "https://www.eba.europa.eu/sites/default/documents/files/documents/10180/2551996/f892da33-5cb2-44f8-ae5d-68251b9bab8f/Final%20Report%20on%20Guidelines%20on%20LGD%20estimates%20under%20downturn%20conditions.pdf",
+        "expected_sha256": "2cb600d1ddfa4ad1cb6819b49a8bf16905c1d4faceb0bf8058fed59dc58444fd",
+        "actual_sha256": "2cb600d1ddfa4ad1cb6819b49a8bf16905c1d4faceb0bf8058fed59dc58444fd",
+        "matches_lock": true
+      },
+      "eba-gl-lom": {
+        "file": "data/raw/eba-gl-lom/eba-gl-lom.pdf",
+        "official_url": "https://www.eba.europa.eu/sites/default/files/document_library/Publications/Guidelines/2020/Guidelines%20on%20loan%20origination%20and%20monitoring/884283/EBA%20GL%202020%2006%20Final%20Report%20on%20GL%20on%20loan%20origination%20and%20monitoring.pdf",
+        "expected_sha256": "1a61938f0fccf8bff502c90cdf182d784aab058c50c9e5d0df4b932d0d19fa3e",
+        "actual_sha256": "1a61938f0fccf8bff502c90cdf182d784aab058c50c9e5d0df4b932d0d19fa3e",
+        "matches_lock": true
+      },
+      "eba-gl-pd-lgd": {
+        "file": "data/raw/eba-gl-pd-lgd/eba-gl-pd-lgd.pdf",
+        "official_url": "https://www.eba.europa.eu/documents/10180/2033363/6b062012-45d6-4655-af04-801d26493ed0/Guidelines%20on%20PD%20and%20LGD%20estimation%20%28EBA-GL-2017-16%29.pdf",
+        "expected_sha256": "f306218f0eb94d0d3a9e452d156b5ea7b8500b0807f303a2e5a606536a3dda01",
+        "actual_sha256": "f306218f0eb94d0d3a9e452d156b5ea7b8500b0807f303a2e5a606536a3dda01",
+        "matches_lock": true
+      },
+      "eba-qa-credit-risk": {
+        "file": "data/raw/eba-qa-credit-risk/qa.jsonl",
+        "official_url": "https://www.eba.europa.eu/single-rule-book-qa/all?qa_legal_act%5B%5D=33&qa_legal_act_topic%5B%5D=181&qa_final_publishing_date_start=2000-01-01",
+        "expected_sha256": "fed523dea52eeb05853bfcee47971c82941e82251d85165b2a828b5b545ed6aa",
+        "actual_sha256": "fed523dea52eeb05853bfcee47971c82941e82251d85165b2a828b5b545ed6aa",
+        "matches_lock": true
+      },
+      "ecb-guide-internal-models": {
+        "file": "data/raw/ecb-guide-internal-models/ecb-guide-internal-models.pdf",
+        "official_url": "https://www.bankingsupervision.europa.eu/ecb/pub/pdf/ssm.supervisory_guide_egim_202606.en.pdf",
+        "expected_sha256": "e2df64d9ceac698131e9c77f8914217b2b6853bb73c8a9f60695ae0a5fc5a3b5",
+        "actual_sha256": "e2df64d9ceac698131e9c77f8914217b2b6853bb73c8a9f60695ae0a5fc5a3b5",
+        "matches_lock": true
+      },
+      "ecb-validation-reporting": {
+        "file": "data/raw/ecb-validation-reporting/ecb-validation-reporting.pdf",
+        "official_url": "https://www.bankingsupervision.europa.eu/activities/internal_models/shared/pdf/instructions_validation_reporting_credit_risk.en.pdf",
+        "expected_sha256": "f0bef87b1c636b8dc493e0d8e8b0690a5660a0663086ea6f676ccae2a7685d01",
+        "actual_sha256": "f0bef87b1c636b8dc493e0d8e8b0690a5660a0663086ea6f676ccae2a7685d01",
+        "matches_lock": true
+      },
+      "rts-default-materiality": {
+        "file": "data/raw/rts-default-materiality/32018R0171.xhtml",
+        "official_url": "http://publications.europa.eu/resource/celex/32018R0171",
+        "expected_sha256": "7eaba53f1fe34f1fd113bd70bd58b1b294a858cc571a281ee8b3fb835d816af5",
+        "actual_sha256": "7eaba53f1fe34f1fd113bd70bd58b1b294a858cc571a281ee8b3fb835d816af5",
+        "matches_lock": true
+      },
+      "rts-economic-downturn": {
+        "file": "data/raw/rts-economic-downturn/32021R0930.xhtml",
+        "official_url": "http://publications.europa.eu/resource/celex/32021R0930",
+        "expected_sha256": "78ca3eec7360fb9b60801b67d10e19f98a1651ab88eeec5a1d6b3652842e4d38",
+        "actual_sha256": "78ca3eec7360fb9b60801b67d10e19f98a1651ab88eeec5a1d6b3652842e4d38",
+        "matches_lock": true
+      },
+      "rts-irb-assessment": {
+        "file": "data/raw/rts-irb-assessment/32022R0439.xhtml",
+        "official_url": "http://publications.europa.eu/resource/celex/32022R0439",
+        "expected_sha256": "277613891b43cdfc613153102bfa7acc72bcc03deaf0d78c0efb68dd0c2c2089",
+        "actual_sha256": "277613891b43cdfc613153102bfa7acc72bcc03deaf0d78c0efb68dd0c2c2089",
+        "matches_lock": true
+      }
+    },
+    "citation_problems": [
+      {
+        "id": "ex-002",
+        "source": "eba-gl-dod",
+        "ref": "Section 4.1",
+        "matched": 0,
+        "evaluable": true
+      },
+      {
+        "id": "cmp-002",
+        "source": "ecb-guide-internal-models",
+        "ref": "Document releases table",
+        "matched": 0,
+        "evaluable": false
+      },
+      {
+        "id": "mh-023",
+        "source": "eba-qa-credit-risk",
+        "ref": "Q&A 2016_2593",
+        "matched": 2,
+        "evaluable": false
+      }
+    ],
+    "scorer_probes": {
+      "val004_unrelated_passage_credit": {
+        "chunk_id": "ecb-validation-reporting:paragraph:b11:3:",
+        "starts_with": "EAD - application portfolio statistics at portfolio level.\nAll summary",
+        "credit_for_grade_definition": 1.0
+      },
+      "scope001_intro_only_credit": {
+        "chunk_id": "crr3-consolidated:article:142:1:",
+        "text": "For the purposes of this Chapter, the following definitions shall apply:",
+        "credit_for_large_corporate_definition": 1.0
+      },
+      "mh023_missing_qa_credit": {
+        "qa_normalized": [],
+        "only_article183_retrieved_citation_recall": 1.0
+      },
+      "cmp002_unscorable": true,
+      "dod004_170_alternative_credit": 1.0
+    },
+    "items": [
+      {
+        "id": "ex-001",
+        "type": "factual",
+        "status": "draft",
+        "primary_citations": 2,
+        "evidence_characters": 5139
+      },
+      {
+        "id": "ex-002",
+        "type": "multi_hop",
+        "status": "draft",
+        "primary_citations": 3,
+        "evidence_characters": 4731
+      },
+      {
+        "id": "ex-003",
+        "type": "out_of_scope",
+        "status": "draft",
+        "primary_citations": 0,
+        "evidence_characters": 0
+      },
+      {
+        "id": "dod-001",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 1059
+      },
+      {
+        "id": "dod-002",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 2865
+      },
+      {
+        "id": "dod-003",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 2,
+        "evidence_characters": 1565
+      },
+      {
+        "id": "dod-004",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 5878
+      },
+      {
+        "id": "dod-005",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 2,
+        "evidence_characters": 11439
+      },
+      {
+        "id": "dod-006",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 2,
+        "evidence_characters": 2296
+      },
+      {
+        "id": "dod-007",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 2,
+        "evidence_characters": 2051
+      },
+      {
+        "id": "pd-001",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 892
+      },
+      {
+        "id": "pd-002",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 2,
+        "evidence_characters": 1188
+      },
+      {
+        "id": "pd-003",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 2,
+        "evidence_characters": 5181
+      },
+      {
+        "id": "lgd-001",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 1258
+      },
+      {
+        "id": "moc-001",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 2,
+        "evidence_characters": 1566
+      },
+      {
+        "id": "scope-001",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 1570
+      },
+      {
+        "id": "sa-001",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 2551
+      },
+      {
+        "id": "floor-001",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 2,
+        "evidence_characters": 2166
+      },
+      {
+        "id": "mh-001",
+        "type": "multi_hop",
+        "status": "verified",
+        "primary_citations": 3,
+        "evidence_characters": 4247
+      },
+      {
+        "id": "mh-002",
+        "type": "multi_hop",
+        "status": "verified",
+        "primary_citations": 3,
+        "evidence_characters": 3747
+      },
+      {
+        "id": "mh-003",
+        "type": "multi_hop",
+        "status": "verified",
+        "primary_citations": 4,
+        "evidence_characters": 7341
+      },
+      {
+        "id": "mh-004",
+        "type": "multi_hop",
+        "status": "verified",
+        "primary_citations": 4,
+        "evidence_characters": 5081
+      },
+      {
+        "id": "mh-005",
+        "type": "multi_hop",
+        "status": "verified",
+        "primary_citations": 3,
+        "evidence_characters": 5206
+      },
+      {
+        "id": "mh-006",
+        "type": "multi_hop",
+        "status": "verified",
+        "primary_citations": 2,
+        "evidence_characters": 4270
+      },
+      {
+        "id": "mh-007",
+        "type": "multi_hop",
+        "status": "verified",
+        "primary_citations": 5,
+        "evidence_characters": 6814
+      },
+      {
+        "id": "cmp-001",
+        "type": "comparison",
+        "status": "verified",
+        "primary_citations": 2,
+        "evidence_characters": 4033
+      },
+      {
+        "id": "cmp-002",
+        "type": "comparison",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 0
+      },
+      {
+        "id": "app-001",
+        "type": "applicability",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 1465
+      },
+      {
+        "id": "oos-001",
+        "type": "out_of_scope",
+        "status": "verified",
+        "primary_citations": 0,
+        "evidence_characters": 0
+      },
+      {
+        "id": "oos-002",
+        "type": "out_of_scope",
+        "status": "verified",
+        "primary_citations": 0,
+        "evidence_characters": 0
+      },
+      {
+        "id": "oos-003",
+        "type": "out_of_scope",
+        "status": "verified",
+        "primary_citations": 0,
+        "evidence_characters": 0
+      },
+      {
+        "id": "oos-004",
+        "type": "out_of_scope",
+        "status": "verified",
+        "primary_citations": 0,
+        "evidence_characters": 0
+      },
+      {
+        "id": "oos-005",
+        "type": "out_of_scope",
+        "status": "verified",
+        "primary_citations": 0,
+        "evidence_characters": 0
+      },
+      {
+        "id": "sa-002",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 497
+      },
+      {
+        "id": "sa-003",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 297
+      },
+      {
+        "id": "sa-004",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 1747
+      },
+      {
+        "id": "sa-005",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 2598
+      },
+      {
+        "id": "sa-006",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 286
+      },
+      {
+        "id": "sa-007",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 1448
+      },
+      {
+        "id": "sa-008",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 394
+      },
+      {
+        "id": "sa-009",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 595
+      },
+      {
+        "id": "irb-001",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 2,
+        "evidence_characters": 1503
+      },
+      {
+        "id": "irb-002",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 1374
+      },
+      {
+        "id": "irb-003",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 2,
+        "evidence_characters": 2482
+      },
+      {
+        "id": "irb-004",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 2,
+        "evidence_characters": 2535
+      },
+      {
+        "id": "irb-005",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 734
+      },
+      {
+        "id": "irb-006",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 9988
+      },
+      {
+        "id": "rs-001",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 2182
+      },
+      {
+        "id": "rs-002",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 1279
+      },
+      {
+        "id": "rs-003",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 2356
+      },
+      {
+        "id": "rs-004",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 799
+      },
+      {
+        "id": "rs-005",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 1927
+      },
+      {
+        "id": "pd-004",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 788
+      },
+      {
+        "id": "pd-005",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 2988
+      },
+      {
+        "id": "lgd-002",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 1415
+      },
+      {
+        "id": "lgd-003",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 1364
+      },
+      {
+        "id": "lgd-004",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 2200
+      },
+      {
+        "id": "lgd-005",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 2839
+      },
+      {
+        "id": "lgd-006",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 790
+      },
+      {
+        "id": "lgd-007",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 988
+      },
+      {
+        "id": "lgd-008",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 998
+      },
+      {
+        "id": "lgd-009",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 883
+      },
+      {
+        "id": "dt-001",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 2025
+      },
+      {
+        "id": "dt-002",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 695
+      },
+      {
+        "id": "val-001",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 1024
+      },
+      {
+        "id": "val-002",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 845
+      },
+      {
+        "id": "val-003",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 2,
+        "evidence_characters": 1851
+      },
+      {
+        "id": "lom-001",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 2230
+      },
+      {
+        "id": "dod-008",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 2,
+        "evidence_characters": 2032
+      },
+      {
+        "id": "dod-009",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 663
+      },
+      {
+        "id": "dod-010",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 686
+      },
+      {
+        "id": "floor-002",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 4647
+      },
+      {
+        "id": "crm-001",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 2306
+      },
+      {
+        "id": "mh-008",
+        "type": "multi_hop",
+        "status": "verified",
+        "primary_citations": 2,
+        "evidence_characters": 4944
+      },
+      {
+        "id": "mh-009",
+        "type": "multi_hop",
+        "status": "verified",
+        "primary_citations": 3,
+        "evidence_characters": 3411
+      },
+      {
+        "id": "mh-010",
+        "type": "multi_hop",
+        "status": "verified",
+        "primary_citations": 2,
+        "evidence_characters": 3722
+      },
+      {
+        "id": "mh-011",
+        "type": "multi_hop",
+        "status": "verified",
+        "primary_citations": 3,
+        "evidence_characters": 4933
+      },
+      {
+        "id": "mh-012",
+        "type": "multi_hop",
+        "status": "verified",
+        "primary_citations": 2,
+        "evidence_characters": 1778
+      },
+      {
+        "id": "oos-006",
+        "type": "out_of_scope",
+        "status": "verified",
+        "primary_citations": 0,
+        "evidence_characters": 0
+      },
+      {
+        "id": "oos-007",
+        "type": "out_of_scope",
+        "status": "verified",
+        "primary_citations": 0,
+        "evidence_characters": 0
+      },
+      {
+        "id": "oos-008",
+        "type": "out_of_scope",
+        "status": "verified",
+        "primary_citations": 0,
+        "evidence_characters": 0
+      },
+      {
+        "id": "oos-009",
+        "type": "out_of_scope",
+        "status": "verified",
+        "primary_citations": 0,
+        "evidence_characters": 0
+      },
+      {
+        "id": "oos-010",
+        "type": "out_of_scope",
+        "status": "verified",
+        "primary_citations": 0,
+        "evidence_characters": 0
+      },
+      {
+        "id": "mh-013",
+        "type": "multi_hop",
+        "status": "verified",
+        "primary_citations": 2,
+        "evidence_characters": 2577
+      },
+      {
+        "id": "mh-014",
+        "type": "multi_hop",
+        "status": "verified",
+        "primary_citations": 3,
+        "evidence_characters": 2912
+      },
+      {
+        "id": "mh-015",
+        "type": "multi_hop",
+        "status": "verified",
+        "primary_citations": 3,
+        "evidence_characters": 2861
+      },
+      {
+        "id": "mh-016",
+        "type": "multi_hop",
+        "status": "verified",
+        "primary_citations": 3,
+        "evidence_characters": 2515
+      },
+      {
+        "id": "mh-017",
+        "type": "multi_hop",
+        "status": "verified",
+        "primary_citations": 2,
+        "evidence_characters": 1832
+      },
+      {
+        "id": "mh-018",
+        "type": "multi_hop",
+        "status": "verified",
+        "primary_citations": 2,
+        "evidence_characters": 2685
+      },
+      {
+        "id": "mh-020",
+        "type": "multi_hop",
+        "status": "verified",
+        "primary_citations": 2,
+        "evidence_characters": 2677
+      },
+      {
+        "id": "mh-021",
+        "type": "multi_hop",
+        "status": "verified",
+        "primary_citations": 3,
+        "evidence_characters": 3997
+      },
+      {
+        "id": "mh-022",
+        "type": "multi_hop",
+        "status": "verified",
+        "primary_citations": 3,
+        "evidence_characters": 2975
+      },
+      {
+        "id": "mh-023",
+        "type": "multi_hop",
+        "status": "verified",
+        "primary_citations": 2,
+        "evidence_characters": 7002
+      },
+      {
+        "id": "mh-024",
+        "type": "multi_hop",
+        "status": "verified",
+        "primary_citations": 2,
+        "evidence_characters": 5794
+      },
+      {
+        "id": "cmp-003",
+        "type": "comparison",
+        "status": "verified",
+        "primary_citations": 2,
+        "evidence_characters": 10722
+      },
+      {
+        "id": "cmp-004",
+        "type": "comparison",
+        "status": "verified",
+        "primary_citations": 2,
+        "evidence_characters": 3548
+      },
+      {
+        "id": "cmp-005",
+        "type": "comparison",
+        "status": "verified",
+        "primary_citations": 2,
+        "evidence_characters": 1453
+      },
+      {
+        "id": "cmp-006",
+        "type": "comparison",
+        "status": "verified",
+        "primary_citations": 3,
+        "evidence_characters": 4648
+      },
+      {
+        "id": "app-002",
+        "type": "applicability",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 860
+      },
+      {
+        "id": "app-003",
+        "type": "applicability",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 786
+      },
+      {
+        "id": "app-004",
+        "type": "applicability",
+        "status": "verified",
+        "primary_citations": 2,
+        "evidence_characters": 1119
+      },
+      {
+        "id": "app-005",
+        "type": "applicability",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 860
+      },
+      {
+        "id": "dt-003",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 2,
+        "evidence_characters": 4010
+      },
+      {
+        "id": "dt-004",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 1504
+      },
+      {
+        "id": "moc-002",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 773
+      },
+      {
+        "id": "moc-003",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 2592
+      },
+      {
+        "id": "dod-011",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 2,
+        "evidence_characters": 933
+      },
+      {
+        "id": "dod-012",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 758
+      },
+      {
+        "id": "dod-013",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 748
+      },
+      {
+        "id": "dod-014",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 896
+      },
+      {
+        "id": "ccf-002",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 1429
+      },
+      {
+        "id": "irb-007",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 3722
+      },
+      {
+        "id": "val-004",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 2,
+        "evidence_characters": 6595
+      },
+      {
+        "id": "val-005",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 2,
+        "evidence_characters": 4424
+      },
+      {
+        "id": "crm-002",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 876
+      },
+      {
+        "id": "crm-003",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 2225
+      },
+      {
+        "id": "oos-011",
+        "type": "out_of_scope",
+        "status": "verified",
+        "primary_citations": 0,
+        "evidence_characters": 0
+      },
+      {
+        "id": "oos-012",
+        "type": "out_of_scope",
+        "status": "verified",
+        "primary_citations": 0,
+        "evidence_characters": 0
+      },
+      {
+        "id": "oos-013",
+        "type": "out_of_scope",
+        "status": "verified",
+        "primary_citations": 0,
+        "evidence_characters": 0
+      },
+      {
+        "id": "oos-014",
+        "type": "out_of_scope",
+        "status": "verified",
+        "primary_citations": 0,
+        "evidence_characters": 0
+      },
+      {
+        "id": "oos-015",
+        "type": "out_of_scope",
+        "status": "verified",
+        "primary_citations": 0,
+        "evidence_characters": 0
+      },
+      {
+        "id": "oos-016",
+        "type": "out_of_scope",
+        "status": "verified",
+        "primary_citations": 0,
+        "evidence_characters": 0
+      },
+      {
+        "id": "lgd-010",
+        "type": "factual",
+        "status": "verified",
+        "primary_citations": 1,
+        "evidence_characters": 1348
+      }
+    ]
+  },
+  "official_version_checks": [
+    {
+      "url": "https://www.eba.europa.eu/activities/single-rulebook/regulatory-activities/credit-risk/guidelines-application-definition-default",
+      "check": "Official page retrieved; revised DoD guidance and 19 October 2026 application date identified"
+    },
+    {
+      "url": "https://www.eba.europa.eu/sites/default/files/2026-05/35b162ff-9373-4fdb-87f2-7b775e1c2cfd/Amending%20Guidelines%20on%20definition%20of%20default.pdf",
+      "sha256": "055912cee229b98c0f07681186cbae180f497720c6bddbe25586af473ef84adf",
+      "bytes": 955757,
+      "pages": 69,
+      "check": "Official PDF downloaded separately for this audit; operative pages 27-30 read. No corpus update performed."
+    },
+    {
+      "url": "https://www.eba.europa.eu/publications-and-media/press-releases/eba-amends-guidelines-definition-default",
+      "check": "Official release confirms technical factoring change and retained 1% NPV threshold"
+    },
+    {
+      "url": "https://eba.europa.eu/single-rule-book-qa/qna/view/publicId/2016_2593",
+      "check": "Official indexed text includes 2017 publication, 2021 update, and warning to check legislation amendments; compared with current pinned CRR Articles 108/160/161"
+    },
+    {
+      "url": "https://www.bankingsupervision.europa.eu/ecb/pub/pdf/ssm.supervisory_guide_egim_202606.en.pdf",
+      "check": "Official June 2026 PDF; release table, foreword and removal of CCF material confirmed"
+    },
+    {
+      "url": "http://publications.europa.eu/resource/celex/02013R0575-20260626",
+      "local_sha256": "2d041b5b32d4020fa1decb3bb64e835d6fcb747c5274a61f785b195a9dc9e6ad",
+      "check": "Pinned full raw XHTML inspected at art_495 and art_495a, outside indexed corpus selection. Live EUR-Lex web rendering was bot-blocked; local locked text used, with official EBA reporting examples as corroboration."
+    }
+  ],
+  "limitations": [
+    "AI source-grounded second review, not independent expert adjudication",
+    "Current-law investigation was targeted; no comprehensive effective-date model or fresh legal authentication of every source",
+    "Paraphrase equivalence and scope ambiguity require human judgment",
+    "Historical benchmarks and frozen snapshots were not rewritten"
+  ]
+}

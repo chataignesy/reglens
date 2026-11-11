@@ -75,7 +75,9 @@ def corpus_fingerprint(conn) -> str:
     """Chunks (text hashes, citation keys and all answer-relevant metadata), graph edges and
     the source registry. Computed fresh on every call (~0.1 s): no memo can go stale after a
     metadata-only refresh."""
-    return _corpus(conn)
+    from reglens.index.generations import current, metadata
+
+    return sha(_corpus(conn) + current(conn) + json.dumps(metadata(conn), sort_keys=True))
 
 
 def namespace(kind: str, conn, model: str, settings: dict, suffix: str = "") -> str:

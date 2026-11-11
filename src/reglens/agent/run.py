@@ -79,13 +79,15 @@ Final reply: ONE JSON object and nothing else:
 """
 
 
-def _mcp_config(max_calls: int, trace_path: str, applies_to: str | None = None) -> str:
+def _mcp_config(max_calls: int, trace_path: str, applies_to: str | None = None,
+                generation: str | None = None) -> str:
     cfg = {
         "mcpServers": {
             "reglens": {
                 "command": sys.executable,
                 "args": ["-m", "reglens.agent.mcp_server"],
                 "env": {
+                    **({"REGLENS_CORPUS_GENERATION": generation} if generation else {}),
                     "REGLENS_MAX_TOOL_CALLS": str(max_calls),
                     "REGLENS_TRACE_FILE": trace_path,
                     "PYTHONIOENCODING": "utf-8",
@@ -235,7 +237,7 @@ def _run_once(
     """One `claude -p` agent run with a fresh MCP server; returns (completion, tool trace)."""
     with tempfile.NamedTemporaryFile(suffix=".jsonl", delete=False) as f:
         trace_file = f.name
-    mcp_file = _mcp_config(max_calls, trace_file, applies_to)
+    mcp_file = _mcp_config(max_calls, trace_file, applies_to, opts.get("corpus_generation"))
     stop = threading.Event()
     watcher = None
     if progress:
@@ -274,6 +276,9 @@ def answer_agentic(
     only `applies_to` ("SI" / "LSI") is used: the search tool then only finds texts that apply
     to that institution type (or to all), and the agent is told which type was asked about."""
     opts = (config.answer or {}) | (config.agent or {})
+    from reglens.index.generations import current
+
+    opts["corpus_generation"] = current(conn)
     today = today or date.today()
     max_calls = int(opts.get("max_calls", 10))
     applies = filters.applies_to if filters else None

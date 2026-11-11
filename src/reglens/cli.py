@@ -183,21 +183,22 @@ def _cmd_parse(args: argparse.Namespace) -> None:
 
 
 def _cmd_index(args: argparse.Namespace) -> None:
-    from reglens.index import db
+    from reglens.index import db, generations
+    from reglens.index.embed import model_identity
     from reglens.ingest.chunks import load_chunks
-    from reglens.ingest.xrefs import build_edges, write_edges
+    from reglens.ingest.xrefs import build_edges
 
     chunks = load_chunks()
     conn = db.connect()
-    db.init_schema(conn)
+    gid = generations.begin(conn, model_identity())
     n = db.upsert_chunks(conn, chunks)
-    for sid in {c.source_id for c in chunks}:
-        db.delete_missing(conn, sid, {c.id for c in chunks if c.source_id == sid})
     edges = build_edges(chunks)
-    write_edges(edges)
     db.replace_edges(conn, edges)
-    print(f"{n} chunks upserted, {len(edges)} edges")
+    reused = generations.reuse_vectors(conn)
+    print(f"Generation {gid}: {n} chunks, {len(edges)} edges, {reused} vectors reused")
     if args.no_embed:
+        print("Staged only; not published. Active readers are unchanged.")
+        conn.close()
         return
 
     from reglens.index.embed import embed
@@ -211,6 +212,27 @@ def _cmd_index(args: argparse.Namespace) -> None:
         vectors = embed([c.text for c in part])
         db.set_embeddings(conn, list(zip([c.id for c in part], vectors, strict=True)))
         print(f"  {min(i + batch, len(todo))}/{len(todo)}", flush=True)
+    print("Published:", generations.publish(conn, gid))
+    conn.close()
+
+
+def _cmd_corpus(args: argparse.Namespace) -> None:
+    from reglens.index import db, generations
+
+    with db.connect() as conn:
+        generations.install(conn)
+        if args.publish:
+            print(generations.publish(conn, args.publish, expected_head=generations.active(conn)))
+        elif args.rollback:
+            row = conn.execute("SELECT state FROM public.corpus_generations WHERE id=%s",
+                               (args.rollback,)).fetchone()
+            if not row or row[0] != "ready":
+                raise SystemExit("Rollback target must be a previously published snapshot")
+            print(generations.publish(conn, args.rollback, expected_head=generations.active(conn)))
+        else:
+            import json
+
+            print(json.dumps(generations.list_generations(conn), indent=2))
 
 
 def _cmd_search(args: argparse.Namespace) -> None:
@@ -619,6 +641,12 @@ def main(argv: list[str] | None = None) -> None:
     idx = sub.add_parser("index", help="load chunks + edges into Postgres and embed new chunks")
     idx.add_argument("--no-embed", action="store_true", help="skip embedding")
     idx.set_defaults(func=_cmd_index)
+
+    corpus = sub.add_parser("corpus", help="list, publish, or roll back corpus snapshots")
+    action = corpus.add_mutually_exclusive_group()
+    action.add_argument("--publish", help="publish a fully embedded, validated staged generation")
+    action.add_argument("--rollback", help="activate a previously published generation")
+    corpus.set_defaults(func=_cmd_corpus)
 
     srch = sub.add_parser("search", help="search the index (no LLM calls)")
     srch.add_argument("query")

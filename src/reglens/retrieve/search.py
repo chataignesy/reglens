@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from functools import lru_cache
 
 import psycopg
 
@@ -34,14 +33,14 @@ class Filters:
     exclude_kinds: tuple[str, ...] = ("background",)
     default_scope: bool = True
 
-    def sql(self) -> tuple[str, list]:
+    def sql(self, conn=None) -> tuple[str, list]:
         where, params = [], []
         if self.source_ids:
             where.append("source_id = ANY(%s)")
             params.append(self.source_ids)
-        elif self.default_scope and _off_by_default():
+        elif self.default_scope and _off_by_default(conn):
             where.append("NOT (source_id = ANY(%s))")
-            params.append(_off_by_default())
+            params.append(_off_by_default(conn))
         if self.exclude_kinds:
             where.append("NOT (kind = ANY(%s))")
             params.append(list(self.exclude_kinds))
@@ -54,23 +53,26 @@ class Filters:
         return (" AND " + " AND ".join(where)) if where else "", params
 
 
-@lru_cache(maxsize=1)
-def _off_by_default() -> list[str]:
+def _off_by_default(conn=None) -> list[str]:
     from reglens.sources import load_sources
 
-    return [s.id for s in load_sources() if not s.search_default]
-
-
-_DF: dict[str, int] = {}
-_N: list[int] = [0]
+    return [s.id for s in load_sources(conn=conn) if not s.search_default]
 
 
 def _doc_freqs(conn: psycopg.Connection) -> tuple[dict[str, int], int]:
     """Lexeme -> number of chunks containing it (computed once per process)."""
-    if not _DF:
-        _DF.update(dict(conn.execute("SELECT word, ndoc FROM ts_stat('SELECT tsv FROM chunks')")))
-        _N[0] = conn.execute("SELECT count(*) FROM chunks").fetchone()[0]
-    return _DF, _N[0]
+    return _generation_freqs(conn)
+
+
+def _generation_freqs(conn) -> tuple[dict[str, int], int]:
+    # The per-generation data lives on the connection: concurrent readers of old/new
+    # generations never overwrite a process-global partially populated dictionary.
+    cached = getattr(conn, "_reglens_freqs", None)
+    if cached is None:
+        cached = (dict(conn.execute("SELECT word, ndoc FROM ts_stat('SELECT tsv FROM chunks')")),
+                  conn.execute("SELECT count(*) FROM chunks").fetchone()[0])
+        conn._reglens_freqs = cached
+    return cached
 
 
 def _rare_terms_query(
@@ -100,7 +102,7 @@ def _fetch(conn: psycopg.Connection, scored: list[tuple[str, float]]) -> list[Hi
 
 
 def bm25(conn, question: str, k: int, filters: Filters) -> list[tuple[str, float]]:
-    where, params = filters.sql()
+    where, params = filters.sql(conn)
     rows = conn.execute(
         "SELECT id, ts_rank(tsv, q, 1) AS s FROM chunks, to_tsquery('simple', %s) q "
         f"WHERE tsv @@ q{where} ORDER BY s DESC LIMIT %s",
@@ -113,9 +115,11 @@ def dense(conn, question: str, k: int, filters: Filters) -> list[tuple[str, floa
     import numpy as np
 
     from reglens.index.embed import embed
+    from reglens.index.generations import metadata
 
-    vec = np.array(embed([question])[0], dtype=np.float32)
-    where, params = filters.sql()
+    vec = np.array(embed([question], identity=metadata(conn).get("models") or None)[0],
+                   dtype=np.float32)
+    where, params = filters.sql(conn)
     rows = conn.execute(
         "SELECT id, 1 - (embedding <=> %s) AS s FROM chunks "
         f"WHERE embedding IS NOT NULL{where} ORDER BY embedding <=> %s LIMIT %s",

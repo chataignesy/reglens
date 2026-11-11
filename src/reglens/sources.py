@@ -55,7 +55,13 @@ class Source:
         return False
 
 
-def load_sources(path: str | Path | None = None) -> list[Source]:
+def load_sources(path: str | Path | None = None, *, conn=None) -> list[Source]:
+    if path is None and conn is not None:
+        from reglens.index.generations import metadata
+
+        records = metadata(conn).get("sources")
+        if records is not None:
+            return [Source(**s) for s in records]
     path = Path(path or PROJECT_ROOT / "sources.yaml")
     raw = yaml.safe_load(path.read_text(encoding="utf-8"))
     sources = [Source(**s) for s in raw["sources"]]

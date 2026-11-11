@@ -50,10 +50,12 @@ class Row:
         )
 
 
-def source_by_name(name: str) -> Source | None:
+def source_by_name(name: str, conn=None) -> Source | None:
     """Accept a source id ('crr3-consolidated') or its short label ('CRR'), case-insensitive."""
     n = name.strip().lower()
-    for s in _sources().values():
+    from reglens.sources import load_sources
+
+    for s in load_sources(conn=conn):
         if n in (s.id.lower(), s.label().lower()) or s.label().lower().startswith(n + " "):
             return s
     return None
@@ -229,7 +231,7 @@ class Toolbox:
             return msg
         filters = Filters(applies_to=self.applies_to)
         if source:
-            s = source_by_name(source)
+            s = source_by_name(source, self.conn)
             if not s:
                 return f"Unknown source '{source}'."
             filters = Filters(source_ids=[s.id], applies_to=self.applies_to)
@@ -256,7 +258,7 @@ class Toolbox:
         articles come in pages: the reply says which passages it holds and how to continue."""
         if msg := self._budget():
             return msg
-        s = source_by_name(source)
+        s = source_by_name(source, self.conn)
         if not s:
             return f"Unknown source '{source}'."
         art = str(article).strip().removeprefix("Art.").removeprefix("Article").strip()

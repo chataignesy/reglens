@@ -48,6 +48,8 @@ class Answer:
     errors: list[str] = field(default_factory=list)
     trace: list[dict] = field(default_factory=list)  # agent tool calls (empty for single-pass)
     missing_info: bool = False  # the passages lacked information needed for a complete answer
+    research_needed: bool | None = None  # None: legacy output; False: no useful further lookup
+    missing_requirements: list[str] = field(default_factory=list)
     # The model's reply broke the answer contract (answer/schema.py) even after a retry: no
     # answer is shown; `raw_output` keeps the reply for diagnosis, clearly labelled unverified.
     unverified: bool = False
@@ -234,6 +236,8 @@ def answer_question(
     ans.abstained = bool(data.get("abstain"))
     ans.abstain_reason = str(data.get("abstain_reason") or "")
     ans.missing_info = bool(data.get("missing_info"))
+    ans.research_needed = data.get("research_needed")
+    ans.missing_requirements = data.get("missing_requirements", [])
     ans.answer = str(data.get("answer") or "")
     from reglens.answer.research import report
 

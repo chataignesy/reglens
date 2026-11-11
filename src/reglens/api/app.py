@@ -255,6 +255,8 @@ def answer_payload(ans: Answer, check: dict) -> dict:
         "unverified": ans.unverified,
         # R3: completeness, separate from the mechanical checks and from scope (abstained)
         "missing_info": ans.missing_info,
+        "research_needed": ans.research_needed,
+        "missing_requirements": ans.missing_requirements,
         "coverage": ans.coverage,
         "research": ans.research,
         "semantic_review": ans.semantic_review,

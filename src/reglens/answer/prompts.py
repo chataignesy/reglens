@@ -39,14 +39,18 @@ Rules:
 4. Quote numbers exactly as the passages give them (percentages, amounts, periods).
 5. Be concise and precise; practitioners read this. No legal advice disclaimers — the app adds one.
 
-6. Set "missing_info": true when the passages lack information needed to answer the question
-   completely (also when you abstain for that reason); false when they cover it, and when you
-   abstain because the question is out of scope.
+6. Set "missing_info": true only when the passages lack a fact needed for the actual question,
+   and list it in "missing_requirements". A complete answer to a source-bound question need not
+   establish the full current legal position. Keep optional context and metadata caveats
+   separate. Set "research_needed" true only if another corpus lookup could resolve a required
+   gap, otherwise false. Out-of-scope refusal has neither flag set.
 
 Reply with ONE JSON object and nothing else:
 {{"abstain": false,
   "abstain_reason": "",
   "missing_info": false,
+  "research_needed": false,
+  "missing_requirements": [],
   "answer": "short answer in Markdown with [C#] citations",
   "claims": [{{"text": "one atomic claim", "citations": ["C1"], "kind": "law"}}]}}
 """

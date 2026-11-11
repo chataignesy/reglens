@@ -62,8 +62,10 @@ def _completeness_note(text: str, trace: list[dict], conn=None) -> str | None:
     if cut:
         return ("Your answer relies on passages you only saw in part (truncated, or not all "
                 "of their parts): " + "; ".join(cut) + ". Read them in full with get_passage.")
-    from reglens.answer.research import completion_note
+    from reglens.answer.research import completion_note, needs_research
 
+    if not needs_research(data):
+        return None
     if note := completion_note(data):
         return note
     if data.get("missing_info"):

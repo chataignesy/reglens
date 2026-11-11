@@ -93,8 +93,15 @@ service. A practitioner must still supply and take responsibility for their asse
 Both answering prompts require checks for rule, definitions, exceptions, applicability and
 temporal evidence. Checks are explicitly model-reported, and evidence-found statuses require
 actually delivered, sufficiently read citation keys. Missing, malformed and partial evidence
-stays unresolved. The API loop can spend its one existing completion round on specific unresolved
-checks while preserving call/turn/token reserves. The subscription CLI shares the checklist,
+stays unresolved. Research is scoped to the actual question and its stated assumptions.
+`missing_info` records an unanswered requirement; `missing_requirements` names it, and
+`research_needed` distinguishes a gap that another corpus lookup could resolve from missing
+user inputs or unavailable corpus evidence. Only required, retrievable gaps trigger automatic
+research or the API loop's existing completion round. Optional background and unannotated date
+metadata alone do not trigger more tools. Explicit current-law/date questions still require
+relevant date evidence and visible qualifications; strict date filters remain unchanged.
+Partially read cited passages still require a full read. Legacy records without the new decision
+retain their previous fallback behavior. Call/turn/token reserves remain in force. The subscription CLI shares the checklist,
 read-only tool contract and tool budget; its orchestration and cost cap remain controlled by
 Claude Code. Equal tools do not imply identical model trajectories or token accounting across
 transports. No complete legal-coverage guarantee is claimed.
@@ -127,8 +134,9 @@ limits throughput by design. An in-flight GPU operation finishes even if its HTT
 ## Frozen evaluation and future holdouts
 
 `uv run reglens eval-freeze` creates a content-addressed snapshot of verified development items
-and their source registry under `evals/frozen/`. The committed development snapshot contains 120
-items. `eval-answers --snapshot PATH` and `eval-route --snapshot PATH` use that snapshot (dry run
+and their source registry under `evals/frozen/`. The original development snapshot contains 120
+items. The source-reviewed 11 November revision contains 118; see
+[GOLDEN-REVISION-2026-11-11.md](GOLDEN-REVISION-2026-11-11.md). `eval-answers --snapshot PATH` and `eval-route --snapshot PATH` use that snapshot (dry run
 unless `--yes`). Every new answer run embeds frozen references and their hash; `judge --run ID`
 uses them even if the working golden files later change. Run manifests are exclusively created.
 Legacy runs explicitly fall back to current references because their original references were

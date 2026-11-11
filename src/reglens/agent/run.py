@@ -48,12 +48,12 @@ How to work:
 - Long articles come in pages: if a `get_article` reply says it is incomplete and the part you
   need is not shown, call it again with the `offset` it gives (or ask for one paragraph).
 - `follow_reference` lists target provisions without their text: read a target before citing it.
-- Before answering, check the legal basis:
-  (a) if the passages you rely on cite CRR or RTS provisions (e.g. "Article 181(1)(b)", "the RTS
-      on economic downturn"), read the main one with `get_article`, or `follow_reference` first;
-  (b) if the question asks what is required and all your passages are supervisory (EBA
-      guidelines, Q&A, ECB guide), `search` for the underlying CRR or RTS text.
-  Answer from supervisory passages alone only if these calls find nothing; then say so.
+- Check the legal basis needed for the requested conclusion. If that conclusion depends on a
+  cross-reference, read the relevant provision. For a question about a legal requirement, check
+  the underlying law where necessary. A guideline may supply operational detail absent from the
+  CRR: once its legal role is clear, the absence of the same numerical detail in the CRR is not
+  itself a gap. For a question about a specified document's content or limits, do not research
+  unrelated law or broader supervisory scope just to complete a checklist.
 - You have a small tool budget (about {{max_calls}} calls). Make independent calls together in
   one turn (e.g. several `get_article` calls at once): every extra turn re-reads all passages.
   Once the checks above are done, stop as soon as you can answer.
@@ -70,11 +70,14 @@ Rules:
    instructions) or "interpretation" (your inference; say so in the text).
 4. Quote numbers exactly as the passages give them. Be concise; no legal-advice disclaimers.
 
-5. Set "missing_info": true when something the answer needs is not in the passages you read
-   (and say what in the text).
+5. Set "missing_info": true only for unanswered requirements of the actual question; state
+   them in "missing_requirements" and explain them in the answer. Set "research_needed" true
+   only if another corpus lookup could resolve a required gap. Optional background and
+   limitations the question explicitly asks you to identify are not unanswered requirements.
 
 Final reply: ONE JSON object and nothing else:
 {{"abstain": false, "abstain_reason": "", "missing_info": false,
+  "research_needed": false, "missing_requirements": [],
   "answer": "short answer in Markdown citing keys in brackets",
   "claims": [{{"text": "one atomic claim", "citations": ["CRR Art. 178(1)"], "kind": "law"}}]}}
 """
@@ -428,6 +431,11 @@ def answer_agentic(
         names = ", ".join(canonical[c] for c in ans.partial_cids)
         ans.errors.append(f"relies on passages read only in part: {names}")
     ans.missing_info = bool(data.get("missing_info")) or bool(ans.partial_cids)
+    ans.research_needed = data.get("research_needed")
+    ans.missing_requirements = data.get("missing_requirements", [])
+    if ans.partial_cids:
+        ans.research_needed = True
+        ans.missing_requirements = [*ans.missing_requirements, "Read cited passages in full"]
 
     ans.abstained = bool(data.get("abstain"))
     ans.abstain_reason = str(data.get("abstain_reason") or "")

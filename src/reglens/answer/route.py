@@ -1,8 +1,7 @@
-"""Routing: a cheap Haiku call decides whether a question goes to the single-pass pipeline
-(~6k tokens) or the agent (~50k tokens). Single-answer questions never pay the agent's cost.
+"""Routing: a bulk-tier call selects single-pass or agent research.
 
 Order in `answer_routed`: free retrieval gate -> router (bulk tier, low effort) -> answer; a
-single-pass answer that reports missing information (`missing_info`) is re-run with the agent.
+single-pass answer requests more research only for required, retrievable gaps.
 """
 
 from __future__ import annotations
@@ -12,6 +11,7 @@ from collections.abc import Callable
 from datetime import date
 
 from reglens.answer.pipeline import Answer, Progress, _parse_json, answer_question
+from reglens.answer.prompts import SCOPE
 from reglens.config import Config
 from reglens.llm.provider import LLMError, LLMProvider
 from reglens.retrieve.search import Filters, search
@@ -26,8 +26,21 @@ to internal models) to one of two answering modes.
   class -> definition -> treatment), law plus the RTS or guideline that specifies it, two
   conditions from different articles combined, or a comparison of approaches or versions.
 
+Choose based on what the question actually asks, not every related issue one could research:
+- A specified document's content, stated scope, limits or version change is single when its
+  passages can answer it. Do not add a current-law or wider-supervisory-framework investigation.
+- Accept scenario assumptions the user has supplied (eligibility, full collateral coverage,
+  absence of an override); do not route to agent just to independently establish them.
+- Multiple requested facts in one article or guideline topic can still be single.
+- A mention of law, an exception, date, comparison or a long answer alone does not require agent.
+- Outside-corpus questions go to single for refusal, never agent to search unrelated topics.
+- Use agent when indispensable evidence must actually be connected across provisions. If
+  unsure whether extra research is needed, start single; a required evidence gap can escalate.
+
 Reply with ONE JSON object and nothing else: {"route": "single", "reason": "a few words"}
 """
+
+ROUTER_SYSTEM += "\nCorpus scope:\n" + SCOPE
 
 ROUTER_VERSION = hashlib.sha256(ROUTER_SYSTEM.encode()).hexdigest()[:8]
 ROUTES = ("single", "agent")
@@ -106,7 +119,9 @@ def _failed(a) -> bool:
 
 
 def _gap(a) -> bool:
-    return bool(a.get("missing_info") if isinstance(a, dict) else a.missing_info)
+    from reglens.answer.research import needs_research
+
+    return needs_research(a)
 
 
 def _tokens(a) -> int:

@@ -1,0 +1,2117 @@
+{
+  "snapshot_sha256": "24da390da84fc23a115c266f0ddb6d422af0819fb5844aa0e9e53e1c06856a9f",
+  "corpus_generation": "legacy",
+  "model_identity": {
+    "embedding": "BAAI/bge-m3",
+    "embedding_revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "reranker": "BAAI/bge-reranker-v2-m3",
+    "reranker_revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+    "dimension": 1024,
+    "normalised": true,
+    "embedding_max_length": 2048
+  },
+  "answer_model": "claude-sonnet-5-5",
+  "judge_model": "claude-haiku-5-5",
+  "retrieval": [
+    {
+      "mode": "bm25",
+      "k": 10,
+      "items": 103,
+      "skipped_not_evaluable": [],
+      "recall@5": 0.488,
+      "recall@10": 0.612,
+      "hit@5": 0.602,
+      "hit@10": 0.728,
+      "mrr@10": 0.418,
+      "seconds": 2.121
+    },
+    {
+      "mode": "dense",
+      "k": 10,
+      "items": 103,
+      "skipped_not_evaluable": [],
+      "recall@5": 0.693,
+      "recall@10": 0.762,
+      "hit@5": 0.816,
+      "hit@10": 0.883,
+      "mrr@10": 0.648,
+      "seconds": 11.799
+    },
+    {
+      "mode": "hybrid",
+      "k": 10,
+      "items": 103,
+      "skipped_not_evaluable": [],
+      "recall@5": 0.674,
+      "recall@10": 0.795,
+      "hit@5": 0.777,
+      "hit@10": 0.913,
+      "mrr@10": 0.574,
+      "seconds": 9.66
+    },
+    {
+      "mode": "rerank",
+      "k": 10,
+      "items": 103,
+      "skipped_not_evaluable": [],
+      "recall@5": 0.757,
+      "recall@10": 0.819,
+      "hit@5": 0.893,
+      "hit@10": 0.932,
+      "mrr@10": 0.717,
+      "seconds": 70.444
+    }
+  ],
+  "pilot": {
+    "before": {
+      "manifest": "data/evals/runs/20261111-215442-218679-routed-all.json",
+      "manifest_sha256": "95d1d572db22ffe67afa8373a45794130a8dd1cb71c15386b823df2122ee8750",
+      "summary": {
+        "run_id": "20261111-215442-218679-routed-all",
+        "kind": "routed",
+        "model": "claude-sonnet-5-5",
+        "items": 5,
+        "abstain_on_out_of_scope": 1.0,
+        "answered_in_scope": 1.0,
+        "scope_compliance": 1.0,
+        "answered_out_of_scope": [],
+        "citation_recall": 0.875,
+        "check_pass_rate": 1.0,
+        "reports_incomplete": [
+          "dod-004",
+          "mh-005",
+          "cmp-002",
+          "app-001"
+        ],
+        "avg_tokens": 118035,
+        "total_tokens": 590177,
+        "new_tokens_this_run": 582993,
+        "errors": []
+      },
+      "namespaces": {
+        "single": "single-b1b576fa2b",
+        "agent": "agent-620b741ef1"
+      },
+      "items": [
+        {
+          "id": "dod-004",
+          "type": "factual",
+          "question_sha": "a4ff6d8f",
+          "planned": "single",
+          "route": "agent",
+          "reason": "fallback: single pass lacked information (one threshold lookup (probation period under default definition rules))",
+          "attempts": [
+            "single",
+            "agent"
+          ],
+          "router_tokens": 1394,
+          "tokens": 178496,
+          "artifact": "data/evals/answers/agent-620b741ef1/dod-004-a4ff6d8f.json",
+          "artifact_sha256": "ffe49f3d5b6ce271a1bdf06ba975e8f3edb7f3a213b23202fda1f2aee3063c00",
+          "errors": [],
+          "unverified": false,
+          "answer_usage_tokens": 169134,
+          "missing_info": true,
+          "research_needed": null,
+          "missing_requirements": null,
+          "claims": [
+            {
+              "text": "CRR Art. 178(5) requires an exposure to be rated as non-defaulted once no default trigger continues to apply, but it does not itself state a number of months.",
+              "citations": [
+                "C1"
+              ],
+              "kind": "law",
+              "check": "ok"
+            },
+            {
+              "text": "For exposures not under distressed restructuring, no default trigger is considered to continue to apply once at least 3 months have passed since the Art. 178(1)(b) and 178(3) conditions ceased to be met.",
+              "citations": [
+                "C2"
+              ],
+              "kind": "supervisory",
+              "check": "ok"
+            },
+            {
+              "text": "During the period the institution must consider obligor behaviour and financial situation, and an assessment follows. If the obligor is still unlikely to pay, the exposure stays defaulted until the improvement is factual and permanent.",
+              "citations": [
+                "C2"
+              ],
+              "kind": "supervisory",
+              "check": "ok"
+            },
+            {
+              "text": "For distressed restructuring, the minimum is 1 year from the latest of extending the restructuring measures, classification as defaulted, or the end of the grace period.",
+              "citations": [
+                "C3"
+              ],
+              "kind": "supervisory",
+              "check": "ok"
+            },
+            {
+              "text": "The EBA Q&A confirms a 3-month minimum probation period with no unlikeliness-to-pay indication and no material past-due amount.",
+              "citations": [
+                "C4"
+              ],
+              "kind": "supervisory",
+              "check": "ok"
+            },
+            {
+              "text": "The ECB expects the 3 months to run from when all default triggers cease to apply, and to reset to zero if a new trigger arises.",
+              "citations": [
+                "C5"
+              ],
+              "kind": "supervisory",
+              "check": "ok"
+            },
+            {
+              "text": "Institutions may use longer probation periods than the 3-month minimum, and may apply different periods to different exposure types.",
+              "citations": [
+                "C2"
+              ],
+              "kind": "interpretation",
+              "check": "ok"
+            }
+          ],
+          "check": {
+            "claims": 7,
+            "ok": 7,
+            "supported_rate": 1.0,
+            "problems": {}
+          }
+        },
+        {
+          "id": "mh-005",
+          "type": "multi_hop",
+          "question_sha": "16050e81",
+          "planned": "agent",
+          "route": "agent",
+          "reason": "chains collateral eligibility, currency mismatch, and retail LGD floor provisions",
+          "attempts": [
+            "agent"
+          ],
+          "router_tokens": 1508,
+          "tokens": 167306,
+          "artifact": "data/evals/answers/agent-620b741ef1/mh-005-16050e81.json",
+          "artifact_sha256": "069e08a7d321a0ce1827b9808ac265df5ec4ec4c423bd88de332a22f78f0299c",
+          "errors": [],
+          "unverified": false,
+          "answer_usage_tokens": 165798,
+          "missing_info": true,
+          "research_needed": null,
+          "missing_requirements": null,
+          "claims": [
+            {
+              "text": "For other retail exposures secured by financial collateral, the LGD S-floor is 0 % (unsecured floor 30 %).",
+              "citations": [
+                "C1"
+              ],
+              "kind": "law",
+              "check": "ok"
+            },
+            {
+              "text": "The Table 1 floors apply to exposures secured by FCP that is eligible under Chapter 4. Full cover means FCP value after Art. 230 volatility adjustments is at least the exposure value. Partial cover uses the Art. 161(6) weighted-average formula.",
+              "citations": [
+                "C2"
+              ],
+              "kind": "law",
+              "check": "ok"
+            },
+            {
+              "text": "Financial collateral is eligible only if there is no material positive correlation between obligor credit quality and collateral value, and obligor or related-group securities are excluded. The only exception is the obligor's own Art. 129 covered bonds posted in a repurchase transaction.",
+              "citations": [
+                "C3"
+              ],
+              "kind": "law",
+              "check": "ok"
+            },
+            {
+              "text": "Financial collateral must also meet the enforceability and operational requirements in Art. 207(3)–(4).",
+              "citations": [
+                "C4",
+                "C5"
+              ],
+              "kind": "law",
+              "check": "ok"
+            },
+            {
+              "text": "A currency mismatch is handled through H fx, which is the same as under Articles 224 to 227. The collateral value E S is taken after H c and H fx and capped at E·(1+H E).",
+              "citations": [
+                "C6",
+                "C7"
+              ],
+              "kind": "law",
+              "check": "ok"
+            }
+          ],
+          "check": {
+            "claims": 5,
+            "ok": 5,
+            "supported_rate": 1.0,
+            "problems": {}
+          }
+        },
+        {
+          "id": "cmp-002",
+          "type": "comparison",
+          "question_sha": "f8ccb70a",
+          "planned": "single",
+          "route": "agent",
+          "reason": "fallback: single pass lacked information (one search of the ECB guide foreword for a specific change and rationale)",
+          "attempts": [
+            "single",
+            "agent"
+          ],
+          "router_tokens": 1336,
+          "tokens": 194764,
+          "artifact": "data/evals/answers/agent-620b741ef1/cmp-002-f8ccb70a.json",
+          "artifact_sha256": "731d18c1b349d62d7f276fb0f33fff72957f26696fabb2b46dba868dc28fd3c2",
+          "errors": [],
+          "unverified": false,
+          "answer_usage_tokens": 183920,
+          "missing_info": true,
+          "research_needed": null,
+          "missing_requirements": null,
+          "claims": [
+            {
+              "text": "The June 2026 version of the ECB guide (release 4.1, 26/06/2026) removed all content related to the estimation of the CCF.",
+              "citations": [
+                "C1",
+                "C2"
+              ],
+              "kind": "supervisory",
+              "check": "ok"
+            },
+            {
+              "text": "The stated reason is that the EBA is in the process of preparing Guidelines on CCF estimation.",
+              "citations": [
+                "C1"
+              ],
+              "kind": "supervisory",
+              "check": "ok"
+            },
+            {
+              "text": "CRR Art. 182(5) requires the EBA to issue guidelines by 31 December 2026 specifying the methodology to estimate IRB-CCF.",
+              "citations": [
+                "C3"
+              ],
+              "kind": "law",
+              "check": "ok"
+            },
+            {
+              "text": "The EBA guidelines mandated by Art. 182(5) are probably the guidelines the foreword refers to. This is an inference, because the foreword does not cite the article.",
+              "citations": [
+                "C1",
+                "C3"
+              ],
+              "kind": "interpretation",
+              "check": "ok"
+            },
+            {
+              "text": "Credit risk chapter section 18 is listed as '[Deleted]' in the table of contents. It may be the former CCF section, but this is not confirmed.",
+              "citations": [
+                "C2"
+              ],
+              "kind": "interpretation",
+              "check": "ok"
+            }
+          ],
+          "check": {
+            "claims": 5,
+            "ok": 5,
+            "supported_rate": 1.0,
+            "problems": {}
+          }
+        },
+        {
+          "id": "app-001",
+          "type": "applicability",
+          "question_sha": "b76a0155",
+          "planned": "agent",
+          "route": "agent",
+          "reason": "needs foreword legal-force text plus SSM scope rules (LSI vs significant, NCA role) chained together",
+          "attempts": [
+            "agent"
+          ],
+          "router_tokens": 1597,
+          "tokens": 33085,
+          "artifact": "data/evals/answers/agent-620b741ef1/app-001-b76a0155.json",
+          "artifact_sha256": "4691c0719ed0b160be324e0c1e1a59b484542bdc4df3017cbb90698d271e41a5",
+          "errors": [],
+          "unverified": false,
+          "answer_usage_tokens": 31488,
+          "missing_info": true,
+          "research_needed": null,
+          "missing_requirements": null,
+          "claims": [
+            {
+              "text": "The guide's purpose is to give transparency on how the ECB understands the CRR internal-model rules and intends to apply them when assessing whether institutions meet the requirements.",
+              "citations": [
+                "C1"
+              ],
+              "kind": "supervisory",
+              "check": "ok"
+            },
+            {
+              "text": "The guide is also for internal use by supervisory teams, to ensure a common and consistent approach, and the ECB will consider the particular circumstances of the institution concerned.",
+              "citations": [
+                "C2"
+              ],
+              "kind": "supervisory",
+              "check": "ok"
+            },
+            {
+              "text": "The guide must not be construed as going beyond existing EU and national law (including adopted RTS and ITS) and is not intended to replace or overrule it.",
+              "citations": [
+                "C3"
+              ],
+              "kind": "supervisory",
+              "check": "ok"
+            },
+            {
+              "text": "The guide itself has no independent binding force. It states the ECB's supervisory understanding, while the binding rules are in the CRR, RTS and ITS.",
+              "citations": [
+                "C3",
+                "C4"
+              ],
+              "kind": "interpretation",
+              "check": "ok"
+            },
+            {
+              "text": "Paras. 1-3 refer only to the ECB's own permission and assessment role and its supervisory teams. They do not say whether LSIs supervised by NCAs must follow the guide.",
+              "citations": [
+                "C1",
+                "C2",
+                "C3"
+              ],
+              "kind": "interpretation",
+              "check": "ok"
+            }
+          ],
+          "check": {
+            "claims": 5,
+            "ok": 5,
+            "supported_rate": 1.0,
+            "problems": {}
+          }
+        },
+        {
+          "id": "oos-001",
+          "type": "out_of_scope",
+          "question_sha": "f9fa860d",
+          "planned": "agent",
+          "route": "single",
+          "reason": "agent stopped (agent made no tool calls (RegLens MCP tools unavailable?)); single pass",
+          "attempts": [
+            "agent",
+            "single"
+          ],
+          "router_tokens": 1349,
+          "tokens": 16526,
+          "artifact": "data/evals/answers/single-b1b576fa2b/oos-001-f9fa860d.json",
+          "artifact_sha256": "2adf218629ccb73c8ee02f4f199d2ac9ca76a663ab7d0f1d4e271b37cc1dd785",
+          "errors": [],
+          "unverified": false,
+          "answer_usage_tokens": 7333,
+          "missing_info": false,
+          "research_needed": null,
+          "missing_requirements": null,
+          "claims": [],
+          "check": {
+            "claims": 0,
+            "ok": 0,
+            "supported_rate": null,
+            "problems": {}
+          }
+        }
+      ],
+      "judge": {
+        "run_id": "20261111-215442-218679-routed-all",
+        "judge_prompt": "b0686714",
+        "judge_model": "claude-haiku-5-5",
+        "items": 5,
+        "problems": [],
+        "correctness_in_scope": 0.875,
+        "correctness_single": 1.0,
+        "correctness_multi_hop": 0.5,
+        "fully_correct": 3,
+        "partly_correct": 1,
+        "wrong": 0,
+        "out_of_scope_declined": "1/1",
+        "with_contradictions": [
+          "mh-005"
+        ],
+        "inconsistent_verdicts": {
+          "mh-005": [
+            "score 1 but contradictions listed"
+          ]
+        },
+        "practitioner_reviews": {},
+        "reference_basis": "frozen",
+        "new_tokens": 9856,
+        "per_item": [
+          {
+            "id": "dod-004",
+            "type": "factual",
+            "route": "agent",
+            "score": 2,
+            "missing": [],
+            "contradictions": [],
+            "rationale": "The answer states the 3-month minimum and that it runs from when the Art. 178(1)(b) and 178(3) conditions cease to be met, and it notes the other cure conditions still apply; its caveat concerns the source of the number, not the fact itself.",
+            "flags": [],
+            "method": "llm",
+            "model": "claude-haiku-5-5",
+            "tokens": 2735
+          },
+          {
+            "id": "mh-005",
+            "type": "multi_hop",
+            "route": "agent",
+            "score": 1,
+            "missing": [
+              "Explicit statement that dependence between obligor and collateral/provider must be considered and significant dependence treated conservatively (Art. 181(1)(c))",
+              "Explicit statement that currency mismatches must be treated conservatively in LGD (Art. 181(1)(d))",
+              "Citation of Art. 164(4) and 164(4a) as the source of the 0% floor and full-coverage requirement"
+            ],
+            "contradictions": [
+              "Answer states there is no prohibition on currency mismatch and handles it only via H fx, whereas the reference says currency mismatches must be treated conservatively in LGD (Art. 181(1)(d))",
+              "Answer says dependence is handled via Art. 207(2) eligibility rules, rather than requiring conservative treatment of significant dependence under Art. 181(1)(c)"
+            ],
+            "rationale": "The answer gets the 0% secured and 30% unsecured floors right but omits the reference's required conservative treatment of obligor/collateral dependence and currency mismatch under Art. 181(1)(c)-(d), and it describes currency handling as a volatility adjustment without the conservative LGD treatment the reference requires.",
+            "flags": [
+              "score 1 but contradictions listed"
+            ],
+            "method": "llm",
+            "model": "claude-haiku-5-5",
+            "tokens": 2721
+          },
+          {
+            "id": "cmp-002",
+            "type": "comparison",
+            "route": "agent",
+            "score": 2,
+            "missing": [],
+            "contradictions": [],
+            "rationale": "The answer states that all CCF-estimation content was removed and gives the reason as the EBA preparing guidelines on the topic, matching the reference's required facts; the extra CRR and limitations detail is correct and optional.",
+            "flags": [],
+            "method": "llm",
+            "model": "claude-haiku-5-5",
+            "tokens": 2071
+          },
+          {
+            "id": "app-001",
+            "type": "applicability",
+            "route": "agent",
+            "score": 2,
+            "missing": [],
+            "contradictions": [],
+            "rationale": "The answer covers the reference's key points: the guide explains the ECB's understanding of the rules and its assessment approach, supports consistency among supervisory teams, does not replace or overrule EU or national law, and paras 1-3 alone do not establish that an NCA-supervised LSI must follow it, with further evidence needed.",
+            "flags": [],
+            "method": "llm",
+            "model": "claude-haiku-5-5",
+            "tokens": 2329
+          },
+          {
+            "id": "oos-001",
+            "type": "out_of_scope",
+            "route": "single",
+            "score": 2,
+            "method": "deterministic",
+            "rationale": "out of scope: correct iff abstained"
+          }
+        ]
+      }
+    },
+    "after": {
+      "manifest": "data/evals/runs/20261111-221443-616610-routed-all.json",
+      "manifest_sha256": "67b022a40b778fd2add2df27d050f9a694d29e28a1d2d5c805ebec1195623c74",
+      "summary": {
+        "run_id": "20261111-221443-616610-routed-all",
+        "kind": "routed",
+        "model": "claude-sonnet-5-5",
+        "items": 5,
+        "abstain_on_out_of_scope": 1.0,
+        "answered_in_scope": 1.0,
+        "scope_compliance": 1.0,
+        "answered_out_of_scope": [],
+        "citation_recall": 0.917,
+        "check_pass_rate": 0.958,
+        "reports_incomplete": [],
+        "avg_tokens": 51644,
+        "total_tokens": 258219,
+        "new_tokens_this_run": 247359,
+        "errors": []
+      },
+      "namespaces": {
+        "single": "single-209a31a7c8",
+        "agent": "agent-841e119bb7"
+      },
+      "items": [
+        {
+          "id": "dod-004",
+          "type": "factual",
+          "question_sha": "a4ff6d8f",
+          "planned": "single",
+          "route": "single",
+          "reason": "one definition-of-default probation period rule; single provision lookup",
+          "attempts": [
+            "single"
+          ],
+          "router_tokens": 2090,
+          "tokens": 10122,
+          "artifact": "data/evals/answers/single-209a31a7c8/dod-004-a4ff6d8f.json",
+          "artifact_sha256": "8002929a3d9901b5ffe865890d7c126a5d0902bf3739e572d318eae5f84d1b1c",
+          "errors": [],
+          "unverified": false,
+          "answer_usage_tokens": 8032,
+          "missing_info": false,
+          "research_needed": false,
+          "missing_requirements": [],
+          "claims": [
+            {
+              "text": "For defaulted exposures not subject to distressed restructuring, no default trigger continues to apply once at least 3 months have passed since the conditions in Articles 178(1)(b) and 178(3) CRR cease to be met.",
+              "citations": [
+                "C7"
+              ],
+              "kind": "supervisory",
+              "check": "ok"
+            },
+            {
+              "text": "The ECB states the probation period should last a minimum of three months from the moment all default triggers cease to apply, and it is reset to zero if a new default trigger becomes applicable during the period.",
+              "citations": [
+                "C3"
+              ],
+              "kind": "supervisory",
+              "check": "ok"
+            },
+            {
+              "text": "After the 3-month period the institution must assess the obligor; if the obligor is still unlikely to pay in full without recourse to realising security, the exposure remains defaulted until the improvement is factual and permanent. The obligor's behaviour and financial situation must be considered during the period.",
+              "citations": [
+                "C7"
+              ],
+              "kind": "supervisory",
+              "check": "ok"
+            },
+            {
+              "text": "Institutions may apply the 3-month period to all exposures or use different periods for different exposure types, and may set longer probation periods.",
+              "citations": [
+                "C7",
+                "C1"
+              ],
+              "kind": "supervisory",
+              "check": "ok"
+            },
+            {
+              "text": "For distressed restructurings the minimum is 1 year, longer than the 3 months for other exposures.",
+              "citations": [
+                "C5"
+              ],
+              "kind": "supervisory",
+              "check": "unsupported_number(3)"
+            },
+            {
+              "text": "The ECB says that where no distressed restructuring applies, a defaulted exposure can be reclassified despite remaining past due amounts that are immaterial, or material but less than 90 consecutive days past due, if the other conditions of paragraph 71 are met.",
+              "citations": [
+                "C2"
+              ],
+              "kind": "supervisory",
+              "check": "ok"
+            }
+          ],
+          "check": {
+            "claims": 6,
+            "ok": 5,
+            "supported_rate": 0.833,
+            "problems": {
+              "unsupported_number": 1
+            }
+          }
+        },
+        {
+          "id": "mh-005",
+          "type": "multi_hop",
+          "question_sha": "16050e81",
+          "planned": "agent",
+          "route": "agent",
+          "reason": "Requires chaining CRM collateral adjustments with IRB LGD floor and dependence/currency rules across several provisions",
+          "attempts": [
+            "agent"
+          ],
+          "router_tokens": 2468,
+          "tokens": 215120,
+          "artifact": "data/evals/answers/agent-841e119bb7/mh-005-16050e81.json",
+          "artifact_sha256": "6579068263101e358f6eac8c66f639da91e2404c9bd6d87b43964c89ea9932f5",
+          "errors": [],
+          "unverified": false,
+          "answer_usage_tokens": 212652,
+          "missing_info": false,
+          "research_needed": false,
+          "missing_requirements": [],
+          "claims": [
+            {
+              "text": "The LGD input floor for an other-retail exposure secured by financial collateral is 0 %, against 30 % for an unsecured other-retail exposure.",
+              "citations": [
+                "C1"
+              ],
+              "kind": "law",
+              "check": "ok"
+            },
+            {
+              "text": "The fully-secured floor applies where the FCP value after Art. 230 volatility adjustments (Hc, Hfx) is at least the exposure value. Partial cover uses the Art. 161(6) weighted-average formula, and the collateral must be eligible under Chapter 4.",
+              "citations": [
+                "C2"
+              ],
+              "kind": "law",
+              "check": "ok"
+            },
+            {
+              "text": "Hfx for a currency mismatch is the same as that applying under Articles 224 to 227, and it reduces the collateral value ES in the LGD* formula.",
+              "citations": [
+                "C3",
+                "C4"
+              ],
+              "kind": "law",
+              "check": "ok"
+            },
+            {
+              "text": "Financial collateral is eligible only if the obligor's credit quality and the collateral value have no material positive correlation. Securities issued by the obligor or a related group entity are excluded, apart from the Art. 129 covered-bond repo exception.",
+              "citations": [
+                "C5"
+              ],
+              "kind": "law",
+              "check": "ok"
+            },
+            {
+              "text": "In own-LGD estimation, the bank must consider dependence between the obligor and the collateral or its provider, and address significant dependence conservatively. It must also treat currency mismatches conservatively.",
+              "citations": [
+                "C6",
+                "C7",
+                "C8"
+              ],
+              "kind": "law",
+              "check": "ok"
+            }
+          ],
+          "check": {
+            "claims": 5,
+            "ok": 5,
+            "supported_rate": 1.0,
+            "problems": {}
+          }
+        },
+        {
+          "id": "cmp-002",
+          "type": "comparison",
+          "question_sha": "f8ccb70a",
+          "planned": "single",
+          "route": "single",
+          "reason": "one document's foreword: a specified guide's changes and rationale, answerable from its passages",
+          "attempts": [
+            "single"
+          ],
+          "router_tokens": 2099,
+          "tokens": 11773,
+          "artifact": "data/evals/answers/single-209a31a7c8/cmp-002-f8ccb70a.json",
+          "artifact_sha256": "4d87e2115aeb5cbcf286b4b2149187893df3a343931ca6cc0aeccb25810e5c70",
+          "errors": [],
+          "unverified": false,
+          "answer_usage_tokens": 9674,
+          "missing_info": false,
+          "research_needed": false,
+          "missing_requirements": [],
+          "claims": [
+            {
+              "text": "The foreword states that, in this version of the Guide, all content related to the estimation of the conversion factor (CCF) has been removed.",
+              "citations": [
+                "C2"
+              ],
+              "kind": "supervisory",
+              "check": "ok"
+            },
+            {
+              "text": "The reason given is that the EBA is in the process of preparing Guidelines on the CCF topic.",
+              "citations": [
+                "C2"
+              ],
+              "kind": "supervisory",
+              "check": "ok"
+            },
+            {
+              "text": "The release table lists version 4.1 (26/06/2026) as the consolidated document whose rationale is that all content related to the estimation of the CCF has been removed, following version 4.0 of 28/07/2025.",
+              "citations": [
+                "C1"
+              ],
+              "kind": "supervisory",
+              "check": "ok"
+            }
+          ],
+          "check": {
+            "claims": 3,
+            "ok": 3,
+            "supported_rate": 1.0,
+            "problems": {}
+          }
+        },
+        {
+          "id": "app-001",
+          "type": "applicability",
+          "question_sha": "b76a0155",
+          "planned": "single",
+          "route": "single",
+          "reason": "asks about specific foreword paragraphs of one ECB guide; answerable from that passage alone",
+          "attempts": [
+            "single"
+          ],
+          "router_tokens": 2124,
+          "tokens": 11514,
+          "artifact": "data/evals/answers/single-209a31a7c8/app-001-b76a0155.json",
+          "artifact_sha256": "1092957105cdf5ee41d330f2873b1ce76a61ce2cad66da0212cef5c5d96a604d",
+          "errors": [],
+          "unverified": false,
+          "answer_usage_tokens": 9390,
+          "missing_info": false,
+          "research_needed": false,
+          "missing_requirements": [],
+          "claims": [
+            {
+              "text": "The foreword states that Articles 143, 283 and 325 CRR require the ECB to grant permission to use internal models for credit, counterparty credit and market risk where the CRR requirements are met.",
+              "citations": [
+                "C2"
+              ],
+              "kind": "supervisory",
+              "check": "ok"
+            },
+            {
+              "text": "The guide's purpose is to provide transparency on how the ECB understands those rules and intends to apply them when assessing whether institutions meet the requirements, based on current applicable EU and national law.",
+              "citations": [
+                "C2"
+              ],
+              "kind": "supervisory",
+              "check": "ok"
+            },
+            {
+              "text": "The guide should not be construed as going beyond current existing applicable EU law, including adopted RTS and ITS, and national law, and is not intended to replace or overrule applicable EU and national law.",
+              "citations": [
+                "C1"
+              ],
+              "kind": "supervisory",
+              "check": "ok"
+            },
+            {
+              "text": "Inference: the guide is an explanation of ECB understanding and intended application, not a source of new binding law; the passages do not literally say 'non-binding'.",
+              "citations": [
+                "C1",
+                "C2"
+              ],
+              "kind": "interpretation",
+              "check": "ok"
+            }
+          ],
+          "check": {
+            "claims": 4,
+            "ok": 4,
+            "supported_rate": 1.0,
+            "problems": {}
+          }
+        },
+        {
+          "id": "oos-001",
+          "type": "out_of_scope",
+          "question_sha": "f9fa860d",
+          "planned": "single",
+          "route": "single",
+          "reason": "market risk is out of corpus scope; refusal needed, no search required",
+          "attempts": [
+            "single"
+          ],
+          "router_tokens": 2079,
+          "tokens": 9690,
+          "artifact": "data/evals/answers/single-209a31a7c8/oos-001-f9fa860d.json",
+          "artifact_sha256": "c193d5d33889a6769140f656801c08031c681bb338e30667c3078009a978e364",
+          "errors": [],
+          "unverified": false,
+          "answer_usage_tokens": 7611,
+          "missing_info": false,
+          "research_needed": false,
+          "missing_requirements": [],
+          "claims": [],
+          "check": {
+            "claims": 0,
+            "ok": 0,
+            "supported_rate": null,
+            "problems": {}
+          }
+        }
+      ],
+      "judge": {
+        "run_id": "20261111-221443-616610-routed-all",
+        "judge_prompt": "b0686714",
+        "judge_model": "claude-haiku-5-5",
+        "items": 5,
+        "problems": [],
+        "correctness_in_scope": 1.0,
+        "correctness_single": 1.0,
+        "correctness_multi_hop": 1.0,
+        "fully_correct": 4,
+        "partly_correct": 0,
+        "wrong": 0,
+        "out_of_scope_declined": "1/1",
+        "with_contradictions": [],
+        "inconsistent_verdicts": {},
+        "practitioner_reviews": {},
+        "reference_basis": "frozen",
+        "new_tokens": 9002,
+        "per_item": [
+          {
+            "id": "dod-004",
+            "type": "factual",
+            "route": "single",
+            "score": 2,
+            "missing": [],
+            "contradictions": [],
+            "rationale": "The answer states the three-month minimum probation period and correctly anchors its start to when the Article 178(1)(b) and 178(3) CRR conditions cease to be met, which covers the required facts; it also notes the broader assessment is still needed, and does not rely on ECB 170/172 as equivalents.",
+            "flags": [],
+            "method": "llm",
+            "model": "claude-haiku-5-5",
+            "tokens": 2151
+          },
+          {
+            "id": "mh-005",
+            "type": "multi_hop",
+            "route": "agent",
+            "score": 2,
+            "missing": [],
+            "contradictions": [],
+            "rationale": "The answer gives the 0% fully secured floor against the 30% unsecured floor, requires full coverage after the Art. 230 volatility adjustments, treats significant dependence and currency mismatches conservatively in own-LGD estimates, and notes a weighted floor for partial coverage, so every key reference fact is present with no conflicts.",
+            "flags": [],
+            "method": "llm",
+            "model": "claude-haiku-5-5",
+            "tokens": 2865
+          },
+          {
+            "id": "cmp-002",
+            "type": "comparison",
+            "route": "single",
+            "score": 2,
+            "missing": [],
+            "contradictions": [],
+            "rationale": "The answer states that all CCF-estimation content was removed and gives the reason that the EBA is preparing Guidelines on the topic, matching the reference's required facts; the extra release-table details are optional and not contradicted.",
+            "flags": [],
+            "method": "llm",
+            "model": "claude-haiku-5-5",
+            "tokens": 1802
+          },
+          {
+            "id": "app-001",
+            "type": "applicability",
+            "route": "single",
+            "score": 2,
+            "missing": [],
+            "contradictions": [],
+            "rationale": "The answer covers the reference's key points: the guide explains the ECB's understanding and approach to internal-model permissions, does not replace or overrule EU or national law, and the passages alone do not establish an obligation for NCA-supervised LSIs, with the bounded acknowledgement required by the guidance.",
+            "flags": [],
+            "method": "llm",
+            "model": "claude-haiku-5-5",
+            "tokens": 2184
+          },
+          {
+            "id": "oos-001",
+            "type": "out_of_scope",
+            "route": "single",
+            "score": 2,
+            "method": "deterministic",
+            "rationale": "out of scope: correct iff abstained"
+          }
+        ]
+      }
+    }
+  },
+  "routing": {
+    "router_version": "cfc8d549",
+    "items": 103,
+    "accuracy": 0.845,
+    "agent_recall": 0.586,
+    "agent_precision": 0.81,
+    "confusion": {
+      "single->single": 70,
+      "single->agent": 4,
+      "agent->single": 12,
+      "agent->agent": 17
+    },
+    "new_tokens_this_run": 246530,
+    "misrouted": [
+      {
+        "id": "mh-003",
+        "type": "multi_hop",
+        "route": "single",
+        "reason": "one guideline topic (downturn LGD) covers both requirement and fallback"
+      },
+      {
+        "id": "cmp-001",
+        "type": "comparison",
+        "route": "single",
+        "reason": "one provision and one value; answerable from a single CRR article search"
+      },
+      {
+        "id": "cmp-002",
+        "type": "comparison",
+        "route": "single",
+        "reason": "one document's foreword: a specified guide's changes and rationale, answerable from its passages"
+      },
+      {
+        "id": "pd-005",
+        "type": "factual",
+        "route": "agent",
+        "reason": "retail PD estimation spans CRR IRB rules for retail exposure classes plus the EBA PD/LGD estimation guidelines that specify methodology"
+      },
+      {
+        "id": "mh-009",
+        "type": "multi_hop",
+        "route": "single",
+        "reason": "two direct facts (F-IRB LGD and maturity) from one IRB topic; no cross-provision chain needed"
+      },
+      {
+        "id": "mh-011",
+        "type": "multi_hop",
+        "route": "single",
+        "reason": "one guideline/RTS topic: identification of economic downturn for downturn LGD"
+      },
+      {
+        "id": "mh-012",
+        "type": "multi_hop",
+        "route": "single",
+        "reason": "one guideline topic (realised LGD components) answerable from a single passage"
+      },
+      {
+        "id": "mh-015",
+        "type": "multi_hop",
+        "route": "single",
+        "reason": "one article (CRR Art. 162) answers the maturity-option question"
+      },
+      {
+        "id": "mh-017",
+        "type": "multi_hop",
+        "route": "single",
+        "reason": "one topic: internal audit review requirements for IRB; answerable from a single passage set"
+      },
+      {
+        "id": "mh-018",
+        "type": "multi_hop",
+        "route": "single",
+        "reason": "both facts (validation function scope and PD back-testing frequency) fall within one IRB validation provision set, answerable from passages alone"
+      },
+      {
+        "id": "mh-022",
+        "type": "multi_hop",
+        "route": "single",
+        "reason": "one default-materiality rule applied to supplied scenario facts; no cross-provision chain needed"
+      },
+      {
+        "id": "cmp-004",
+        "type": "comparison",
+        "route": "single",
+        "reason": "one guideline topic (LGD data observation periods) comparing two exposure classes; a single search can answer it"
+      },
+      {
+        "id": "cmp-005",
+        "type": "comparison",
+        "route": "single",
+        "reason": "both thresholds sit within one default-definition topic and one search can answer"
+      },
+      {
+        "id": "app-002",
+        "type": "applicability",
+        "route": "agent",
+        "reason": "requires connecting F-IRB scope (Art. 143/ CRR IRB provisions) with the EBA PD/LGD estimation guidelines' applicability conditions across provisions"
+      },
+      {
+        "id": "app-003",
+        "type": "applicability",
+        "route": "agent",
+        "reason": "answer chains permanent partial use scope (Art. 150) with the Art. 178 default definition and related guidance"
+      },
+      {
+        "id": "dod-014",
+        "type": "factual",
+        "route": "agent",
+        "reason": "answer chains Art. 178 default definition with EBA DoD guidance on connected obligors and cross-default"
+      }
+    ],
+    "per_item": [
+      {
+        "route": "single",
+        "reason": "one definition topic (CRR Art. 178 default definition), answerable from a single provision set",
+        "tokens": 2076,
+        "question_sha": "87216673",
+        "id": "dod-001",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one topic: default definition application level, answerable from Art. 178 and the EBA DoD guidelines",
+        "tokens": 2475,
+        "question_sha": "663b8e4b",
+        "id": "dod-002",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one definition-threshold lookup in the default materiality RTS",
+        "tokens": 2080,
+        "question_sha": "a1ffcd42",
+        "id": "dod-003",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one definition-of-default probation period rule; single provision lookup",
+        "tokens": 2090,
+        "question_sha": "a4ff6d8f",
+        "id": "dod-004",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "single definition/threshold lookup on probation period for distressed restructuring",
+        "tokens": 2077,
+        "question_sha": "5740330a",
+        "id": "dod-005",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one definition-of-default threshold question, answerable from a single EBA guideline topic",
+        "tokens": 2081,
+        "question_sha": "608353b5",
+        "id": "dod-006",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one definition-of-default guideline topic; single passage answers it",
+        "tokens": 2075,
+        "question_sha": "83463a97",
+        "id": "dod-007",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one threshold value from CRR Art. 160 article; no cross-provision chaining needed",
+        "tokens": 2080,
+        "question_sha": "3cca5061",
+        "id": "pd-001",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one provision lookup: PD input floors for retail exposures in CRR Art. 160",
+        "tokens": 2075,
+        "question_sha": "0de4dc75",
+        "id": "pd-002",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one specific requirement (minimum PD historical observation period) answerable from a single provision or guideline",
+        "tokens": 2078,
+        "question_sha": "ee93d9e1",
+        "id": "pd-003",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one provision lookup: LGD input floors for retail exposures in CRR Part Three Title II Chapter 3",
+        "tokens": 2085,
+        "question_sha": "e894e505",
+        "id": "lgd-001",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one guideline topic: MoC deficiency categories",
+        "tokens": 2077,
+        "question_sha": "29075ed9",
+        "id": "moc-001",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one definition lookup in CRR Art. 4",
+        "tokens": 2059,
+        "question_sha": "6773082b",
+        "id": "scope-001",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one article's loan-splitting rule; single provision answers it",
+        "tokens": 2214,
+        "question_sha": "fe04f237",
+        "id": "sa-001",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one transitional factor lookup from Art. 465 output floor rules",
+        "tokens": 2076,
+        "question_sha": "c236660b",
+        "id": "floor-001",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "agent",
+        "reason": "needs chaining of Art 142(1)(5a) sales definition with Art 147A/IRB approach eligibility rules for own LGD and CCF",
+        "tokens": 2665,
+        "question_sha": "af397236",
+        "id": "mh-001",
+        "type": "multi_hop",
+        "expected": "agent"
+      },
+      {
+        "route": "agent",
+        "reason": "chains default materiality threshold (RTS), 90-day rule (Art. 178 CRR), and return-to-non-default probation (EBA DoD guidelines)",
+        "tokens": 2482,
+        "question_sha": "5ebbf51d",
+        "id": "mh-002",
+        "type": "multi_hop",
+        "expected": "agent"
+      },
+      {
+        "route": "single",
+        "reason": "one guideline topic (downturn LGD) covers both requirement and fallback",
+        "tokens": 2254,
+        "question_sha": "3948141c",
+        "id": "mh-003",
+        "type": "multi_hop",
+        "expected": "agent"
+      },
+      {
+        "route": "agent",
+        "reason": "chains default definition, NPV materiality threshold in RTS, and distressed restructuring cure rules across provisions",
+        "tokens": 2373,
+        "question_sha": "e5532d80",
+        "id": "mh-004",
+        "type": "multi_hop",
+        "expected": "agent"
+      },
+      {
+        "route": "agent",
+        "reason": "Requires chaining CRM collateral adjustments with IRB LGD floor and dependence/currency rules across several provisions",
+        "tokens": 2468,
+        "question_sha": "16050e81",
+        "id": "mh-005",
+        "type": "multi_hop",
+        "expected": "agent"
+      },
+      {
+        "route": "agent",
+        "reason": "Needs CRR Art. 185(b) connected to the ECB validation-reporting instructions' Section 2.2 submission rules across two documents",
+        "tokens": 2452,
+        "question_sha": "ad47980e",
+        "id": "mh-006",
+        "type": "multi_hop",
+        "expected": "agent"
+      },
+      {
+        "route": "agent",
+        "reason": "needs chaining of IRB retail exposure rules, input floors (PD/LGD) and output floor transitional rules under Art. 92/465, across several provisions",
+        "tokens": 2163,
+        "question_sha": "05e60b5c",
+        "id": "mh-007",
+        "type": "multi_hop",
+        "expected": "agent"
+      },
+      {
+        "route": "single",
+        "reason": "one provision and one value; answerable from a single CRR article search",
+        "tokens": 2079,
+        "question_sha": "8e1c8e05",
+        "id": "cmp-001",
+        "type": "comparison",
+        "expected": "agent"
+      },
+      {
+        "route": "single",
+        "reason": "one document's foreword: a specified guide's changes and rationale, answerable from its passages",
+        "tokens": 2099,
+        "question_sha": "f8ccb70a",
+        "id": "cmp-002",
+        "type": "comparison",
+        "expected": "agent"
+      },
+      {
+        "route": "single",
+        "reason": "asks about specific foreword paragraphs of one ECB guide; answerable from that passage alone",
+        "tokens": 2124,
+        "question_sha": "b76a0155",
+        "id": "app-001",
+        "type": "applicability",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "market risk is out of corpus scope; refusal needed, no search required",
+        "tokens": 2079,
+        "question_sha": "f9fa860d",
+        "id": "oos-001",
+        "type": "out_of_scope",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "out-of-scope NSFR liquidity question; refusal needed, no multi-provision research",
+        "tokens": 2081,
+        "question_sha": "d0a5c2a7",
+        "id": "oos-002",
+        "type": "out_of_scope",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "AML customer due diligence is outside the EU credit risk corpus (AML is explicitly not covered)",
+        "tokens": 2091,
+        "question_sha": "de9f480f",
+        "id": "oos-003",
+        "type": "out_of_scope",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "IRRBB is explicitly outside the corpus scope (interest rate risk in the banking book is NOT covered)",
+        "tokens": 2092,
+        "question_sha": "3a6b573c",
+        "id": "oos-004",
+        "type": "out_of_scope",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "operational risk is outside the EU credit risk corpus; refusal, no search needed",
+        "tokens": 2079,
+        "question_sha": "4c7b4c94",
+        "id": "oos-005",
+        "type": "out_of_scope",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one standardised-approach risk weight table for rated corporates",
+        "tokens": 2075,
+        "question_sha": "edcb1e33",
+        "id": "sa-002",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one standardised approach rule: unrated corporate risk weight, single article lookup",
+        "tokens": 2087,
+        "question_sha": "5a97a1fb",
+        "id": "sa-003",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one threshold figure from a single CRR article (retail exposure definition)",
+        "tokens": 2086,
+        "question_sha": "54d83093",
+        "id": "sa-004",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one article (CRR3 Art. 126(1)) answers the question directly",
+        "tokens": 3252,
+        "question_sha": "82f0ddbb",
+        "id": "sa-005",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one provision (CRR3 standardised approach ADC risk weight) answers directly",
+        "tokens": 2094,
+        "question_sha": "df1a4a47",
+        "id": "sa-006",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one provision on defaulted exposure risk weight under standardised approach",
+        "tokens": 2080,
+        "question_sha": "411a8a63",
+        "id": "sa-007",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one article's general rule; single provision lookup",
+        "tokens": 2116,
+        "question_sha": "c2f7139b",
+        "id": "sa-008",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one standardised approach rule on exposure value; answerable from a single CRR provision",
+        "tokens": 2082,
+        "question_sha": "26f545ae",
+        "id": "sa-009",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "single specific requirement (three-year use test in CRR Art. 144), one provision",
+        "tokens": 2089,
+        "question_sha": "6164bbe6",
+        "id": "irb-001",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one CRR provision on IRB exposure class minimum; single search suffices",
+        "tokens": 2087,
+        "question_sha": "1a3e1381",
+        "id": "irb-002",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one article's requirement (Art. 150(1) general rule), answerable from a single provision",
+        "tokens": 2108,
+        "question_sha": "e3ddedb8",
+        "id": "irb-003",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one CRR3 provision lists eligible exposures for own IRB CCF; single search suffices",
+        "tokens": 2093,
+        "question_sha": "3930537e",
+        "id": "irb-004",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one definition/parameter question on F-IRB maturity; single CRR provision answers it",
+        "tokens": 2072,
+        "question_sha": "9b0470da",
+        "id": "irb-005",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "single provision lookup: maturity cap for own-LGD exposures in one CRR article",
+        "tokens": 2080,
+        "question_sha": "fadf7867",
+        "id": "irb-006",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one threshold number from the IRB provisions; single search suffices",
+        "tokens": 2069,
+        "question_sha": "e59e7f08",
+        "id": "rs-001",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one guideline/article requirement on review frequency and responsibility",
+        "tokens": 2076,
+        "question_sha": "be450d87",
+        "id": "rs-002",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one IRB requirement about grading for corporate exposures; answerable from a single provision",
+        "tokens": 2083,
+        "question_sha": "9e3566fe",
+        "id": "rs-003",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one guideline topic: rating system scope",
+        "tokens": 2063,
+        "question_sha": "33d2cb80",
+        "id": "rs-004",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one provision's requirement on adjusted estimates; answerable from a single CRR article",
+        "tokens": 2080,
+        "question_sha": "d61c867e",
+        "id": "rs-005",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "agent",
+        "reason": "retail PD estimation spans CRR IRB rules for retail exposure classes plus the EBA PD/LGD estimation guidelines that specify methodology",
+        "tokens": 2096,
+        "question_sha": "f9b41e2a",
+        "id": "pd-005",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "single article lookup of supervisory LGD values under F-IRB",
+        "tokens": 2075,
+        "question_sha": "fdc1e093",
+        "id": "lgd-002",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "single provision lookup: LGD input floors for corporate exposures under CRR Art. 161 / IRB chapter",
+        "tokens": 2095,
+        "question_sha": "5ddb6a1f",
+        "id": "lgd-003",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one threshold question on LGD data period, answerable from a single provision",
+        "tokens": 2071,
+        "question_sha": "e4abc4fc",
+        "id": "lgd-004",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one LGD rule for defaulted exposures; answerable from a single provision or guideline",
+        "tokens": 2072,
+        "question_sha": "193dcc68",
+        "id": "lgd-005",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one guideline topic (realised LGD discounting) answerable from a single EBA LGD estimation provision",
+        "tokens": 2080,
+        "question_sha": "7299d499",
+        "id": "lgd-006",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one guideline topic (realised LGD cost components) answerable from a single provision set",
+        "tokens": 2071,
+        "question_sha": "ea79146a",
+        "id": "lgd-007",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one guideline topic (LGD estimation treatment of incomplete recoveries) answerable from the PD/LGD estimation guidelines",
+        "tokens": 2094,
+        "question_sha": "11d86e9e",
+        "id": "lgd-008",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "single provision lookup on ELBE/LGD guideline conditions",
+        "tokens": 2081,
+        "question_sha": "a2b4627d",
+        "id": "lgd-009",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one topic: economic downturn identification indicators, answerable from the RTS on economic downturn",
+        "tokens": 2085,
+        "question_sha": "019e5239",
+        "id": "dt-001",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one provision on downturn identification period; single search suffices",
+        "tokens": 2068,
+        "question_sha": "68f0f40b",
+        "id": "dt-002",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one guideline/ECB topic on validation tools; answerable from a single passage",
+        "tokens": 2080,
+        "question_sha": "7b33b1eb",
+        "id": "val-001",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one CRR requirement on changes in validation methods and data; answerable from a single provision",
+        "tokens": 2074,
+        "question_sha": "dbfd6d66",
+        "id": "val-002",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one guideline topic on IRB validation independence; answerable from a single search of the corpus",
+        "tokens": 2080,
+        "question_sha": "510f59e8",
+        "id": "val-003",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one guideline topic (loan origination), single requirement lookup",
+        "tokens": 2076,
+        "question_sha": "120f1259",
+        "id": "lom-001",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one guideline's original text and its past-due treatment; answerable from a single provision set",
+        "tokens": 2109,
+        "question_sha": "0678f901",
+        "id": "dod-008",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one topic: default classification under the past-due criterion in the EBA definition of default guidelines and Art. 178",
+        "tokens": 2323,
+        "question_sha": "a83e71b8",
+        "id": "dod-009",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one definition (credit obligation past due / days past due) answerable from a single provision",
+        "tokens": 2078,
+        "question_sha": "ca231d46",
+        "id": "dod-010",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one article's transitional rule on a specific risk weight; single lookup",
+        "tokens": 2080,
+        "question_sha": "26bf38c2",
+        "id": "floor-002",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one CRR CRM provision defines eligible financial collateral; single search suffices",
+        "tokens": 2074,
+        "question_sha": "f1b4a85e",
+        "id": "crm-001",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "agent",
+        "reason": "chains standardised corporate risk weight (Art. 122) with output floor rules (Art. 92, Art. 465)",
+        "tokens": 2420,
+        "question_sha": "54b80a7a",
+        "id": "mh-008",
+        "type": "multi_hop",
+        "expected": "agent"
+      },
+      {
+        "route": "single",
+        "reason": "two direct facts (F-IRB LGD and maturity) from one IRB topic; no cross-provision chain needed",
+        "tokens": 2317,
+        "question_sha": "d1734f88",
+        "id": "mh-009",
+        "type": "multi_hop",
+        "expected": "agent"
+      },
+      {
+        "route": "agent",
+        "reason": "Requires linking CRR LGD-in-default provisions with the EBA PD/LGD guideline's ELBE and economic-conditions paragraphs",
+        "tokens": 2626,
+        "question_sha": "7f793bd1",
+        "id": "mh-010",
+        "type": "multi_hop",
+        "expected": "agent"
+      },
+      {
+        "route": "single",
+        "reason": "one guideline/RTS topic: identification of economic downturn for downturn LGD",
+        "tokens": 2076,
+        "question_sha": "e569012a",
+        "id": "mh-011",
+        "type": "multi_hop",
+        "expected": "agent"
+      },
+      {
+        "route": "single",
+        "reason": "one guideline topic (realised LGD components) answerable from a single passage",
+        "tokens": 2070,
+        "question_sha": "409fbc3c",
+        "id": "mh-012",
+        "type": "multi_hop",
+        "expected": "agent"
+      },
+      {
+        "route": "single",
+        "reason": "securitisation is outside the corpus scope (NOT covered list), so single-mode refusal",
+        "tokens": 2088,
+        "question_sha": "a478929b",
+        "id": "oos-006",
+        "type": "out_of_scope",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "leverage ratio is explicitly outside corpus scope; refusal only, no search needed",
+        "tokens": 2077,
+        "question_sha": "e08faef4",
+        "id": "oos-007",
+        "type": "out_of_scope",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "large exposures is a NOT-covered topic; out of scope refusal",
+        "tokens": 2071,
+        "question_sha": "f8ff2f77",
+        "id": "oos-008",
+        "type": "out_of_scope",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "IFRS 9 staging is accounting, outside the EU credit risk corpus; out-of-scope refusal needs no agent research",
+        "tokens": 2090,
+        "question_sha": "dc615d82",
+        "id": "oos-009",
+        "type": "out_of_scope",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "CVA is explicitly outside the corpus scope (NOT covered list), so no agent research applies; single routing for refusal",
+        "tokens": 2092,
+        "question_sha": "53e07510",
+        "id": "oos-010",
+        "type": "out_of_scope",
+        "expected": "single"
+      },
+      {
+        "route": "agent",
+        "reason": "combines the own-CCF exposure value floor with the separate list of items that stay on SA-CCFs, across provisions",
+        "tokens": 2680,
+        "question_sha": "c9e434b5",
+        "id": "mh-013",
+        "type": "multi_hop",
+        "expected": "agent"
+      },
+      {
+        "route": "agent",
+        "reason": "needs linking the IRB input floor rules with the guarantee/CRM treatment across provisions",
+        "tokens": 2102,
+        "question_sha": "e144e7d8",
+        "id": "mh-014",
+        "type": "multi_hop",
+        "expected": "agent"
+      },
+      {
+        "route": "single",
+        "reason": "one article (CRR Art. 162) answers the maturity-option question",
+        "tokens": 2959,
+        "question_sha": "e6077925",
+        "id": "mh-015",
+        "type": "multi_hop",
+        "expected": "agent"
+      },
+      {
+        "route": "agent",
+        "reason": "Needs connecting the EBA default definition guidance on credit-related economic loss from sales with the RTS materiality threshold",
+        "tokens": 2479,
+        "question_sha": "06e61a6f",
+        "id": "mh-016",
+        "type": "multi_hop",
+        "expected": "agent"
+      },
+      {
+        "route": "single",
+        "reason": "one topic: internal audit review requirements for IRB; answerable from a single passage set",
+        "tokens": 2085,
+        "question_sha": "7debb2ec",
+        "id": "mh-017",
+        "type": "multi_hop",
+        "expected": "agent"
+      },
+      {
+        "route": "single",
+        "reason": "both facts (validation function scope and PD back-testing frequency) fall within one IRB validation provision set, answerable from passages alone",
+        "tokens": 2481,
+        "question_sha": "900eca6a",
+        "id": "mh-018",
+        "type": "multi_hop",
+        "expected": "agent"
+      },
+      {
+        "route": "agent",
+        "reason": "chains exposure class (insurer under Art. 147) to A-IRB LGD own-estimate rules, floors and CF treatment across several provisions",
+        "tokens": 2914,
+        "question_sha": "b5f7a16c",
+        "id": "mh-020",
+        "type": "multi_hop",
+        "expected": "agent"
+      },
+      {
+        "route": "agent",
+        "reason": "needs CRR LGD estimation rules linked to EBA PD/LGD guideline back-testing and ECB internal-model expectations",
+        "tokens": 2261,
+        "question_sha": "583dad87",
+        "id": "mh-021",
+        "type": "multi_hop",
+        "expected": "agent"
+      },
+      {
+        "route": "single",
+        "reason": "one default-materiality rule applied to supplied scenario facts; no cross-provision chain needed",
+        "tokens": 2289,
+        "question_sha": "7fcae49b",
+        "id": "mh-022",
+        "type": "multi_hop",
+        "expected": "agent"
+      },
+      {
+        "route": "agent",
+        "reason": "Requires linking CRR IRB rules on guarantee recognition with the EBA CRM for A-IRB guidelines that specify the requirements",
+        "tokens": 2252,
+        "question_sha": "dc6d2885",
+        "id": "mh-023",
+        "type": "multi_hop",
+        "expected": "agent"
+      },
+      {
+        "route": "agent",
+        "reason": "chains CRR downturn LGD requirement with EBA downturn LGD guideline conditions",
+        "tokens": 2232,
+        "question_sha": "f24932c6",
+        "id": "mh-024",
+        "type": "multi_hop",
+        "expected": "agent"
+      },
+      {
+        "route": "agent",
+        "reason": "compares two approaches (foundation vs own LGD) requiring linking CRR maturity provisions across IRB articles",
+        "tokens": 2098,
+        "question_sha": "90145fb5",
+        "id": "cmp-003",
+        "type": "comparison",
+        "expected": "agent"
+      },
+      {
+        "route": "single",
+        "reason": "one guideline topic (LGD data observation periods) comparing two exposure classes; a single search can answer it",
+        "tokens": 2354,
+        "question_sha": "665e283a",
+        "id": "cmp-004",
+        "type": "comparison",
+        "expected": "agent"
+      },
+      {
+        "route": "single",
+        "reason": "both thresholds sit within one default-definition topic and one search can answer",
+        "tokens": 2419,
+        "question_sha": "5b88b926",
+        "id": "cmp-005",
+        "type": "comparison",
+        "expected": "agent"
+      },
+      {
+        "route": "agent",
+        "reason": "comparison across SA (Art 125) and IRB retail mortgage provisions, chaining several articles",
+        "tokens": 2263,
+        "question_sha": "7cb0ce95",
+        "id": "cmp-006",
+        "type": "comparison",
+        "expected": "agent"
+      },
+      {
+        "route": "agent",
+        "reason": "requires connecting F-IRB scope (Art. 143/ CRR IRB provisions) with the EBA PD/LGD estimation guidelines' applicability conditions across provisions",
+        "tokens": 2138,
+        "question_sha": "6e81e2fb",
+        "id": "app-002",
+        "type": "applicability",
+        "expected": "single"
+      },
+      {
+        "route": "agent",
+        "reason": "answer chains permanent partial use scope (Art. 150) with the Art. 178 default definition and related guidance",
+        "tokens": 2364,
+        "question_sha": "28020106",
+        "id": "app-003",
+        "type": "applicability",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one guideline's scope/applicability question answerable from a single document",
+        "tokens": 2073,
+        "question_sha": "9148843f",
+        "id": "app-004",
+        "type": "applicability",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one guideline scope question answerable from the EBA PD/LGD guidelines passages",
+        "tokens": 2096,
+        "question_sha": "57ae5ebc",
+        "id": "app-005",
+        "type": "applicability",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one guideline topic: downturn LGD impact analysis requirements",
+        "tokens": 2130,
+        "question_sha": "f2e63839",
+        "id": "dt-003",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one guideline topic (downturn LGD reference period) answerable from a single passage",
+        "tokens": 2088,
+        "question_sha": "9ad883e4",
+        "id": "dt-004",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one guideline topic (MoC under PD/LGD guidelines), single lookup suffices",
+        "tokens": 2086,
+        "question_sha": "7ecd0098",
+        "id": "moc-002",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one guideline topic (MoC deficiency identification); answerable from a single provision",
+        "tokens": 2081,
+        "question_sha": "ae5e5ca4",
+        "id": "moc-003",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one guideline topic: probation period and re-default after cure under DoD guidelines",
+        "tokens": 2266,
+        "question_sha": "4195a521",
+        "id": "dod-011",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one guideline topic (return to non-default status criteria in EBA default definition guidelines)",
+        "tokens": 2082,
+        "question_sha": "910ccd0c",
+        "id": "dod-012",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one topic: default materiality threshold in the default definition guidelines/RTS",
+        "tokens": 2376,
+        "question_sha": "f9bf0eb2",
+        "id": "dod-013",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "agent",
+        "reason": "answer chains Art. 178 default definition with EBA DoD guidance on connected obligors and cross-default",
+        "tokens": 2543,
+        "question_sha": "e3a15d98",
+        "id": "dod-014",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one definition lookup in CRR Art. 4 or Art. 166 CCF provisions",
+        "tokens": 2090,
+        "question_sha": "37d80340",
+        "id": "ccf-002",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one CRR provision (Art. 162) defines the short-term maturity exception",
+        "tokens": 2331,
+        "question_sha": "e116ed7b",
+        "id": "irb-007",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one document section lookup; specific figures from a single passage",
+        "tokens": 2105,
+        "question_sha": "1a25e549",
+        "id": "val-004",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one guideline topic (review of estimates framework), answerable from a single passage",
+        "tokens": 2071,
+        "question_sha": "2af68479",
+        "id": "val-005",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one CRM chapter requirement; answerable from a single provision",
+        "tokens": 2084,
+        "question_sha": "6fe72ae8",
+        "id": "crm-002",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one definitional requirement from CRR guarantee/CRM provisions; single passage lookup",
+        "tokens": 2085,
+        "question_sha": "4b1319d0",
+        "id": "crm-003",
+        "type": "factual",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "out-of-scope IFRS 9 accounting question; refusal needs no search",
+        "tokens": 2085,
+        "question_sha": "8264e54e",
+        "id": "oos-011",
+        "type": "out_of_scope",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "SA-CCR is counterparty credit risk, which is out of corpus scope",
+        "tokens": 2124,
+        "question_sha": "8863397f",
+        "id": "oos-012",
+        "type": "out_of_scope",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one provision (CRR Art. 47c/Art. 36 backstop coverage schedule) answers the question directly",
+        "tokens": 2093,
+        "question_sha": "aa69db9c",
+        "id": "oos-013",
+        "type": "out_of_scope",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "market risk topic (FRTB trading book equity charge) is out of corpus scope; refusal only",
+        "tokens": 2086,
+        "question_sha": "80beda7c",
+        "id": "oos-015",
+        "type": "out_of_scope",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "Asks about a national regulator's expectations (DNB, Dutch rules), which is outside the EU-level corpus; out-of-scope refusal needs no multi-provision search",
+        "tokens": 2114,
+        "question_sha": "5a6f9d39",
+        "id": "oos-016",
+        "type": "out_of_scope",
+        "expected": "single"
+      },
+      {
+        "route": "single",
+        "reason": "one topic: LGD treatment of future drawings, answerable from a single provision set (EBA LGD guidelines)",
+        "tokens": 2091,
+        "question_sha": "add1edee",
+        "id": "lgd-010",
+        "type": "factual",
+        "expected": "single"
+      }
+    ]
+  },
+  "remaining_budget": {
+    "cached_answers": 5,
+    "new_single": 93,
+    "new_agent": 20,
+    "answer_dry_run_tokens": 5330000,
+    "judge_allowance_tokens": 250000,
+    "estimate_range_tokens": [
+      3000000,
+      7000000
+    ],
+    "full_answer_run_authorized": false,
+    "basis": "single ~8-10k; agent ~100-220k, only one necessary-agent post-fix sample; upper range includes fallback/retry allowance; not a hard cost bound"
+  }
+}

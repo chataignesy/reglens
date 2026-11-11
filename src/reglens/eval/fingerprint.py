@@ -22,13 +22,22 @@ RETRIEVAL_FILES = [
     "retrieve/glossary.py",
     "retrieve/glossary.yaml",
     "index/embed.py",
+    "context.py",
+    "index/generations.py",
 ]
-SINGLE_FILES = ["answer/pipeline.py", "answer/prompts.py", "answer/schema.py", *RETRIEVAL_FILES]
+SINGLE_FILES = [
+    "answer/research.py",
+    "answer/pipeline.py",
+    "answer/prompts.py",
+    "answer/schema.py",
+    *RETRIEVAL_FILES,
+]
 AGENT_FILES = [
     *SINGLE_FILES,
     "agent/run.py",
     "agent/tools.py",
     "agent/api_loop.py",
+    "agent/contracts.py",
     "agent/mcp_server.py",
     "ingest/cite.py",
 ]
@@ -51,9 +60,29 @@ def code_hash(files: list[str]) -> str:
 # Every chunk column that can change retrieval inclusion (applies_to, filters), source
 # classification (legal_level, kind), dates (version), citation keys or text (second review S4).
 _CHUNK_FIELDS = (
-    "id", "source_id", "text_hash", "cite", "applies_to", "legal_level", "version", "kind",
-    "ref", "title", "article", "paragraph", "point", "part", "source_sha256",
+    "id",
+    "source_id",
+    "text_hash",
+    "cite",
+    "applies_to",
+    "legal_level",
+    "version",
+    "kind",
+    "ref",
+    "title",
+    "article",
+    "paragraph",
+    "point",
+    "part",
+    "source_sha256",
     "array_to_string(amended_by, '|')",
+    "published_on",
+    "effective_from",
+    "effective_until",
+    "application_from",
+    "application_until",
+    "temporal_verified",
+    "applicability",
 )
 
 

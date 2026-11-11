@@ -49,9 +49,11 @@ def box() -> Toolbox:
 
 def _call(tool: str, *args) -> str:
     """Run a Toolbox method and append it to the trace file (if any)."""
-    out = getattr(box(), tool)(*args)
+    from reglens.agent.contracts import invoke, positional
+
+    out, values = invoke(box(), tool, positional(tool, args))
     if path := os.environ.get("REGLENS_TRACE_FILE"):
-        entry = trace_entry(box().calls, tool, list(args), out, getattr(box(), "last_chunks", None))
+        entry = trace_entry(box().calls, tool, values, out, getattr(box(), "last_chunks", None))
         with open(path, "a", encoding="utf-8") as f:
             f.write(json.dumps(entry, ensure_ascii=False) + "\n")
     return out

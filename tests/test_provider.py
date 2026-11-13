@@ -110,6 +110,23 @@ def test_quota_error_with_success_subtype_is_not_logged_as_success(cfg):
     assert Ledger(cfg).entries()[0]["outcome"] == "provider_error"
 
 
+@pytest.mark.parametrize("message", [
+    "You've hit your 5-hour limit · resets 7:30pm (Europe/Berlin)",
+    "You've hit your weekly limit",
+    "You've hit your seven-day limit",
+    "You've hit your session limit",
+])
+def test_subscription_limit_variants_remain_retryable(message, tmp_path):
+    from reglens.eval.answer_cache import cached, save
+
+    error = LLMError(message, tokens=0)
+    assert error.retryable
+    # Legacy records have no explicit flag: their service errors must also not be reused.
+    index = tmp_path / "q.json"
+    path = save(index, {"answer": "", "errors": [message]})
+    assert path.exists() and cached(index) is None
+
+
 def test_non_json_output_raises(cfg):
     with pytest.raises(LLMError, match="non-JSON"):
         ClaudeCLIProvider(cfg, runner=fake_runner("not json", returncode=1)).complete(

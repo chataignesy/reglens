@@ -46,7 +46,8 @@ def transient_error(message: str) -> bool:
     import re
 
     return bool(re.search(
-        r"timed?\s*out|timeout|rate.?limit|usage limit|session limit|"
+        r"timed?\s*out|timeout|rate.?limit|"
+        r"(?:usage|session|5[- ]hour|five[- ]hour|weekly|7[- ]day|seven[- ]day) limit|"
         r"hit your limit|out of extra usage|overloaded|could not reach|"
         r"connection (?:error|reset)|returned non-JSON|API error \(5\d\d\)", message, re.I,
     ))

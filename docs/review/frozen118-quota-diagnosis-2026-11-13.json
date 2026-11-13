@@ -1,0 +1,144 @@
+{
+  "diagnosis": "Same confirmed account; provider rate-limit event rejects the five-hour window while allowing the weekly window. User reports more than 50 percent five-hour allowance remaining; discrepancy not explained.",
+  "cli_versions_checked": [
+    "2.1.150",
+    "2.1.321"
+  ],
+  "tests_performed": [
+    "normal configured model",
+    "explicit Windows configuration directory",
+    "user setting sources disabled",
+    "current Sonnet alias",
+    "current Desktop-bundled CLI",
+    "current CLI streamed rate-limit metadata"
+  ],
+  "account_matches_user_confirmation": true,
+  "auth_method": "claude.ai subscription",
+  "api_key_override_detected": false,
+  "login_or_billing_changed": false,
+  "rate_limit_info": {
+    "status": "rejected",
+    "resetsAt": 1794594600,
+    "rateLimitType": "five_hour",
+    "overageStatus": "rejected",
+    "overageDisabledReason": "org_level_disabled",
+    "isUsingOverage": false,
+    "unifiedWindows": {
+      "five_hour": {
+        "utilization": 1.01,
+        "resetsAt": 1794594600,
+        "status": "rejected",
+        "surpassedThreshold": 1
+      },
+      "seven_day": {
+        "utilization": 0.5,
+        "resetsAt": 1794916800,
+        "status": "allowed"
+      }
+    }
+  },
+  "reset_utc": "2026-11-13T18:30:00+00:00",
+  "reset_berlin": "2026-11-13 19:30 Europe/Berlin",
+  "ledger_receipts": [
+    {
+      "ts": "2026-11-13T17:32:16+00:00",
+      "phase": 4,
+      "purpose": "followup_limit_diagnosis",
+      "model": "claude-sonnet-5-5",
+      "billing": "subscription",
+      "batch": false,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0,
+      "total_tokens": 0,
+      "cost_eur": 0.0,
+      "reported_cost_usd": 0,
+      "outcome": "provider_error"
+    },
+    {
+      "ts": "2026-11-13T17:32:19+00:00",
+      "phase": 4,
+      "purpose": "followup_limit_diagnosis",
+      "model": "claude-sonnet-5-5",
+      "billing": "subscription",
+      "batch": false,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0,
+      "total_tokens": 0,
+      "cost_eur": 0.0,
+      "reported_cost_usd": 0,
+      "outcome": "provider_error"
+    },
+    {
+      "ts": "2026-11-13T17:34:12+00:00",
+      "phase": 4,
+      "purpose": "followup_limit_diagnosis",
+      "model": "claude-sonnet-5-5",
+      "billing": "subscription",
+      "batch": false,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0,
+      "total_tokens": 0,
+      "cost_eur": 0.0,
+      "reported_cost_usd": 0,
+      "outcome": "provider_error"
+    },
+    {
+      "ts": "2026-11-13T17:34:15+00:00",
+      "phase": 4,
+      "purpose": "followup_limit_diagnosis",
+      "model": "sonnet",
+      "billing": "subscription",
+      "batch": false,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0,
+      "total_tokens": 0,
+      "cost_eur": null,
+      "reported_cost_usd": 0,
+      "outcome": "provider_error"
+    },
+    {
+      "ts": "2026-11-13T17:35:29+00:00",
+      "phase": 4,
+      "purpose": "followup_limit_diagnosis_current_cli",
+      "model": "claude-sonnet-5-5",
+      "billing": "subscription",
+      "batch": false,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0,
+      "total_tokens": 0,
+      "cost_eur": 0.0,
+      "reported_cost_usd": 0,
+      "outcome": "provider_error"
+    },
+    {
+      "ts": "2026-11-13T17:36:18+00:00",
+      "phase": 4,
+      "purpose": "followup_limit_diagnosis_metadata",
+      "model": "claude-sonnet-5-5",
+      "billing": "subscription",
+      "batch": false,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0,
+      "total_tokens": 0,
+      "cost_eur": 0.0,
+      "reported_cost_usd": 0,
+      "outcome": "provider_error"
+    }
+  ],
+  "reported_tokens": 0,
+  "semantic_evaluation_completed": false,
+  "official_authentication_reference": "https://code.claude.com/docs/en/authentication",
+  "official_configuration_reference": "https://code.claude.com/docs/en/env-vars"
+}

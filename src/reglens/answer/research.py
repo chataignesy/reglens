@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 ASPECTS = ("rule", "definitions", "exceptions", "applicability", "temporal")
 INSTRUCTION = """
 Scope your research to the question's actual requirements and stated assumptions. Check rule,
@@ -30,7 +32,174 @@ If a required, retrievable gap remains, use a focused lookup for that gap within
 budget. Do not repeat broad searches or keep investigating optional checklist aspects. Once the
 asked facts and indispensable conditions are supported, finish; an unused tool budget is fine.
 Do not present absent evidence or an empty search as proof of legal absence.
+Before a definitive yes/no answer, identify the operative rule AND any explicit proviso that
+could change the result for the supplied scenario. 'Subject to paragraphs ...' means those
+exceptions must be checked, not assumed inapplicable. A passage saying it omits a requested
+calculation component, discount rate, condition or applicable exception is a required gap even
+if other parts can be answered. Do not say 'not covered' and simultaneously report completeness.
+Do not require an input when another cumulative condition already determines the outcome.
+Treat a classification explicitly supplied by the scenario (e.g. a corporate or eligible
+collateral) as an assumption, not a definition to re-prove. Read a definition when applying it
+is actually necessary (e.g. deciding whether given sales make a corporate a large corporate).
+Reserve tool calls for full reads of passages you cite; omit optional material rather than
+citing a truncated preview. A successful answer need not exhaust the research budget.
 """
+
+_PROVISO = re.compile(
+    r"(?:subject to|by way of derogation from|without prejudice to)\s+paragraphs?\s+"
+    r"(\d+[a-z]?(?:(?:\s*,\s*|\s+and\s+|\s+to\s+)\d+[a-z]?){0,8})",
+    re.I,
+)
+
+
+def provisos(hit) -> list[str]:
+    """Explicit same-article exceptions only; not an unbounded traversal of all references."""
+    out = []
+    for group in _PROVISO.findall(hit.text):
+        numbers = re.findall(r"\d+[a-z]?", group)
+        if " to " in group.lower() and len(numbers) == 2 and all(n.isdigit() for n in numbers):
+            numbers = [
+                str(n)
+                for n in range(int(numbers[0]), min(int(numbers[1]) + 1, int(numbers[0]) + 8))
+            ]
+        out.extend(numbers)
+    return list(dict.fromkeys(out))
+
+
+def expand_provisos(conn, hits: list, filters=None, *, max_extra: int = 4) -> list:
+    """Read a bounded one-hop set before drafting, preserving every caller filter."""
+    if conn is None:
+        return hits
+    from reglens.agent.tools import Toolbox, _rows
+
+    box = Toolbox(conn, filters=filters)
+    out, seen, left = list(hits), {h.id for h in hits}, 12000
+    for h in hits[:4]:
+        article = re.match(r"Art\.\s*(\d+[a-z]?)", h.ref)
+        if not article or not (paras := provisos(h)):
+            continue
+        rows = box._eligible(
+            _rows(
+                conn,
+                "source_id = %s AND article = %s AND paragraph = ANY(%s)",
+                [h.source_id, article[1], paras],
+                limit=20,
+            )
+        )
+        # Do not spend every slot on windows of the first (possibly irrelevant) proviso.
+        # Prefer complete small units; leave oversized units for targeted agent research.
+        groups = [[r for r in rows if r.paragraph == para] for para in paras]
+        for group in sorted(groups, key=len):
+            group = [r for r in group if r.id not in seen]
+            if not group:
+                continue
+            if (
+                len(out) - len(hits) + len(group) > max_extra
+                or sum(len(r.text) for r in group) > left
+            ):
+                continue
+            for row in group:
+                added = row.hit(h.score)
+                added.generation = h.generation
+                out.append(added)
+                seen.add(row.id)
+                left -= len(row.text)
+    return out
+
+
+def guard(question: str, data: dict, hits: list) -> list[str]:
+    """Independent, auditable conservative signals; this does not prove completeness."""
+    if data.get("abstain"):
+        return []
+    gaps = []
+    # Document-content questions may be fully answered by identifying a document's limits.
+    document_bound = bool(
+        re.search(
+            r"foreword|what (?:does|do|did).*(?:document|guide|passages).*say|"
+            r"(?:according to|in) (?:the |these )?(?:specified )?(?:foreword|passages)",
+            question,
+            re.I,
+        )
+    )
+    date_required = bool(
+        re.search(
+            r"current law|as of|in force|historical|version|applic(?:ation|able) date",
+            question,
+            re.I,
+        )
+    )
+    document_bound = document_bound and not date_required
+    text = str(data.get("answer") or "")
+    if not document_bound:
+        if data.get("missing_info") and data.get("research_needed") is False:
+            for requirement in data.get("missing_requirements", []):
+                if re.search(
+                    r"not (?:in|covered by) (?:the )?(?:retrieved )?passages|"
+                    r"passages (?:do not|don't) (?:state|include)|did not read",
+                    requirement,
+                    re.I,
+                ) and not re.search(
+                    r"metadata|verified.*interval|not (?:needed|required)|"
+                    r"not (?:provided|given) in the question",
+                    requirement,
+                    re.I,
+                ):
+                    gaps.append("Try a focused lookup for the required gap: " + requirement)
+        for m in re.finditer(
+            r"(?:not covered\s*[:.]|(?:the )?passages (?:do not|don't) (?:cover|set out|give)|"
+            r"I (?:did not|haven't|have not) (?:read|retrieve))[^\n]{0,600}",
+            text,
+            re.I,
+        ):
+            statement = m[0]
+            definition = re.search(
+                r"definition of ['‘\"]?([a-z -]+?)(?:[,.‘’'\"]|$)", statement, re.I
+            )
+            if (
+                definition
+                and re.search(r"\b" + re.escape(definition[1].strip()) + r"\b", question, re.I)
+                and not re.search(r"defin|what (?:is|are)|meaning", question, re.I)
+            ):
+                continue  # the scenario already supplies this classification
+            # Metadata uncertainty / optional background are not missing asked facts.
+            if re.search(
+                r"not (?:needed|required|necessary)|optional",
+                statement,
+                re.I,
+            ):
+                continue
+            if not date_required and re.search(
+                r"metadata|version|publication|download|February 2019 date", statement, re.I
+            ):
+                continue
+            gaps.append("Check the stated evidence gap: " + statement)
+        cited = {k for c in data.get("claims", []) for k in c.get("citations", [])}
+        cited |= set(re.findall(r"\[(C\d+)\]", text))
+        available = {(h.source_id, re.sub(r"\s+", "", h.ref).lower()) for h in hits}
+        for n, h in enumerate(hits, 1):
+            if f"C{n}" not in cited:
+                continue
+            art = re.match(r"Art\.\s*(\d+[a-z]?)", h.ref)
+            if art:
+                read_exception = any(
+                    f"C{i}" in cited
+                    and other.source_id == h.source_id
+                    and re.sub(r"\s+", "", other.ref).lower()
+                    in {f"art.{art[1]}({p})" for p in provisos(h)}
+                    for i, other in enumerate(hits, 1)
+                )
+                if read_exception and re.match(r"\W*yes\b", text, re.I):
+                    continue  # an evidenced election, not a denial based only on the general rule
+                for para in provisos(h):
+                    target = f"Art. {art[1]}({para})"
+                    if (h.source_id, target.replace(" ", "").lower()) not in available:
+                        gaps.append(f"Check the explicit proviso {h.source_id} {target}")
+    if gaps:
+        data["missing_info"], data["research_needed"] = True, True
+        data["missing_requirements"] = list(
+            dict.fromkeys([*data.get("missing_requirements", []), *gaps])
+        )
+    return gaps
 
 
 def needs_research(answer) -> bool:

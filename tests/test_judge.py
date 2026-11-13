@@ -8,7 +8,7 @@ from reglens.config import load_config
 from reglens.eval.answers import file_sha
 from reglens.eval.golden import Citation, GoldenItem
 from reglens.llm.ledger import Usage
-from reglens.llm.provider import Completion
+from reglens.llm.provider import Completion, LLMError
 
 MODEL = load_config().model("bulk")
 
@@ -110,3 +110,29 @@ def test_bad_judge_output_not_cached(run):
     s = j.judge(FakeJudge('{"score": 7}'), load_config(), manifest, [item("a")],
                 log=lambda m: None)
     assert s["per_item"] == [] and j.plan(manifest, [item("a")], MODEL)["needs_call"] == ["a"]
+
+
+def test_invalid_verdict_and_retries_count_toward_cumulative_usage(run):
+    manifest, put = run
+    put("a", False)
+    bad = j.judge(FakeJudge("bad JSON"), load_config(), manifest, [item("a")], log=lambda m: None)
+    assert bad["new_tokens"] == bad["known_tokens_cumulative"] == 920
+    assert bad["score_status"] == "requires_review"
+    good = FakeJudge('{"score":2,"missing":[],"contradictions":[],"rationale":"matches"}')
+    fixed = j.judge(good, load_config(), manifest, [item("a")], log=lambda m: None)
+    assert fixed["new_tokens"] == 920 and fixed["known_tokens_cumulative"] == 1840
+    cached = j.judge(good, load_config(), manifest, [item("a")], log=lambda m: None)
+    assert cached["new_tokens"] == 0 and cached["known_tokens_cumulative"] == 1840
+
+
+def test_failed_call_usage_is_known_or_explicitly_unknown(run):
+    manifest, put = run
+    put("a", False)
+
+    class Failed:
+        def complete(self, *args, **kwargs):
+            raise LLMError("timeout", tokens=40, usage_known=False)
+
+    result = j.judge(Failed(), load_config(), manifest, [item("a")], log=lambda m: None)
+    assert result["new_tokens"] == result["known_tokens_cumulative"] == 40
+    assert result["new_usage_unknown_calls"] == result["unknown_usage_calls_cumulative"] == 1

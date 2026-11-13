@@ -1,0 +1,269 @@
+{
+  "baseline_run": "20261111-230849-885073-routed-all",
+  "baseline_evidence_sha256": "51a4d6e5267f265fc1f167bb1799af915adeb0b7f5fbd2fc5032214beba2c700",
+  "items": [
+    {
+      "id": "pd-002",
+      "status": "needs_review",
+      "review_basis": "Codex triage; not practitioner adjudication",
+      "raw_score_changed": false,
+      "raw_verdict": {
+        "id": "pd-002",
+        "type": "factual",
+        "route": "single",
+        "score": 2,
+        "missing": [
+          "PD of defaulted retail exposures is 100% (not mentioned in the answer)"
+        ],
+        "contradictions": [],
+        "rationale": "The answer correctly states the 0.1% QRRE revolver floor, the 0.05% floor for other retail, and the higher-of rule, but omits the reference's fact that defaulted retail exposures carry a PD of 100%, which is a key fact.",
+        "flags": [
+          "score 2 but key facts listed as missing"
+        ],
+        "method": "llm",
+        "model": "claude-haiku-5-5",
+        "tokens": 1838
+      },
+      "observation": "Score 2 and missing key fact disagree. Decide whether defaulted-exposure PD is required by the question before adjudication."
+    },
+    {
+      "id": "lgd-001",
+      "status": "needs_review",
+      "review_basis": "Codex triage; not practitioner adjudication",
+      "raw_score_changed": false,
+      "raw_verdict": {
+        "id": "lgd-001",
+        "type": "factual",
+        "route": "single",
+        "score": 2,
+        "missing": [],
+        "contradictions": [
+          "The answer states the 10% floor for other retail secured by residential or commercial immovable property, which matches the reference; no contradiction found. The answer's treatment of residential property floor as 5% is consistent with the reference."
+        ],
+        "rationale": "The answer lists every reference floor (QRRE 50%, other retail 30%, residential 5%, financial collateral 0%, receivables 10%, immovable property 10%, other physical collateral 15%) with correct article grounding, and the extra exception and application detail is correct and does not conflict.",
+        "flags": [
+          "score 2 but contradictions listed"
+        ],
+        "method": "llm",
+        "model": "claude-haiku-5-5",
+        "tokens": 2384
+      },
+      "observation": "The contradiction list actually describes agreement. Keep raw output; separate factual score from malformed verdict structure."
+    },
+    {
+      "id": "cmp-001",
+      "status": "needs_review",
+      "review_basis": "Codex triage; not practitioner adjudication",
+      "raw_score_changed": false,
+      "raw_verdict": {
+        "id": "cmp-001",
+        "type": "comparison",
+        "route": "single",
+        "score": 1,
+        "missing": [
+          "Identification of the amending act: Regulation (EU) 2024/1623 (CRR3), Article 1, point (86)",
+          "Explicit statement that CRR3 replaced Art. 160(1)",
+          "Mention of the new separate Art. 160(1a) for regional governments, local authorities and public sector entities (only the 0.03% floor for other classes is given, not its role for public sector entities)"
+        ],
+        "contradictions": [
+          "Says the passages cannot confirm that CRR3 changed the provision, whereas the reference definitively states Art. 1(86) of Regulation 2024/1623 replaced Art. 160(1)"
+        ],
+        "rationale": "The answer correctly gives Art. 160(1) and the 0.05% floor but hedges on whether CRR3 changed the provision and omits the amending regulation and point, which the reference states definitively.",
+        "flags": [
+          "score 1 but contradictions listed"
+        ],
+        "method": "llm",
+        "model": "claude-haiku-5-5",
+        "tokens": 2328
+      },
+      "observation": "Separate an unestablished amending-act fact from an affirmative contradiction; missing evidence is not evidence of the opposite."
+    },
+    {
+      "id": "crm-001",
+      "status": "needs_review",
+      "review_basis": "Codex triage; not practitioner adjudication",
+      "raw_score_changed": false,
+      "raw_verdict": {
+        "id": "crm-001",
+        "type": "factual",
+        "route": "agent",
+        "score": 2,
+        "missing": [],
+        "contradictions": [
+          "Item (h) lists securitisation positions as eligible, which is not in the reference; however the reference includes 'non-resecuritisation positions with a risk weight of 100% or lower', and the answer states the same conditions (not resecuritisation, RW 100% or lower), so this is consistent rather than contradictory.",
+          "The answer hedges on how the risk weight is determined ('I did not read those articles'), where the reference is definite that the condition is RW of 100% or lower; the condition itself is stated, so this is a minor hedge rather than a missing key fact."
+        ],
+        "rationale": "The answer covers all reference items (cash, CQS 1-4 central government debt, CQS 1-3 institution and other entity debt, short-term CQS 1-3 debt, main-index equities/convertibles, gold, and non-resecuritisation positions with RW of 100% or lower), with the only deviation being a non-material hedge on the risk-weight determination.",
+        "flags": [
+          "score 2 but contradictions listed"
+        ],
+        "method": "llm",
+        "model": "claude-haiku-5-5",
+        "tokens": 3126
+      },
+      "observation": "Contradiction entries call their own content consistent or non-material; field misuse, not a demonstrated key conflict."
+    },
+    {
+      "id": "mh-009",
+      "status": "needs_review",
+      "review_basis": "Codex triage; not practitioner adjudication",
+      "raw_score_changed": false,
+      "raw_verdict": {
+        "id": "mh-009",
+        "type": "multi_hop",
+        "route": "agent",
+        "score": 1,
+        "missing": [
+          "Art. 151(8)(c): large corporate exposures must use supervisory LGD values and SA-CCFs, stated as a requirement rather than a choice"
+        ],
+        "contradictions": [
+          "Says a large corporate has no fixed 2.5-year maturity option under Art. 162(4), which conflicts with the reference's definite statement that M is 2.5 years unless calculated under Art. 162(2)"
+        ],
+        "rationale": "The LGD of 40% is correct and definite, but the maturity answer hedges and suggests large corporates may lack the 2.5-year fixed option, whereas the reference states M = 2.5 years as the default.",
+        "flags": [
+          "score 1 but contradictions listed"
+        ],
+        "method": "llm",
+        "model": "claude-haiku-5-5",
+        "tokens": 2972
+      },
+      "observation": "Review actual maturity rule and exposure class against delivered sources; do not resolve a claimed key conflict with a partial score by assumption."
+    },
+    {
+      "id": "mh-010",
+      "status": "needs_review",
+      "review_basis": "Codex triage; not practitioner adjudication",
+      "raw_score_changed": false,
+      "raw_verdict": {
+        "id": "mh-010",
+        "type": "multi_hop",
+        "route": "agent",
+        "score": 1,
+        "missing": [
+          "Explicit statement that the three paragraph-184 conditions (macro driver in model, material driver sensitive to economic conditions, realised LGD insensitive to economic factors) are the only cases where no further adjustment applies - present but framed as 'not sensitive' condition; core facts largely present"
+        ],
+        "contradictions": [
+          "Answer says the ECB reads para 184 to mean ELBE should not deviate from long-run average where the argument is based on economic conditions, and that the conditions are about 'no further adjustment' when met, but does not clearly state that the conditions capture cycle through the model rather than ignoring conditions; it also presents condition (c) as the realised LGD being 'not sensitive', which matches, so no direct contradiction on numbers"
+        ],
+        "rationale": "The answer correctly gives LGD in-default as ELBE plus unexpected-loss add-on and lists the three para-184 conditions, but it does not clearly state that these cases capture economic conditions through the model rather than ignoring them, and it adds lengthy extra material; it is hedged on the downturn calibration, so it is partly correct.",
+        "flags": [
+          "score 1 but contradictions listed"
+        ],
+        "method": "llm",
+        "model": "claude-haiku-5-5",
+        "tokens": 2901
+      },
+      "observation": "Separate omitted explanation from conflicting substance; the contradiction entry admits matching facts."
+    },
+    {
+      "id": "mh-016",
+      "status": "needs_review",
+      "review_basis": "Codex triage; not practitioner adjudication",
+      "raw_score_changed": false,
+      "raw_verdict": {
+        "id": "mh-016",
+        "type": "multi_hop",
+        "route": "agent",
+        "score": 1,
+        "missing": [
+          "Explicit statement that obligations are not considered defaulted on account of the sale (para. 45) — the answer hedges with 'probably not' and 'if'",
+          "Explicit reference that a sale at material credit-related loss indicates unlikeliness to pay under Art. 178(3)(c)",
+          "Clear definitive conclusion that other indications of unlikeliness to pay still need to be assessed"
+        ],
+        "contradictions": [
+          "Answer states the loss formula is 'my inference' and hedges the conclusion ('Probably not', 'if the 4% discount is the credit-related economic loss'), whereas the reference states definitively that the sale does not trigger default on this indicator",
+          "Answer suggests a lower threshold such as 3% would be breached, and that portfolio-level pricing could make all obligations defaulted, which goes beyond the reference's definitive 4%-below-5% conclusion"
+        ],
+        "rationale": "",
+        "flags": [
+          "score 1 but contradictions listed"
+        ],
+        "method": "llm",
+        "model": "claude-haiku-5-5",
+        "tokens": 2549
+      },
+      "observation": "Empty rationale plus partial score with claimed contradictions; scenario assumptions and actual threshold require explicit review."
+    },
+    {
+      "id": "cmp-005",
+      "status": "needs_review",
+      "review_basis": "Codex triage; not practitioner adjudication",
+      "raw_score_changed": false,
+      "raw_verdict": {
+        "id": "cmp-005",
+        "type": "comparison",
+        "route": "agent",
+        "score": 2,
+        "missing": [
+          "The explicit loss ratio L = (E − P)/E is not stated; the answer describes L only as a loss computed from E and P."
+        ],
+        "contradictions": [],
+        "rationale": "The answer gives the correct 5% sale-at-loss threshold and 1% distressed-restructuring threshold, the correct 'should not be higher than' framing, and the NPV-at-original-EIR basis for the restructuring test, so the only gap is the omitted explicit L formula, which is a minor detail rather than a key number or condition.",
+        "flags": [
+          "score 2 but key facts listed as missing"
+        ],
+        "method": "llm",
+        "model": "claude-haiku-5-5",
+        "tokens": 2850
+      },
+      "observation": "Rationale calls the missing formula minor while missing lists imply required facts. Clarify required versus optional facts before adjudication."
+    },
+    {
+      "id": "cmp-006",
+      "status": "needs_review",
+      "review_basis": "Codex triage; not practitioner adjudication",
+      "raw_score_changed": false,
+      "raw_verdict": {
+        "id": "cmp-006",
+        "type": "comparison",
+        "route": "agent",
+        "score": 1,
+        "missing": [
+          "Explicit statement that the 0.05% PD floor and 5% LGD floor are parameter floors, not risk weights or capital ratios",
+          "Explicit statement that the SA 20% loan-splitting applies up to 55% of property value with the remainder treated as unsecured (this is present but the answer's framing of counterparty RW is extra, not contradictory)"
+        ],
+        "contradictions": [
+          "Answer says the IRB result follows an output floor that can 'floor' mortgage risk weights, which is extra but not a contradiction; no direct conflict with the reference's stated floors and 20% split found"
+        ],
+        "rationale": "The answer correctly gives the 20% split up to 55% of property value and the 0.05% PD and 5% LGD floors, but it never explicitly distinguishes the parameter floors from a risk weight or capital ratio, which the scoring guidance requires, and it hedges on the IRB side by not stating the formula outcome.",
+        "flags": [
+          "score 1 but contradictions listed"
+        ],
+        "method": "llm",
+        "model": "claude-haiku-5-5",
+        "tokens": 2951
+      },
+      "observation": "One alleged missing item is acknowledged as present; contradiction list admits no direct conflict. Assess the distinct parameter-floor issue separately."
+    },
+    {
+      "id": "dod-013",
+      "status": "needs_review",
+      "review_basis": "Codex triage; not practitioner adjudication",
+      "raw_score_changed": false,
+      "raw_verdict": {
+        "id": "dod-013",
+        "type": "factual",
+        "route": "single",
+        "score": 1,
+        "missing": [
+          "Explicit statement that materiality is assessed on the obligor's individual credit obligations excluding joint obligations with other persons/entities (EBA para 105)",
+          "Explicit statement that CRR Article 178(1)(b) consecutive-day criterion must also be met for default (answer hedges this as 'my reading' and 'interpretation')",
+          "Clear statement that once the individual-obligor default criterion is met, all its individual exposures are treated as defaulted",
+          "Mention that separate unlikeliness-to-pay triggers remain relevant"
+        ],
+        "contradictions": [
+          "Answer says the 90-day criterion is 'the CRR days-past-due criterion as set out in the ECB guide' and that the breach leads to default only once days past due is met, but frames the CRR-based link as interpretation rather than the definite rule",
+          "Answer asserts the ECB central government/public sector exclusion produces immediate default, which is an added special case not required by the reference and muddies the retail rule"
+        ],
+        "rationale": "The answer gets the core idea that crossing materiality alone is not immediate default and that the consecutive-day test applies, but it hedges the Article 178(1)(b) link as its own interpretation, omits the explicit exclusion of joint obligations as the reference states it, and does not clearly state that all individual exposures become defaulted once the obligor-level criterion is met.",
+        "flags": [
+          "score 1 but contradictions listed"
+        ],
+        "method": "llm",
+        "model": "claude-haiku-5-5",
+        "tokens": 2734
+      },
+      "observation": "Separate a genuinely omitted joint-obligation condition from an interpretation label or optional additional case."
+    }
+  ]
+}

@@ -356,7 +356,7 @@ def _set_repeat(args: argparse.Namespace) -> None:
 
 def _cmd_eval_answers(args: argparse.Namespace) -> None:
     _set_repeat(args)
-    from reglens.eval.answers import ANSWER_DIR, answer_version, artifact_name, run
+    from reglens.eval.answers import ANSWER_DIR, answer_version, required_calls, run
     from reglens.index import db
 
     cfg = load_config(args.config)
@@ -371,17 +371,15 @@ def _cmd_eval_answers(args: argparse.Namespace) -> None:
             print(f"No current route for {', '.join(missing)}: run `reglens eval-route` first.")
             return
 
-    def mode(item) -> bool:
-        return routes[item.id]["route"] == "agent" if routes is not None else args.agent
-
-    dirs = {m: ANSWER_DIR / answer_version(cfg, conn, bool(m)) for m in (0, 1)}
-    todo = [i for i in items if not (dirs[mode(i)] / artifact_name(i)).exists()]
-    per_call = args.tokens_per_call
+    dirs = {m: ANSWER_DIR / answer_version(cfg, conn, m == "agent") for m in ("single", "agent")}
+    todo = required_calls(items, dirs, routes=routes, agent=args.agent)
+    per_call = args.agent_tokens_per_call if args.agent and routes is None else args.tokens_per_call
     est = len(todo) * per_call
     if routes is not None:
-        n_agent = sum(mode(i) for i in todo)
+        n_agent = sum(mode == "agent" for _, mode in todo)
         est = n_agent * args.agent_tokens_per_call + (len(todo) - n_agent) * per_call
         print(f"routed: {n_agent} new agent calls, {len(todo) - n_agent} new single-pass calls")
+        print("Estimate includes known cached fallbacks; new gaps/format repairs can add calls.")
     model = cfg.model((cfg.answer or {}).get("tier", "dev"))
     print(
         f"{len(items)} items ({len(items) - len(todo)} cached), {len(todo)} new LLM calls on "
@@ -650,6 +648,10 @@ def _cmd_judge(args: argparse.Namespace) -> None:
     from reglens.llm.provider import get_provider
 
     s = judge(get_provider(cfg), cfg, manifest, items, log=lambda m: print(m, flush=True))
+    print(f"Score status: {s['score_status']} (raw automated scores, not practitioner approval)")
+    print(f"Known grading tokens: this invocation {s['new_tokens']:,}; "
+          f"cumulative {s['known_tokens_cumulative']:,}; "
+          f"unknown-usage calls {s['unknown_usage_calls_cumulative']}")
     print(
         f"\nrun {s['run_id']}: correctness (mean score/2): in-scope {s['correctness_in_scope']}  "
         f"single {s['correctness_single']}  multi-hop {s['correctness_multi_hop']}\n"
@@ -770,7 +772,7 @@ def main(argv: list[str] | None = None) -> None:
         "--set", default="phase0", help="golden file stem (phase0 = smoke set) or 'all'"
     )
     eva.add_argument("--limit", type=int, help="first N items only")
-    eva.add_argument("--tokens-per-call", type=int, default=6000, help="for the estimate")
+    eva.add_argument("--tokens-per-call", type=int, default=12000, help="for the estimate")
     eva.add_argument("--yes", action="store_true", help="actually call the model")
     eva.add_argument("--agent", action="store_true", help="agentic answering (MCP tools)")
     eva.add_argument("--type", help="only this golden type, e.g. multi_hop")
@@ -780,7 +782,7 @@ def main(argv: list[str] | None = None) -> None:
         "--route", action="store_true", help="per item, the mode chosen by the cached router"
     )
     eva.add_argument(
-        "--agent-tokens-per-call", type=int, default=50000, help="for the routed estimate"
+        "--agent-tokens-per-call", type=int, default=300000, help="for the routed estimate"
     )
     eva.add_argument("--snapshot", type=Path, help="content-addressed frozen evaluation JSON")
     eva.set_defaults(func=_cmd_eval_answers)
@@ -796,7 +798,7 @@ def main(argv: list[str] | None = None) -> None:
 
     jdg = sub.add_parser("judge", help="LLM judge of one eval run's answers (bulk tier, cached)")
     jdg.add_argument("--run", default="latest", help="run id from eval-answers (default: latest)")
-    jdg.add_argument("--tokens-per-call", type=int, default=2000, help="for the estimate")
+    jdg.add_argument("--tokens-per-call", type=int, default=12000, help="for the estimate")
     jdg.add_argument("--yes", action="store_true", help="actually call the judge model")
     jdg.add_argument("--type", help="only this golden type, e.g. multi_hop")
     jdg.add_argument("--id", help="only these golden ids, comma-separated")

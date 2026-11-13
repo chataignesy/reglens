@@ -53,6 +53,35 @@ def artifact_name(item: GoldenItem) -> str:
     return f"{item.id}-{question_hash(item.question)}.json"
 
 
+def required_calls(items, directories, *, routes=None, agent=False) -> list[tuple[str, str]]:
+    """Known new calls, including fallbacks already implied by cached incomplete/failed output."""
+    from reglens.answer.research import needs_research
+
+    calls = []
+    for item in items:
+        mode = routes[item.id]["route"] if routes is not None else ("agent" if agent else "single")
+        path = directories[mode] / artifact_name(item)
+        if not path.exists():
+            calls.append((item.id, mode))
+            continue
+        if routes is None:
+            continue
+        record = json.loads(path.read_text(encoding="utf-8"))
+        other = None
+        if mode == "single" and needs_research(record):
+            other = "agent"
+        elif (
+            mode == "agent"
+            and not record.get("answer")
+            and record.get("errors")
+            and not record.get("abstained")
+        ):
+            other = "single"
+        if other and not (directories[other] / artifact_name(item)).exists():
+            calls.append((item.id, other))
+    return calls
+
+
 def file_sha(path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -115,23 +144,37 @@ def run(
     }
     kind = "routed" if routes is not None else ("agent" if agent else "single")
     rows, entries, new_tokens = [], [], 0
+    new_unknown_calls = 0
     for n, item in enumerate(items, 1):
 
-        def answer(mode: str, item: GoldenItem = item, n: int = n) -> dict:
-            nonlocal new_tokens
+        def answer(mode: str, item: GoldenItem = item, n: int = n, requirements=None) -> dict:
+            nonlocal new_tokens, new_unknown_calls
             out_dir, answer_fn = modes[mode]
             out_dir.mkdir(parents=True, exist_ok=True)
             path = out_dir / artifact_name(item)
             if path.exists():
                 return json.loads(path.read_text(encoding="utf-8"))
             try:
-                ans: Answer = answer_fn(conn, provider, config, item.question)
+                extra = {"research_requirements": requirements} if requirements else {}
+                ans: Answer = answer_fn(conn, provider, config, item.question, **extra)
             except LLMError as e:  # one failed item must not stop the run: record it
-                ans = Answer(item.question, False, "", "", [], [], "", errors=[str(e)])
+                ans = Answer(
+                    item.question,
+                    False,
+                    "",
+                    "",
+                    [],
+                    [],
+                    "",
+                    errors=[str(e)],
+                    usage_tokens=e.tokens or 0,
+                    usage_unknown_calls=int(not e.usage_known),
+                )
             check = check_answer(ans)  # annotates claims first, so the record stores them
             record = ans.to_dict() | {"check": check, "id": item.id, "mode": mode}
             path.write_text(json.dumps(record, indent=2, ensure_ascii=False), encoding="utf-8")
             new_tokens += ans.usage_tokens
+            new_unknown_calls += ans.usage_unknown_calls
             log(f"  [{n}/{len(items)}] {item.id} ({mode}): {ans.usage_tokens:,} tokens")
             return record
 
@@ -143,6 +186,9 @@ def run(
                 int(r.get("tokens", 0)),
                 single=lambda: answer("single"),
                 agent=lambda: answer("agent"),
+                complete=lambda first: answer(
+                    "agent", requirements=first.get("missing_requirements", [])
+                ),
             )
         else:  # plain run, or the retrieval gate abstains (no router call, as in the app)
             mode = "agent" if (agent and routes is None) else "single"
@@ -221,6 +267,8 @@ def run(
         "avg_tokens": round(sum(r["tokens"] for r in rows) / max(len(rows), 1)),
         "total_tokens": sum(r["tokens"] for r in rows),
         "new_tokens_this_run": new_tokens,
+        "new_usage_unknown_calls": new_unknown_calls,
+        "usage_basis": "all reported models; known tokens are a lower bound if usage is unknown",
         "errors": [r["id"] for r in rows if r["errors"]],
         "per_item": rows,
     }

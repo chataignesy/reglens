@@ -112,6 +112,23 @@ consume budget, cancellation propagates, and error calls clear stale evidence de
 MCP requests serialize the shared toolbox so budgets and evidence traces cannot interleave. Parity scripts
 cover truncated snippets, full reads, exhausted budgets and invalid arguments.
 
+## Runtime review follow-up
+
+The [13 November runtime review](review/REVIEW-FROZEN118-2026-11-13.md) adds bounded
+same-article proviso reads, independent gap signals and targeted gap handoff on fallback.
+These signals do not prove legal completeness. One format-only repair may run within remaining
+question limits; it cannot add facts or tools. Answers that still cite partly read evidence
+are withheld as unverified. Whole-unit definition qualifiers and ordinary bracketed placeholders
+are preserved correctly. The CLI's tool/cost bounds remain distinct from the SDK loop's token
+and turn enforcement.
+
+Reported CLI usage now sums every model, including helpers. Output-format failures retain
+their consumed tokens; unknown calls remain explicitly unknown. Judge reports distinguish
+current-invocation tokens from immutable cumulative receipts. They include citation mappings
+in both prompts and cache identity, and flag inconsistent raw scores for review. Defaults
+are estimates, not spending caps; newly discovered gaps and repairs can add calls. Known
+fallbacks from cached incomplete answers are included in the dry-run estimate.
+
 ## One local GPU owner
 
 Start `uv run uvicorn reglens.inference:app --host 127.0.0.1 --port 8001 --workers 1`, then set

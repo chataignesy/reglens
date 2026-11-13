@@ -83,14 +83,17 @@ def answer_routed(
     """`filters.applies_to` ("SI" / "LSI") holds in every route: gate, single pass, agent."""
     emit = progress or (lambda event: None)
     if gate_abstains(conn, config, question, filters):  # no router call: abstains for free
-        return answer_question(conn, provider, config, question, today=today, progress=progress,
-                               filters=filters)
+        return answer_question(
+            conn, provider, config, question, today=today, progress=progress, filters=filters
+        )
 
     emit({"stage": "routing"})
+    router_unknown = 0
     try:
         route, reason, tokens = route_question(provider, question)
     except LLMError as e:
-        route, reason, tokens = "single", f"router failed: {e}", 0
+        route, reason, tokens = "single", f"router failed: {e}", e.tokens or 0
+        router_unknown = int(not e.usage_known)
     emit({"stage": "routed", "route": route, "reason": reason})
     from reglens.agent.run import answer_agentic
 
@@ -105,9 +108,21 @@ def answer_routed(
             conn, provider, config, question, today=today, progress=progress, filters=filters
         ),
         emit=emit,
+        router_usage_unknown_calls=router_unknown,
+        complete=lambda first: answer_agentic(
+            conn,
+            provider,
+            config,
+            question,
+            today=today,
+            progress=progress,
+            filters=filters,
+            research_requirements=first.missing_requirements,
+        ),
     )
     ans.trace.insert(0, {"tool": "route"} | outcome)
     ans.usage_tokens = outcome["tokens"]
+    ans.usage_unknown_calls = outcome["usage_unknown_calls"]
     return ans
 
 
@@ -136,6 +151,8 @@ def dispatch[A](
     single: Callable[[], A],
     agent: Callable[[], A],
     emit: Callable[[dict], None] = lambda e: None,
+    router_usage_unknown_calls: int = 0,
+    complete: Callable[[A], A] | None = None,
 ) -> tuple[A, dict]:
     """Run the routed plan; the ONE place that decides fallbacks (used by the app and the eval).
 
@@ -148,12 +165,24 @@ def dispatch[A](
     """
     attempts: list[str] = []
     spent = router_tokens
+    unknown = router_usage_unknown_calls
+    attempt_errors = []
 
-    def run(mode: str):
-        nonlocal spent
+    def run(mode: str, previous=None):
+        nonlocal spent, unknown
         attempts.append(mode)
-        a = (agent if mode == "agent" else single)()
+        a = (
+            complete(previous)
+            if mode == "agent" and previous is not None and complete
+            else (agent if mode == "agent" else single)()
+        )
         spent += _tokens(a)
+        unknown += int(
+            a.get("usage_unknown_calls", 0) if isinstance(a, dict) else a.usage_unknown_calls
+        )
+        errors = a.get("errors", []) if isinstance(a, dict) else a.errors
+        if errors:
+            attempt_errors.append({"mode": mode, "errors": list(errors)})
         return a
 
     if planned == "agent":
@@ -169,7 +198,7 @@ def dispatch[A](
         if _gap(final):  # single pass reports a gap: let the agent look further
             emit({"stage": "fallback"})
             first = final
-            final = run("agent")
+            final = run("agent", first)
             if _failed(final):
                 final, reason = first, f"agent fallback failed; single-pass answer ({reason})"
             else:
@@ -181,6 +210,8 @@ def dispatch[A](
         "attempts": attempts,
         "router_tokens": router_tokens,
         "tokens": spent,
+        "usage_unknown_calls": unknown,
+        "attempt_errors": attempt_errors,
     }
     return final, outcome
 

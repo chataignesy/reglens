@@ -251,6 +251,7 @@ def answer_payload(ans: Answer, check: dict) -> dict:
         ],
         "model": ans.model,
         "tokens": ans.usage_tokens,
+        "usage_unknown_calls": ans.usage_unknown_calls,
         "errors": ans.errors,
         "unverified": ans.unverified,
         # R3: completeness, separate from the mechanical checks and from scope (abstained)

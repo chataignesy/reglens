@@ -33,7 +33,8 @@ class FakeCLI:
 
     def complete(self, prompt, **kw):
         self.kwargs = kw
-        return Completion(self.reply, "claude-sonnet-5-5", Usage(20000, 900, 15000, 3000))
+        return Completion(self.reply, "claude-sonnet-5-5", Usage(20000, 900, 15000, 3000),
+                          reported_cost_usd=0.05)
 
 
 def test_agent_resolves_keys_and_bounds(monkeypatch):

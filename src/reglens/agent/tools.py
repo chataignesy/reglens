@@ -388,7 +388,14 @@ class Toolbox:
                     limit=3,
                 )
         ids = {r.id for r in rows}
-        return self._out(rows + [q for q in quals if q.id not in ids])
+        # A qualifier may match only one window of its enclosing paragraph. Its citation
+        # names the whole unit, so deliver the other windows too (within the usual cap).
+        for q in quals:
+            for full in resolve_key(self.conn, key_of(q)) or [q]:
+                if full.id not in ids:
+                    rows.append(full)
+                    ids.add(full.id)
+        return self._out(rows)
 
     def get_qa(self, article: str, query: str | None = None, k: int = 4) -> str:
         """Final EBA Q&As about a CRR article (most relevant first if a query is given)."""

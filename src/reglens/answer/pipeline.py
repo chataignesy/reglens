@@ -14,7 +14,7 @@ from datetime import date
 
 from reglens.answer.prompts import SYSTEM, user_prompt
 from reglens.config import Config
-from reglens.llm.provider import LLMProvider
+from reglens.llm.provider import LLMError, LLMProvider
 from reglens.retrieve.search import Filters, Hit, search
 
 LEVEL_LABEL = {
@@ -61,6 +61,7 @@ class Answer:
     source_registry: dict | None = None
     research: dict = field(default_factory=dict)
     semantic_review: dict = field(default_factory=lambda: {"status": "not_run"})
+    usage_unknown_calls: int = 0
 
     def cited_hits(self) -> list[Hit]:
         ids = {c for cl in self.claims for c in cl.citations}
@@ -181,6 +182,9 @@ def answer_question(
     today = today or date.today()
     emit = progress or _no_progress
     hits = search(conn, question, mode="rerank", k=int(opts.get("k", 8)), filters=filters)
+    from reglens.answer.research import expand_provisos
+
+    hits = expand_provisos(conn, hits, filters)
     emit({"stage": "retrieved", "passages": len(hits), "refs": [h.ref for h in hits[:3]]})
     as_of = as_of_statement(hits, today)
 
@@ -216,15 +220,23 @@ def answer_question(
     ans.corpus_generation = current(conn)
     found: list[str] = []
     for attempt in range(2):  # one retry when the reply breaks the answer contract
-        completion = provider.complete(
-            prompt if attempt == 0 else prompt + retry_note(found),
-            purpose="answer" if attempt == 0 else "answer_retry",
-            system=SYSTEM,
-            tier=opts.get("tier", "dev"),
-            effort=opts.get("effort"),
-        )
+        try:
+            completion = provider.complete(
+                prompt if attempt == 0 else prompt + retry_note(found),
+                purpose="answer" if attempt == 0 else "answer_retry",
+                system=SYSTEM,
+                tier=opts.get("tier", "dev"),
+                effort=opts.get("effort"),
+            )
+        except LLMError as exc:
+            ans.usage_tokens += exc.tokens or 0
+            ans.usage_unknown_calls += int(not exc.usage_known)
+            ans.unverified = True
+            ans.errors.append(str(exc))
+            return ans
         ans.model = completion.model
         ans.usage_tokens += completion.usage.total_tokens
+        ans.usage_unknown_calls += int(not completion.usage_known)
         data, found = parse_reply(completion.text)
         if not found:
             break
@@ -233,6 +245,10 @@ def answer_question(
         ans.unverified, ans.raw_output = True, completion.text
         ans.errors.append("invalid model output after one retry: " + "; ".join(found))
         return ans
+    from reglens.answer.research import guard
+
+    if gaps := guard(question, data, hits):
+        ans.trace.append({"tool": "research_guard", "gaps": gaps})
     ans.abstained = bool(data.get("abstain"))
     ans.abstain_reason = str(data.get("abstain_reason") or "")
     ans.missing_info = bool(data.get("missing_info"))
@@ -254,9 +270,8 @@ def answer_question(
 def render(ans: Answer) -> str:
     """Markdown for the CLI / UI: answer, sources with legal level, as-of line, disclaimer."""
     if ans.unverified:
-        body = (
-            "**No verified answer.** The model's reply did not follow the answer format, even "
-            "after one retry, so its claims could not be checked. " + "; ".join(ans.errors)
+        body = "**No verified answer.** Output or evidence checks did not pass. " + "; ".join(
+            ans.errors
         )
     elif ans.abstained:
         body = f"**Not answered from the RegLens corpus.** {ans.abstain_reason}".strip()
@@ -277,6 +292,9 @@ def render(ans: Answer) -> str:
     if problems:
         lines += ["", "**Mechanical citation checks** (citation, numbers, legal level)"]
         lines += [f"- ⚠ {c.check}: {c.text}" for c in problems]
+    if ans.usage_unknown_calls:
+        lines += ["", f"Known usage: at least {ans.usage_tokens:,} tokens; "
+                  f"{ans.usage_unknown_calls} call(s) reported no complete usage."]
     lines += [
         "",
         "_Personal open-source project; not legal or regulatory advice. Check the official texts._",

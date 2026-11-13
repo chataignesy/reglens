@@ -1,0 +1,36 @@
+[
+  {
+    "id": "mh-003",
+    "guard_gaps": [
+      "Try a focused lookup for the required gap: The CRR Art. 181(1)(b) text and the RTS on economic downturn's identification requirements are not in the passages beyond a recital and references; the passages do not state the base legal requirement in full."
+    ],
+    "research_needed": true
+  },
+  {
+    "id": "cmp-002",
+    "guard_gaps": [],
+    "research_needed": false
+  },
+  {
+    "id": "app-001",
+    "guard_gaps": [],
+    "research_needed": false
+  },
+  {
+    "id": "mh-012",
+    "guard_gaps": [
+      "Check the stated evidence gap: Not covered:** The passages do not set out the full list of cost types or the discount rate. Para. 131 and Art. 4(1)(55) are cited only through the ECB guide and EBA GL."
+    ],
+    "research_needed": true
+  },
+  {
+    "id": "mh-015",
+    "guard_gaps": [
+      "Check the stated evidence gap: The passages do not cover other provisions that might offer relief, such as the other paragraphs of Art. 162 or any CRR3 changes. They also do not give the full calculation rules for each exposure type, only the cases in [C4] and [C8].",
+      "Check the explicit proviso crr3-consolidated Art. 162(3)",
+      "Check the explicit proviso crr3-consolidated Art. 162(4)",
+      "Check the explicit proviso crr3-consolidated Art. 162(5)"
+    ],
+    "research_needed": true
+  }
+]

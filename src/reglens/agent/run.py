@@ -23,7 +23,7 @@ from pathlib import Path
 from reglens.agent.tools import coverage, delivered_chars, key_of, partial_reads, resolve_key
 from reglens.answer.pipeline import Answer, Claim, Progress, as_of_statement
 from reglens.answer.prompts import SCOPE
-from reglens.answer.research import INSTRUCTION
+from reglens.answer.research import INSTRUCTION, guard
 from reglens.answer.schema import parse_reply
 from reglens.config import Config
 from reglens.llm.provider import AnthropicAPIProvider, ClaudeCLIProvider, LLMError
@@ -293,6 +293,7 @@ def answer_agentic(
     today: date | None = None,
     progress: Progress | None = None,
     filters: Filters | None = None,
+    research_requirements: list[str] | None = None,
 ) -> Answer:
     """`progress`, if given, receives stage events, including one per tool call. `filters`:
     only `applies_to` ("SI" / "LSI") is used: the search tool then only finds texts that apply
@@ -310,6 +311,12 @@ def answer_agentic(
     max_calls = int(opts.get("max_calls", 10))
     applies = filters.applies_to if filters else None
     asked = question
+    if research_requirements:
+        question += (
+            "\n\nRequired gaps identified in the initial draft (search hints, NOT evidence):\n"
+            + "\n".join("- " + r for r in research_requirements)
+            + "\nResolve these first. Do not repeat a broad search and omit them again."
+        )
     question += instruction(filters)
     if applies:
         question = (
@@ -336,23 +343,29 @@ def answer_agentic(
     system = AGENT_SYSTEM.replace("{max_calls}", str(max_calls))
     if progress:
         progress({"stage": "agent", "max_calls": max_calls})
+    cost_spent = 0.0
+    usage_unknown_calls = 0
     if isinstance(provider, AnthropicAPIProvider):  # bring-your-own-key: loop runs in RegLens
         from reglens.agent.api_loop import run_api_agent
 
-        text, trace, tokens, model, errors = run_api_agent(
-            conn,
-            provider,
-            question,
-            system=system,
-            tier=opts.get("tier", "dev"),
-            effort=opts.get("effort"),
-            max_calls=max_calls,
-            max_turns=int(opts.get("max_turns", max_calls + 3)),
-            max_tokens=int(opts.get("max_tokens_per_question", 200_000)),
-            progress=progress,
-            applies_to=applies,
-            filters=filters,
-        )
+        try:
+            text, trace, tokens, model, errors = run_api_agent(
+                conn,
+                provider,
+                question,
+                system=system,
+                tier=opts.get("tier", "dev"),
+                effort=opts.get("effort"),
+                max_calls=max_calls,
+                max_turns=int(opts.get("max_turns", max_calls + 3)),
+                max_tokens=int(opts.get("max_tokens_per_question", 200_000)),
+                progress=progress,
+                applies_to=applies,
+                filters=filters,
+            )
+        except LLMError as e:
+            text, trace, tokens, model, errors = "", [], e.tokens or 0, None, [str(e)]
+            usage_unknown_calls += int(not e.usage_known)
     else:
         allowed = ",".join(f"mcp__reglens__{t}" for t in TOOLS)
         budget = str(opts.get("max_budget_usd", 0.75))
@@ -360,10 +373,25 @@ def answer_agentic(
         tokens, errors = 0, []
         try:
             for _attempt in range(2):  # a run without any tool call: the tools were unavailable
+                if _attempt:
+                    if cost_spent is None or cost_spent >= float(budget):
+                        break
+                    extra = [
+                        "--allowedTools",
+                        allowed,
+                        "--max-budget-usd",
+                        str(float(budget) - cost_spent),
+                    ]
                 completion, trace = _run_once(
                     provider, question, max_calls, opts, extra, progress, applies
                 )
                 tokens += completion.usage.total_tokens
+                usage_unknown_calls += int(not completion.usage_known)
+                cost_spent = (
+                    cost_spent + completion.reported_cost_usd
+                    if cost_spent is not None and completion.reported_cost_usd is not None
+                    else None
+                )
                 if trace:
                     break
             text, model = completion.text, completion.model
@@ -371,15 +399,18 @@ def answer_agentic(
                 text = ""
                 errors.append("agent made no tool calls (RegLens MCP tools unavailable?)")
         except LLMError as e:
-            if "max_budget" not in str(e):
-                raise
             # claude -p stops without an answer at --max-budget-usd: report it, don't crash;
             # the tokens it spent are counted (and were logged to the ledger by the provider)
             text, model, trace = "", None, []
             tokens += e.tokens or 0
-            errors.append(AGENT_CAP_ERROR + ("" if e.tokens is not None else " (usage unknown)"))
+            usage_unknown_calls += int(not e.usage_known)
+            errors.append(
+                (AGENT_CAP_ERROR if "max_budget" in str(e) else str(e))
+                + ("" if e.usage_known else " (usage unknown)")
+            )
 
     ans = Answer(asked, False, "", "", [], [], "", model=model, usage_tokens=tokens, trace=trace)
+    ans.usage_unknown_calls = usage_unknown_calls
     ans.corpus_generation = current(conn)
     from reglens.sources import load_sources
 
@@ -387,9 +418,26 @@ def answer_agentic(
     ans.errors += errors
     if not text:
         return ans
-    # No retry here: it would re-run the whole tool loop. An invalid reply is unverified and
-    # has no answer text, so routing falls back to a single-pass answer.
     data, found = parse_reply(text)
+    if found:
+        original = text
+        repaired = repair_format(provider, asked, text, found, opts, tokens, cost_spent)
+        if repaired is not None:
+            fixed, extra_tokens, unknown, repair_error = repaired
+            ans.usage_tokens += extra_tokens
+            ans.usage_unknown_calls += unknown
+            ans.raw_output = original
+            ans.trace.append(
+                {
+                    "tool": "format_repair",
+                    "tokens": extra_tokens,
+                    "error": repair_error,
+                    "tools_enabled": False,
+                }
+            )
+            if fixed is not None:
+                data, found = fixed, []
+                text = json.dumps(data, ensure_ascii=False)
     if found:
         ans.unverified, ans.raw_output = True, text
         ans.errors.append("invalid model output: " + "; ".join(found))
@@ -398,8 +446,17 @@ def answer_agentic(
     claims_raw = data.get("claims") or []
     text = str(data.get("answer") or "")
     keys = [str(k) for c in claims_raw for k in c.get("citations", [])]
-    keys += re.findall(r"\[([^\[\]]+?)\]", text)
     received = [k for t in trace for k in t.get("keys", [])]  # passages with text, not refs
+    # Preserve ordinary bracketed text (file-name placeholders, Markdown links, etc.).
+    # Declared or recognisable legal citation keys still undergo delivery checks.
+    bracket_keys = re.findall(r"\[([^\[\]]+?)\]", text)
+    keys += [
+        k
+        for k in bracket_keys
+        if k in keys
+        or k in received
+        or re.search(r"\b(?:Art(?:icle)?\.?\s*\d|paras?\.\s*\d|Section\s+\d|C\d+)\b", k, re.I)
+    ]
     unread: list[str] = []
     canonical: dict[str, str] = {}
     got = delivered_chars(trace)
@@ -416,7 +473,7 @@ def answer_agentic(
     )
     text = re.sub(
         r"\[([^\[\]]+?)\]",
-        lambda m: "".join(f"[{c}]" for c in mapping.get(m.group(1), ["C?"])),
+        lambda m: "".join(f"[{c}]" for c in mapping[m.group(1)]) if m.group(1) in mapping else m[0],
         text,
     )
     unresolved = [k for k, cids in mapping.items() if "C?" in cids]
@@ -456,7 +513,95 @@ def answer_agentic(
         )
         for c in claims_raw
     ]
+    checked = {
+        "answer": ans.answer,
+        "abstain": ans.abstained,
+        "claims": [{"citations": c.citations} for c in ans.claims],
+        "missing_info": ans.missing_info,
+        "research_needed": ans.research_needed,
+        "missing_requirements": ans.missing_requirements,
+    }
+    if gaps := guard(asked, checked, context):
+        ans.missing_info, ans.research_needed = True, True
+        ans.missing_requirements = checked["missing_requirements"]
+        ans.trace.append({"tool": "research_guard", "gaps": gaps})
+    if ans.partial_cids or unread:
+        # Stored for diagnosis; never present a partially read answer as verified prose.
+        ans.unverified, ans.raw_output, ans.answer = True, ans.raw_output or text, ""
     return ans
+
+
+def repair_format(provider, question, raw, problems, opts, spent_tokens, cost_spent):
+    """One format-only call, within remaining question limits, never a fresh tool loop."""
+    if len(raw) > 24000 or spent_tokens + len(raw) // 2 + 5000 > int(
+        opts.get("max_tokens_per_question", 200000)
+    ):
+        return None
+    kwargs = {}
+    if isinstance(provider, ClaudeCLIProvider):
+        if cost_spent is None:
+            return None  # cannot establish remaining cost budget
+        remaining = float(opts.get("max_budget_usd", 0.75)) - cost_spent
+        if remaining <= 0:
+            return None
+        kwargs["extra_args"] = ["--max-budget-usd", str(min(0.10, remaining))]
+    try:
+        completion = provider.complete(
+            "Question (context only): "
+            + question
+            + "\nErrors: "
+            + "; ".join(problems)
+            + "\nMalformed reply:\n"
+            + raw,
+            purpose="agent_format_repair",
+            tier=opts.get("tier", "dev"),
+            system="Repair JSON syntax only. Return ONE JSON object, preserving all original "
+            "field values, answer wording, claims and citations exactly. Do not answer "
+            "the question again, add facts, change booleans or use tools.",
+            **kwargs,
+        )
+    except LLMError as e:
+        return None, e.tokens or 0, int(not e.usage_known), str(e)
+    data, errors = parse_reply(completion.text)
+    if not errors:
+
+        def normal(value):
+            return " ".join(re.findall(r"\w+|[%€]", re.sub(r"\\[nrt]", " ", value).lower()))
+
+        values = [str(data.get("answer") or "")]
+        values += [str(c.get("text") or "") for c in data.get("claims", [])]
+        values += [str(k) for c in data.get("claims", []) for k in c.get("citations", [])]
+        if any(normal(v) not in normal(raw) for v in values if v):
+            errors.append("format repair changed content")
+        original_answer = re.search(
+            r'"answer"\s*:\s*"(.*?)"\s*,\s*"(?:claims|abstain|research|missing)', raw, re.S
+        )
+        original_claims = re.findall(r'"text"\s*:\s*"(.*?)"\s*,\s*"(?:citations|kind)"', raw, re.S)
+        if not original_answer or normal(original_answer[1]) != normal(data.get("answer", "")):
+            errors.append("format repair did not preserve the full answer")
+        if len(original_claims) != len(re.findall(r'"text"\s*:', raw)) or [
+            normal(t) for t in original_claims
+        ] != [normal(c.get("text", "")) for c in data.get("claims", [])]:
+            errors.append("format repair did not preserve all claims")
+        kinds = re.findall(r'"kind"\s*:\s*"([^"]+)"', raw)
+        if kinds != [c.get("kind") for c in data.get("claims", [])]:
+            errors.append("format repair changed claim kinds")
+        try:
+            citations = [json.loads(s) for s in re.findall(r'"citations"\s*:\s*(\[[^\]]*\])', raw)]
+        except ValueError:
+            citations = None
+        if citations != [c.get("citations") for c in data.get("claims", [])]:
+            errors.append("format repair changed citations")
+        for field in ("abstain", "missing_info", "research_needed"):
+            before = re.search(r'"' + field + r'"\s*:\s*(true|false)', raw)
+            if before and data.get(field) != (before[1] == "true"):
+                errors.append("format repair changed " + field)
+    return (
+        None if errors else data,
+        completion.usage.total_tokens,
+        int(not completion.usage_known),
+        "; ".join(errors),
+    )
 
 
 __all__ = ["AGENT_SYSTEM", "answer_agentic", "key_of"]

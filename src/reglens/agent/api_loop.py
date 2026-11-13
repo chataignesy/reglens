@@ -18,7 +18,7 @@ import re
 from reglens.agent.contracts import TOOL_SCHEMAS
 from reglens.agent.contracts import invoke as _run_tool
 from reglens.agent.tools import Toolbox, partial_reads, trace_entry
-from reglens.llm.provider import AnthropicAPIProvider
+from reglens.llm.provider import AnthropicAPIProvider, LLMError
 
 STOP_NOTE = (
     "Limit reached: no more tool calls. Answer now with the passages you already have, in the "
@@ -48,7 +48,7 @@ def _with_cache(messages: list[dict]) -> list[dict]:
     return out
 
 
-def _completeness_note(text: str, trace: list[dict], conn=None) -> str | None:
+def _completeness_note(text: str, trace: list[dict], conn=None, question: str = "") -> str | None:
     """Why a first final answer is not complete yet (review R1): it cites passages read only
     as truncated snippets, or it reports missing information itself. None when complete."""
     from reglens.answer.schema import parse_reply
@@ -56,12 +56,17 @@ def _completeness_note(text: str, trace: list[dict], conn=None) -> str | None:
     data, problems = parse_reply(text)
     if problems or not data or data.get("abstain"):
         return None
+    from reglens.answer.research import guard
+
+    guard(question, data, [])
     cited = {str(k) for c in data.get("claims") or [] for k in c.get("citations") or []}
     cited |= set(re.findall(r"\[([^\[\]]+?)\]", str(data.get("answer") or "")))
     cut = sorted(cited & partial_reads(trace, conn))
     if cut:
-        return ("Your answer relies on passages you only saw in part (truncated, or not all "
-                "of their parts): " + "; ".join(cut) + ". Read them in full with get_passage.")
+        return (
+            "Your answer relies on passages you only saw in part (truncated, or not all "
+            "of their parts): " + "; ".join(cut) + ". Read them in full with get_passage."
+        )
     from reglens.answer.research import completion_note, needs_research
 
     if not needs_research(data):
@@ -69,8 +74,10 @@ def _completeness_note(text: str, trace: list[dict], conn=None) -> str | None:
     if note := completion_note(data):
         return note
     if data.get("missing_info"):
-        return ("Your answer says information is missing. If a tool can find it (the RTS or "
-                "article a passage refers to, a truncated passage), look for it.")
+        return (
+            "Your answer says information is missing. If a tool can find it (the RTS or "
+            "article a passage refers to, a truncated passage), look for it."
+        )
     return None
 
 
@@ -112,27 +119,30 @@ def run_api_agent(
         if tokens >= max_tokens:
             errors.append(f"token budget ({max_tokens:,}) spent before the final answer")
             return "", trace, tokens, model, errors
-        if not stop and (
-            tokens + int(last * 1.3) > max_tokens - reserve or turn + 1 >= max_turns
-        ):
+        if not stop and (tokens + int(last * 1.3) > max_tokens - reserve or turn + 1 >= max_turns):
             stop = True  # no room for another tool round: this turn answers
             if turn:
                 messages[-1]["content"].append({"type": "text", "text": STOP_NOTE})
-        response, usage, model = provider.create(
-            _with_cache(messages),
-            purpose="agent",
-            system=system,
-            tier=tier,
-            effort=effort,
-            tools=TOOL_SCHEMAS,
-            tool_choice={"type": "none"} if stop else None,
-        )
+        try:
+            response, usage, model = provider.create(
+                _with_cache(messages),
+                purpose="agent",
+                system=system,
+                tier=tier,
+                effort=effort,
+                tools=TOOL_SCHEMAS,
+                tool_choice={"type": "none"} if stop else None,
+            )
+        except LLMError as e:
+            raise LLMError(
+                str(e), tokens=tokens + (e.tokens or 0), usage_known=e.usage_known
+            ) from e
         tokens += usage.total_tokens
         last = usage.total_tokens
         _check_cancel(provider)  # cancelled while the request was in flight: do nothing more
         if response.stop_reason != "tool_use":
             text = "".join(b.text for b in response.content if getattr(b, "type", "") == "text")
-            note = None if (stop or nudged) else _completeness_note(text, trace, box.conn)
+            note = None if (stop or nudged) else _completeness_note(text, trace, box.conn, question)
             room = box.calls < max_calls and turn + 2 < max_turns
             if note and room and tokens + int(last * 1.3) <= max_tokens - reserve:
                 nudged = True  # R1: one more round to read what the answer relies on
@@ -140,9 +150,21 @@ def run_api_agent(
                     progress({"stage": "completing", "reason": note})
                 messages.append({"role": "assistant", "content": response.content})
                 left = max_calls - box.calls
-                messages.append({"role": "user", "content": [{"type": "text", "text": (
-                    f"{note} You have {left} tool call(s) left: read it now, then give the "
-                    "final JSON answer again.")}]})
+                messages.append(
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": (
+                                    f"{note} You have {left} tool call(s) left: read it now, "
+                                    "then give the "
+                                    "final JSON answer again."
+                                ),
+                            }
+                        ],
+                    }
+                )
                 continue
             return text, trace, tokens, model, errors
         if stop:  # tools were forbidden on this turn

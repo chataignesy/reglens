@@ -75,8 +75,9 @@ def test_one_ledger_entry_per_model_used(cfg):
         "claude-sonnet-5-5": {"inputTokens": 1000, "outputTokens": 100},
         "claude-haiku-5-5": {"inputTokens": 50, "outputTokens": 5},
     }
-    ClaudeCLIProvider(cfg, runner=fake_runner(json.dumps(sample))).complete("q", purpose="p")
+    result = ClaudeCLIProvider(cfg, runner=fake_runner(json.dumps(sample))).complete("q", purpose="p")
     assert {e["model"] for e in Ledger(cfg).entries()} == {"claude-sonnet-5-5", "claude-haiku-5-5"}
+    assert result.usage.total_tokens == sum(e["total_tokens"] for e in Ledger(cfg).entries()) == 1155
 
 
 def test_failed_call_still_logs_its_usage(cfg):

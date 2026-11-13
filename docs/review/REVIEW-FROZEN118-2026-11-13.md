@@ -87,7 +87,9 @@ confirmation threshold. A research question used about 398k tokens despite the o
 pilot estimate; default estimates were raised and known cached fallbacks are now included.
 
 These are development regressions from different implementation stages, not an independently
-sampled cohort or a fresh full-118 result. The full benchmark has **not** been rerun after the
-fixes. The old 84.0% raw score remains unchanged. Format recovery and guards can still fail;
+sampled cohort or a fresh full-118 result. At implementation completion only these targeted
+checks had run. The subsequent [complete rerun](../results/frozen-118-rerun-2026-11-13.md)
+records all 118 items, including quota recovery and newly observed failures. The old 84.0% raw
+score remains unchanged. Format recovery and guards can still fail;
 tool/context limits and incomplete corpus dates remain explicit limitations. Practitioner
 adjudication of disputed historical verdicts remains separate from this implementation.

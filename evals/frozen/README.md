@@ -30,6 +30,7 @@ uv run reglens eval-answers --set all --snapshot evals/frozen/20d15f898cdbb3884c
 
 After an actual answer run, use its emitted run ID with `reglens judge --run RUN_ID`.
 Do not compare old headline scores with the revised set as if question/reference/cohort and
-scoring rules were identical. The 11 November set has a complete recorded run; the 13 November
-revision has targeted live regressions, not a new full benchmark. See the
+scoring rules were identical. Both revised sets now have complete recorded runs. The
+[13 November full rerun](../../docs/results/frozen-118-rerun-2026-11-13.md) preserves the original
+quota-interrupted run and retries infrastructure failures in an isolated cache. See also the
 [runtime review and implementation](../../docs/review/REVIEW-FROZEN118-2026-11-13.md).

@@ -1,0 +1,22 @@
+[
+  {
+    "id": "mh-013",
+    "original_artifact": "data/evals/answers/agent-4c4a22d855/attempts/mh-013-c9e434b5-a268572274ad4bb28a0a6ae514852586.json",
+    "original_sha256": "591dd0248bb3ff3572e91b8fefb2daf3928b76f9b80489e561f1131c01d3f872",
+    "basis": "Guard-only replay on the stored evidence/claims with complete flags assumed, to isolate the deterministic addition; original answers are not modified.",
+    "before": [
+      "Check the explicit dependency crr3-consolidated Art. 166(8)"
+    ],
+    "after": []
+  },
+  {
+    "id": "mh-014",
+    "original_artifact": "data/evals/answers/agent-4c4a22d855/attempts/mh-014-e144e7d8-11446dbafb844b8a80cdbaeae82efa9c.json",
+    "original_sha256": "6399e07dde64424a959f62a88dd1605f1ec34bbc85014be84d808b3153ebca91",
+    "basis": "Guard-only replay on the stored evidence/claims with complete flags assumed, to isolate the deterministic addition; original answers are not modified.",
+    "before": [
+      "Check the explicit dependency crr3-consolidated Art. 230"
+    ],
+    "after": []
+  }
+]

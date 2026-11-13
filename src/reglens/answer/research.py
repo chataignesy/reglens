@@ -79,20 +79,26 @@ def provisos(hit) -> list[str]:
 
 
 _ARTICLE_PROVISO = re.compile(
-    r"(?:subject to|by way of derogation from|without prejudice to|in accordance with)\s+"
-    r"Article\s+(\d+[a-z]?)(?:\((\d+[a-z]?)\))?(?!\w)", re.I,
+    r"(?P<relation>subject to|by way of derogation from|without prejudice to|in accordance with)"
+    r"\s+Article\s+(?P<article>\d+[a-z]?)(?:\((?P<paragraph>\d+[a-z]?)\))?(?!\w)", re.I,
 )
 _EXCEPTION = r"shall not apply|do not apply|derogation|exempt|non-application"
 
 
-def article_provisos(hit) -> list[tuple[str, str | None]]:
-    """Explicit one-hop references, excluding references naming a different legal instrument."""
+def article_provisos(hit, *, required_only: bool = False) -> list[tuple[str, str | None]]:
+    """References for pre-reading; only explicit qualifications establish a mandatory gap.
+
+    'In accordance with' is a candidate dependency, not proof that the target must be read
+    for this question. Required model-reported gaps still escalate independently.
+    """
     out = []
     for m in _ARTICLE_PROVISO.finditer(hit.text):
+        if required_only and m["relation"].lower() == "in accordance with":
+            continue
         if re.match(r"\s+of\s+(?:Regulation|Directive|Delegated|Implementing)",
                     hit.text[m.end():], re.I):
             continue
-        out.append((m[1], m[2]))
+        out.append((m["article"], m["paragraph"]))
     return list(dict.fromkeys(out))
 
 
@@ -279,7 +285,7 @@ def guard(question: str, data: dict, hits: list) -> list[str]:
                     target = f"Art. {art[1]}({para})"
                     if (h.source_id, target.replace(" ", "").lower()) not in available:
                         gaps.append(f"Check the explicit proviso {h.source_id} {target}")
-                for target_article, para in article_provisos(h):
+                for target_article, para in article_provisos(h, required_only=True):
                     target = f"Art. {target_article}" + (f"({para})" if para else "")
                     present = any(
                         other.source_id == h.source_id

@@ -188,9 +188,9 @@ def answer_question(
     if reason := refusal_reason(question):
         return Answer(question, True, reason, "", [], [], as_of_statement([], today))
     hits = search(conn, question, mode="rerank", k=int(opts.get("k", 8)), filters=filters)
-    from reglens.answer.research import expand_provisos
+    from reglens.answer.context_plan import expand_context
 
-    hits = expand_provisos(conn, hits, filters)
+    hits = expand_context(conn, question, hits, filters)
     emit({"stage": "retrieved", "passages": len(hits), "refs": [h.ref for h in hits[:3]]})
     as_of = as_of_statement(hits, today)
 
@@ -254,7 +254,7 @@ def answer_question(
         return ans
     from reglens.answer.research import guard
 
-    if gaps := guard(question, data, hits):
+    if gaps := guard(question, data, hits, conn=conn, filters=filters):
         ans.trace.append({"tool": "research_guard", "gaps": gaps})
     ans.abstained = bool(data.get("abstain"))
     ans.abstain_reason = str(data.get("abstain_reason") or "")

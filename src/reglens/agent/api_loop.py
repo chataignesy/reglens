@@ -49,7 +49,9 @@ def _with_cache(messages: list[dict]) -> list[dict]:
     return out
 
 
-def _completeness_note(text: str, trace: list[dict], conn=None, question: str = "") -> str | None:
+def _completeness_note(
+    text: str, trace: list[dict], conn=None, question: str = "", filters=None
+) -> str | None:
     """Why a first final answer is not complete yet (review R1): it cites passages read only
     as truncated snippets, or it reports missing information itself. None when complete."""
     from reglens.answer.schema import parse_reply
@@ -57,9 +59,18 @@ def _completeness_note(text: str, trace: list[dict], conn=None, question: str = 
     data, problems = parse_reply(text)
     if problems or not data or data.get("abstain"):
         return None
+    from reglens.agent.tools import _rows, delivered_chars
     from reglens.answer.research import guard
 
-    guard(question, data, [])
+    got = delivered_chars(trace)
+    read_hits = []
+    if (
+        conn is not None
+        and got
+        and re.search(r"\b(?:paragraphs|paras\.)\s*\d+\s*[–—-]", question, re.I)
+    ):
+        read_hits = [r.hit() for r in _rows(conn, "id = ANY(%s)", [list(got)], limit=80)]
+    guard(question, data, [], conn=conn, filters=filters, delivered=got, evidence_hits=read_hits)
     cited = {str(k) for c in data.get("claims") or [] for k in c.get("citations") or []}
     cited |= set(re.findall(r"\[([^\[\]]+?)\]", str(data.get("answer") or "")))
     cut = sorted(cited & partial_reads(trace, conn))
@@ -136,7 +147,9 @@ def run_api_agent(
             )
         except LLMError as e:
             raise LLMError(
-                str(e), tokens=tokens + (e.tokens or 0), usage_known=e.usage_known,
+                str(e),
+                tokens=tokens + (e.tokens or 0),
+                usage_known=e.usage_known,
                 retryable=e.retryable,
             ) from e
         tokens += usage.total_tokens
@@ -144,7 +157,11 @@ def run_api_agent(
         _check_cancel(provider)  # cancelled while the request was in flight: do nothing more
         if response.stop_reason != "tool_use":
             text = "".join(b.text for b in response.content if getattr(b, "type", "") == "text")
-            note = None if (stop or nudged) else _completeness_note(text, trace, box.conn, question)
+            note = (
+                None
+                if (stop or nudged)
+                else _completeness_note(text, trace, box.conn, question, box.filters)
+            )
             room = box.calls < max_calls and turn + 2 < max_turns
             if note and room and tokens + int(last * 1.3) <= max_tokens - reserve:
                 nudged = True  # R1: one more round to read what the answer relies on

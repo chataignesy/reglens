@@ -80,7 +80,8 @@ def provisos(hit) -> list[str]:
 
 _ARTICLE_PROVISO = re.compile(
     r"(?P<relation>subject to|by way of derogation from|without prejudice to|in accordance with)"
-    r"\s+Article\s+(?P<article>\d+[a-z]?)(?:\((?P<paragraph>\d+[a-z]?)\))?(?!\w)", re.I,
+    r"\s+Article\s+(?P<article>\d+[a-z]?)(?:\((?P<paragraph>\d+[a-z]?)\))?(?!\w)",
+    re.I,
 )
 _EXCEPTION = r"shall not apply|do not apply|derogation|exempt|non-application"
 
@@ -95,8 +96,9 @@ def article_provisos(hit, *, required_only: bool = False) -> list[tuple[str, str
     for m in _ARTICLE_PROVISO.finditer(hit.text):
         if required_only and m["relation"].lower() == "in accordance with":
             continue
-        if re.match(r"\s+of\s+(?:Regulation|Directive|Delegated|Implementing)",
-                    hit.text[m.end():], re.I):
+        if re.match(
+            r"\s+of\s+(?:Regulation|Directive|Delegated|Implementing)", hit.text[m.end() :], re.I
+        ):
             continue
         out.append((m["article"], m["paragraph"]))
     return list(dict.fromkeys(out))
@@ -109,30 +111,38 @@ def incoming_exceptions(conn, source_id: str, articles: list[str], filters=None)
     """
     from reglens.agent.tools import Toolbox, _rows
 
-    return Toolbox(conn, filters=filters)._eligible(_rows(
-        conn,
-        "source_id = %s AND body ~* %s AND EXISTS "
-        "(SELECT 1 FROM edges e WHERE e.src = chunks.id AND e.target_source = %s "
-        "AND e.target_article = ANY(%s))",
-        [source_id, _EXCEPTION, source_id, articles], limit=40,
-    ))
+    return Toolbox(conn, filters=filters)._eligible(
+        _rows(
+            conn,
+            "source_id = %s AND body ~* %s AND EXISTS "
+            "(SELECT 1 FROM edges e WHERE e.src = chunks.id AND e.target_source = %s "
+            "AND e.target_article = ANY(%s))",
+            [source_id, _EXCEPTION, source_id, articles],
+            limit=40,
+        )
+    )
 
 
-def expand_provisos(conn, hits: list, filters=None, *, max_extra: int = 4) -> list:
+def expand_provisos(
+    conn, hits: list, filters=None, *, max_extra: int = 4, max_chars: int = 12000
+) -> list:
     """Read a bounded one-hop set before drafting, preserving every caller filter."""
-    if conn is None:
+    if conn is None or max_extra <= 0 or max_chars <= 0:
         return hits
     from reglens.agent.tools import Toolbox, _rows, key_of, resolve_key
 
     box = Toolbox(conn, filters=filters)
-    out, seen, left = list(hits), {h.id for h in hits}, 12000
+    out, seen, left = list(hits), {h.id for h in hits}, max_chars
     incoming_by_source = {}
     sources = {h.source_id for h in hits[:4] if re.match(r"Art\.\s*\d", h.ref)}
     for source_id in sorted(sources):
-        articles = list(dict.fromkeys(
-            m[1] for h in hits[:4] if h.source_id == source_id
-            and (m := re.match(r"Art\.\s*(\d+[a-z]?)", h.ref))
-        ))
+        articles = list(
+            dict.fromkeys(
+                m[1]
+                for h in hits[:4]
+                if h.source_id == source_id and (m := re.match(r"Art\.\s*(\d+[a-z]?)", h.ref))
+            )
+        )
         incoming_by_source[source_id] = incoming_exceptions(conn, source_id, articles, filters)
     resolved = set()
     for h in hits[:4]:
@@ -140,23 +150,32 @@ def expand_provisos(conn, hits: list, filters=None, *, max_extra: int = 4) -> li
         if not article:
             continue
         paras = provisos(h)
-        rows = box._eligible(
-            _rows(
-                conn,
-                "source_id = %s AND article = %s AND paragraph = ANY(%s)",
-                [h.source_id, article[1], paras],
-                limit=20,
+        rows = (
+            box._eligible(
+                _rows(
+                    conn,
+                    "source_id = %s AND article = %s AND paragraph = ANY(%s)",
+                    [h.source_id, article[1], paras],
+                    limit=20,
+                )
             )
-        ) if paras else []
+            if paras
+            else []
+        )
         # Do not spend every slot on windows of the first (possibly irrelevant) proviso.
         # Prefer complete small units; leave oversized units for targeted agent research.
         groups = [[r for r in rows if r.paragraph == para] for para in paras]
         for target_article, para in article_provisos(h)[:4]:
-            groups.append(box._eligible(_rows(
-                conn, "source_id = %s AND article = %s" +
-                (" AND paragraph = %s" if para else ""),
-                [h.source_id, target_article, *([para] if para else [])], limit=40,
-            )))
+            groups.append(
+                box._eligible(
+                    _rows(
+                        conn,
+                        "source_id = %s AND article = %s" + (" AND paragraph = %s" if para else ""),
+                        [h.source_id, target_article, *([para] if para else [])],
+                        limit=40,
+                    )
+                )
+            )
         # Exceptions may point to this article without the article pointing back.
         for candidate in incoming_by_source.get(h.source_id, [])[:4]:
             key = key_of(candidate)
@@ -181,11 +200,25 @@ def expand_provisos(conn, hits: list, filters=None, *, max_extra: int = 4) -> li
     return out
 
 
-def guard(question: str, data: dict, hits: list) -> list[str]:
+def guard(
+    question: str,
+    data: dict,
+    hits: list,
+    *,
+    conn=None,
+    filters=None,
+    delivered=None,
+    evidence_hits=None,
+) -> list[str]:
     """Independent, auditable conservative signals; this does not prove completeness."""
     if data.get("abstain"):
         return []
-    gaps = []
+    from reglens.answer.context_plan import known_definition_gaps, requested_gaps
+
+    gaps = known_definition_gaps(conn, data, filters)
+    gaps += requested_gaps(
+        conn, question, hits if evidence_hits is None else evidence_hits, filters, delivered
+    )
     required_gaps = []
     delivered = {f"C{n}" for n in range(1, len(hits) + 1)}
     # On the API agent's pre-final check, keys are tool keys, not yet C# keys.
@@ -200,9 +233,14 @@ def guard(question: str, data: dict, hits: list) -> list[str]:
                 gaps.append("Resolve the required answer fact: " + requirement["requirement"])
     if required_gaps:
         data["missing_info"] = True
-        data["missing_requirements"] = list(dict.fromkeys([
-            *data.get("missing_requirements", []), *required_gaps,
-        ]))
+        data["missing_requirements"] = list(
+            dict.fromkeys(
+                [
+                    *data.get("missing_requirements", []),
+                    *required_gaps,
+                ]
+            )
+        )
     # Document-content questions may be fully answered by identifying a document's limits.
     document_bound = bool(
         re.search(

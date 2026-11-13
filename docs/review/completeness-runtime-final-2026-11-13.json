@@ -1,0 +1,247 @@
+{
+  "disclaimer": "Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.",
+  "utc": "2026-11-13T22:05:24.686089+00:00",
+  "snapshot_sha256": "47c5cfd9f9307fcbbff8c00f1a853e44acbda45cc4103c99ba10995bfc4ff65e",
+  "source_hashes": {
+    "agent/api_loop.py": "d79f35f638b1fb780b99dac462493110cf18bf688dfcbc94c7e79195f61935d5",
+    "agent/contracts.py": "7d52d717ac08afa978d69f5438eb0d9461f90e0daf7471347c458fd47eff88f9",
+    "agent/mcp_server.py": "faa51bc749eca21eb86071bb7b4b75286cec554fb05f2b63e55f4cd3e57ac59f",
+    "agent/run.py": "4452b00dad1e4bc7e32b9b2de2bcc94bb16b97e457203232d6862e1f47b95506",
+    "agent/tools.py": "7658a603b3e6176aa24739609460a04baf18de717146714d1bf3e2518e0654b0",
+    "answer/context_plan.py": "74f5ffa980e30439c166e0481d4982c9fc642df0620746333a947c1e2f973e29",
+    "answer/pipeline.py": "201d7adfba76fbd1191c28276c84405d993d7b991b8b5be2e4dfb23f36ce0011",
+    "answer/prompts.py": "99d45a56e14667cc06487889036b7351876e36da2f4a1c76fc700c30b18a5643",
+    "answer/research.py": "fb4cd3fd530726f7c80046917ef28a3eefdab96eb00720ea1806abf7cb5f63c7",
+    "answer/route.py": "4b99a12d1f002ffbe1c8d423961599eb4d1cfd0c3b72ee4a03d242de849f96bc",
+    "answer/schema.py": "dc69b54d2e70938543a7860dd655567681e08941829ff5719984f5d922b1b62f",
+    "answer/scope.py": "6775941962261da49f6b056e1df19158d390f604c0baf47d37c408012528791b",
+    "context.py": "c88826f09ccd9cab7ebdb43f344ef181cffce58b04db5fe7b75fbe8124148361",
+    "index/embed.py": "ff2ab9abb79c1281d41ae7f9826a0d1a117eb4e01b1372bc288f9599ddd8b015",
+    "index/generations.py": "c161c7d4b54d283ddd5c61f8508fa06eadd8d6b0d6bdf7330226166fe656c19e",
+    "inference.py": "d246785a569e363b3d21e4dff6e2324c82d7ba20dab15f05523607395250ae5f",
+    "inference_client.py": "3a12e871c7aa05bd05dcad16baafd89d3c60535a3a4f344888bb5f8d2cce75a3",
+    "ingest/cite.py": "92557026226ec545d1046e954fbaba51ec50b06a28ca4583d23128163b8dd3f1",
+    "llm/codex.py": "b41cffe8165865f38a7efe7f7233ebf5d74fa7058db259662f71941b5e5339ac",
+    "llm/ledger.py": "683cd69f2eb97f99ec356b114bb2afe1b261ca3093440174d156e1ef2096cb32",
+    "llm/provider.py": "77899a60698ab52564541f12eebd9c3c01ff40553c151e24f18009b9c5ae31c0",
+    "retrieve/glossary.py": "853f974697087f11fb952fb937c61491dade0fb5bdd143255aad61e0f9313cb7",
+    "retrieve/glossary.yaml": "6bc29bb178c316a62e69f5a49ebbff709b90b45123f7e0320be915310f9c731a",
+    "retrieve/intent.py": "a79e19b09c9a6c0f316dd85e3d57f5545244a2990c4b9a15392cb6e13ccb0723",
+    "retrieve/search.py": "814313c9d24d77bf82bf49be4fcfa41dc7afc2bbf38ff8fefde344fadcba6816"
+  },
+  "retrieval": [
+    {
+      "id": "pd-003",
+      "retrieval_seconds": 1.0976743000010174,
+      "warm_expansion_seconds": [
+        0.02465419999862206,
+        0.02217910000035772,
+        0.023832300001231488,
+        0.015277099999366328,
+        0.015411400001539732,
+        0.016000800000256277,
+        0.013517299999875831
+      ],
+      "warm_expansion_median_ms": 16.000800000256277,
+      "added": [
+        "crr3-consolidated:article:180:2:",
+        "crr3-consolidated:article:180:1:",
+        "crr3-consolidated:article:180:1:~1"
+      ],
+      "evidence": [
+        {
+          "id": "crr3-consolidated:article:180:1:(h)",
+          "ref": "Art. 180(1)(h)",
+          "title": "Requirements specific to PD estimation"
+        },
+        {
+          "id": "eba-gl-pd-lgd:paragraph:b0:147:",
+          "ref": "para. 147",
+          "title": "on PD estimation, LGD estimation and the treatment of defaulted exposures"
+        },
+        {
+          "id": "ecb-guide-internal-models:paragraph:b2:288:",
+          "ref": "para. 288",
+          "title": "Credit risk"
+        },
+        {
+          "id": "rts-irb-assessment:article:45::(b)",
+          "ref": "Art. 45(b)",
+          "title": "Length of the historical observation period"
+        },
+        {
+          "id": "rts-irb-assessment:article:45::(a)",
+          "ref": "Art. 45(a)",
+          "title": "Length of the historical observation period"
+        },
+        {
+          "id": "eba-gl-pd-lgd:paragraph:b0:82:",
+          "ref": "para. 82",
+          "title": "on PD estimation, LGD estimation and the treatment of defaulted exposures"
+        },
+        {
+          "id": "ecb-guide-internal-models:paragraph:b2:236:#1",
+          "ref": "para. 236",
+          "title": "Credit risk"
+        },
+        {
+          "id": "eba-gl-pd-lgd:paragraph:b0:78:",
+          "ref": "para. 78",
+          "title": "on PD estimation, LGD estimation and the treatment of defaulted exposures"
+        },
+        {
+          "id": "crr3-consolidated:article:180:2:",
+          "ref": "Art. 180(2)",
+          "title": "Requirements specific to PD estimation"
+        },
+        {
+          "id": "crr3-consolidated:article:180:1:",
+          "ref": "Art. 180(1)",
+          "title": "Requirements specific to PD estimation"
+        },
+        {
+          "id": "crr3-consolidated:article:180:1:~1",
+          "ref": "Art. 180(1)",
+          "title": "Requirements specific to PD estimation"
+        }
+      ]
+    },
+    {
+      "id": "cmp-001",
+      "retrieval_seconds": 0.7034683000001678,
+      "warm_expansion_seconds": [
+        0.014784599999984493,
+        0.013855600000169943,
+        0.012846100000388105,
+        0.012429300000803778,
+        0.014411800000743824,
+        0.013933500000348431,
+        0.012709899998299079
+      ],
+      "warm_expansion_median_ms": 13.855600000169943,
+      "added": [
+        "crr3-consolidated:article:159a::"
+      ],
+      "evidence": [
+        {
+          "id": "crr3-amending-act:article:1::(89)",
+          "ref": "Art. 1(89)",
+          "title": "Amendments to Regulation (EU) No 575/2013"
+        },
+        {
+          "id": "crr3-amending-act:article:1::(86)(a)",
+          "ref": "Art. 1(86)(a)",
+          "title": "Amendments to Regulation (EU) No 575/2013"
+        },
+        {
+          "id": "crr3-amending-act:article:1::(86)(b)",
+          "ref": "Art. 1(86)(b)",
+          "title": "Amendments to Regulation (EU) No 575/2013"
+        },
+        {
+          "id": "crr3-consolidated:article:160:1:",
+          "ref": "Art. 160(1)",
+          "title": "Probability of default (PD)"
+        },
+        {
+          "id": "crr3-consolidated:article:160:1a:",
+          "ref": "Art. 160(1a)",
+          "title": "Probability of default (PD)"
+        },
+        {
+          "id": "crr3-amending-act:article:1::(104)(a)",
+          "ref": "Art. 1(104)(a)",
+          "title": "Amendments to Regulation (EU) No 575/2013"
+        },
+        {
+          "id": "crr3-consolidated:article:161:5:",
+          "ref": "Art. 161(5)",
+          "title": "Loss Given Default (LGD)"
+        },
+        {
+          "id": "crr3-amending-act:recital:32::",
+          "ref": "recital 32",
+          "title": null
+        },
+        {
+          "id": "crr3-consolidated:article:159a::",
+          "ref": "Art. 159a",
+          "title": "Non-application of PD, LGD and CCF input floors"
+        }
+      ]
+    },
+    {
+      "id": "app-001",
+      "retrieval_seconds": 0.783785200001148,
+      "warm_expansion_seconds": [
+        0.014931300000171177,
+        0.015375200000562472,
+        0.013634599999932107,
+        0.01405720000002475,
+        0.015024399999674642,
+        0.01656160000129603,
+        0.01527170000008482
+      ],
+      "warm_expansion_median_ms": 15.024399999674642,
+      "added": [
+        "ecb-guide-internal-models:paragraph:b0:2:"
+      ],
+      "evidence": [
+        {
+          "id": "ecb-guide-internal-models:paragraph:b0:3:",
+          "ref": "para. 3",
+          "title": "Foreword"
+        },
+        {
+          "id": "ecb-guide-internal-models:paragraph:b0:1:",
+          "ref": "para. 1",
+          "title": "Foreword"
+        },
+        {
+          "id": "ecb-guide-internal-models:paragraph:b1:3:",
+          "ref": "para. 3",
+          "title": "Overarching principles for internal models"
+        },
+        {
+          "id": "ecb-guide-internal-models:section:b2:Section 20.1:#1",
+          "ref": "Section 20.1",
+          "title": "Credit risk"
+        },
+        {
+          "id": "ecb-guide-internal-models:section:b0:Relevant regulatory references:",
+          "ref": "Relevant regulatory references",
+          "title": "Overarching principles for internal models"
+        },
+        {
+          "id": "ecb-guide-internal-models:section:b2:Section 19.1:",
+          "ref": "Section 19.1",
+          "title": "Credit risk"
+        },
+        {
+          "id": "ecb-guide-internal-models:paragraph:b1:22:",
+          "ref": "para. 22",
+          "title": "Overarching principles for internal models"
+        },
+        {
+          "id": "ecb-guide-internal-models:paragraph:b0:5:",
+          "ref": "para. 5",
+          "title": "Foreword"
+        },
+        {
+          "id": "ecb-guide-internal-models:paragraph:b0:2:",
+          "ref": "para. 2",
+          "title": "Foreword"
+        }
+      ]
+    }
+  ],
+  "definition_gap": {
+    "missing_info": true,
+    "research_needed": true,
+    "missing_requirements": [
+      "The definition of 'large corporates' is needed for classification.",
+      "Read the required definition of 'large corporates': CRR Art. 142(1)(5a)"
+    ]
+  },
+  "filter_preservation": "passed"
+}

@@ -185,7 +185,9 @@ evaluation, used about 10.6M tokens (≈ €19 at API prices; 8 Nov 2026).
 configuration remains Claude. No OpenAI API key is used. See the
 [30-question comparison](docs/results/codex-claude-smoke30-2026-11-13.md) and
 [initial three-question run](docs/review/CODEX-SUBSCRIPTION-FOLLOWUP-2026-11-13.md)
-for results, usage and reproduction steps. Codex API-equivalent prices are unconfigured;
+for results, usage and reproduction steps. The subsequent
+[completeness fixes and focused runtime checks](docs/review/COMPLETENESS-FOLLOWUP-2026-11-13.md)
+record the evidence-selection changes and remaining limitations. Codex API-equivalent prices are unconfigured;
 unpriced ledger entries do not mean zero subscription usage or a zero-cost API run.
 
 ## Licence

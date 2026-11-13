@@ -306,8 +306,10 @@ def answer_agentic(
     from dataclasses import asdict
 
     from reglens.context import coverage, instruction
+    from reglens.retrieve.intent import source_filters
 
-    opts["query_context"] = asdict(filters) if filters else {}
+    filters = source_filters(conn, question, filters or Filters())
+    opts["query_context"] = asdict(filters)
     today = today or date.today()
     from reglens.answer.scope import refusal_reason
 
@@ -540,7 +542,7 @@ def answer_agentic(
         "missing_requirements": ans.missing_requirements,
         "answer_requirements": ans.answer_requirements,
     }
-    if gaps := guard(asked, checked, context):
+    if gaps := guard(asked, checked, context, conn=conn, filters=filters, delivered=got):
         ans.missing_info, ans.research_needed = True, True
         ans.missing_requirements = checked["missing_requirements"]
         ans.trace.append({"tool": "research_guard", "gaps": gaps})

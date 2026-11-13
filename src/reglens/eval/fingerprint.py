@@ -19,6 +19,7 @@ _PKG = Path(reglens.__file__).parent
 # Files whose content shapes an answer (retrieval included: it chooses the passages).
 RETRIEVAL_FILES = [
     "retrieve/search.py",
+    "retrieve/intent.py",
     "retrieve/glossary.py",
     "retrieve/glossary.yaml",
     "index/embed.py",
@@ -33,6 +34,8 @@ SINGLE_FILES = [
     "llm/ledger.py",
     "answer/route.py",
     "answer/research.py",
+    "answer/context_plan.py",
+    "agent/tools.py",
     "answer/pipeline.py",
     "answer/prompts.py",
     "answer/schema.py",

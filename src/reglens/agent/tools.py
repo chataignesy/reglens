@@ -69,6 +69,26 @@ class Row:
         )
 
 
+def definition_rows(conn, term: str) -> list[Row]:
+    """Exact defined terms, with a bounded plural fallback; no fuzzy legal classification."""
+    value = term.strip()
+    if not re.fullmatch(r"[\w -]{2,80}", value):
+        return []
+    candidates = [value]
+    if value.endswith("ies"):
+        candidates.append(value[:-3] + "y")
+    elif value.endswith("s") and not value.endswith("ss"):
+        candidates.append(value[:-1])
+    where = "source_id = %s AND article IN ('4', '142') AND point IS NOT NULL AND body ILIKE %s"
+    for candidate in candidates:
+        rows = _rows(conn, where, [CRR, f"‘{candidate}’%"], limit=3)
+        if not rows:
+            rows = _rows(conn, where, [CRR, f"%‘{candidate}’%means%"], limit=3)
+        if rows:
+            return rows
+    return []
+
+
 def source_by_name(name: str, conn=None) -> Source | None:
     """Accept a source id ('crr3-consolidated') or its short label ('CRR'), case-insensitive."""
     n = name.strip().lower()
@@ -392,10 +412,7 @@ class Toolbox:
         """A CRR definition (Art. 4(1), or Art. 142(1) for IRB terms such as 'large corporate')."""
         if msg := self._budget():
             return msg
-        where = "source_id = %s AND article IN ('4', '142') AND point IS NOT NULL AND body ILIKE %s"
-        rows = _rows(self.conn, where, [CRR, f"‘{term.strip()}’%"], limit=3)
-        if not rows:  # also match "'X' or 'Y' means"
-            rows = _rows(self.conn, where, [CRR, f"%‘{term.strip()}’%means%"], limit=3)
+        rows = definition_rows(self.conn, term)
         if not rows:
             return f"No CRR definition found for '{term}'."
         quals: list[Row] = []  # Art. 142(1): "For the purposes of … point (5a) …"

@@ -209,8 +209,9 @@ def search(
     """`expand`: add glossary wording to the query for "none", "bm25" only, or "both"
     (BM25, dense and the reranker)."""
     from reglens.retrieve.glossary import expand_query
+    from reglens.retrieve.intent import source_filters
 
-    filters = filters or Filters()
+    filters = source_filters(conn, question, filters or Filters())
     expanded = expand_query(question) if expand != "none" else question
     q_bm25 = expanded
     q_dense = expanded if expand == "both" else question

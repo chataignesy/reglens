@@ -135,7 +135,8 @@ def run_api_agent(
             )
         except LLMError as e:
             raise LLMError(
-                str(e), tokens=tokens + (e.tokens or 0), usage_known=e.usage_known
+                str(e), tokens=tokens + (e.tokens or 0), usage_known=e.usage_known,
+                retryable=e.retryable,
             ) from e
         tokens += usage.total_tokens
         last = usage.total_tokens

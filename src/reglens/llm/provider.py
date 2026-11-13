@@ -27,10 +27,29 @@ DEFAULT_SYSTEM = "You are a precise assistant for EU credit risk regulation."
 class LLMError(RuntimeError):
     """A failed call. `tokens` is what the failed call reported spending (None: unknown)."""
 
-    def __init__(self, message: str, *, tokens: int | None = None, usage_known: bool | None = None):
+    def __init__(
+        self, message: str, *, tokens: int | None = None, usage_known: bool | None = None,
+        retryable: bool | None = None,
+    ):
         super().__init__(message)
         self.tokens = tokens
         self.usage_known = tokens is not None if usage_known is None else usage_known
+        self.retryable = transient_error(message) if retryable is None else retryable
+
+
+def transient_error(message: str) -> bool:
+    """Conservative compatibility classification for older cached provider errors.
+
+    Cost caps, schema failures and missing evidence are real attempts, not service outages.
+    New API failures carry explicit classification rather than relying on this text.
+    """
+    import re
+
+    return bool(re.search(
+        r"timed?\s*out|timeout|rate.?limit|usage limit|session limit|"
+        r"hit your limit|out of extra usage|overloaded|could not reach|"
+        r"connection (?:error|reset)|returned non-JSON|API error \(5\d\d\)", message, re.I,
+    ))
 
 
 @dataclass(frozen=True)
@@ -189,6 +208,8 @@ class ClaudeCLIProvider:
         if out.get("is_error") or out.get("subtype") != "success":
             # a failed call (e.g. the --max-budget-usd cap) still spent tokens: log them
             outcome = str(out.get("subtype") or "error")
+            if outcome == "success":  # CLI can report is_error=true with subtype=success
+                outcome = "provider_error"
             tokens = self._log(out, model, purpose, outcome=outcome)
             raise LLMError(f"claude -p failed: {outcome}: {out.get('result')}", tokens=tokens)
 
@@ -347,7 +368,13 @@ class AnthropicAPIProvider:
                 message = f"Anthropic API error ({e.status_code})."
             else:
                 message = "Could not reach the Anthropic API."
-            raise LLMError(message) from e
+            retryable = isinstance(e, (
+                anthropic.RateLimitError, anthropic.APIConnectionError,
+                anthropic.AuthenticationError, anthropic.PermissionDeniedError,
+            )) or (
+                isinstance(e, anthropic.APIStatusError) and e.status_code >= 500
+            )
+            raise LLMError(message, retryable=retryable) from e
 
         usage = Usage.from_response(response.usage)
         served = getattr(response, "model", model) or model

@@ -43,6 +43,18 @@ collateral) as an assumption, not a definition to re-prove. Read a definition wh
 is actually necessary (e.g. deciding whether given sales make a corporate a large corporate).
 Reserve tool calls for full reads of passages you cite; omit optional material rather than
 citing a truncated preview. A successful answer need not exhaust the research budget.
+
+Break the actual question into a short `answer_requirements` list before finalising. Each entry
+has `requirement` (one requested fact or indispensable condition), `status` (supported or
+unresolved), `citations` (read evidence keys), and `retrievable` (boolean). Supported entries
+require citations. Unresolved entries must describe the specific missing fact. Do not list
+optional tests, templates, adjacent topics or metadata as requirements unless the question
+asks for them. For multi-part questions, cover each part; for a fallback rule, cover the normal
+rule, intermediate alternatives and the condition permitting the fallback. Distinguish a
+covered portion from an uncovered portion when the scenario splits an exposure. Investigate
+exceptions that refer BACK to the rule as well as references appearing in the rule itself.
+Only treat an exception as applicable after reading its conditions. This list is a model
+self-check, not proof that every legal dependency has been discovered.
 """
 
 _PROVISO = re.compile(
@@ -66,18 +78,62 @@ def provisos(hit) -> list[str]:
     return list(dict.fromkeys(out))
 
 
+_ARTICLE_PROVISO = re.compile(
+    r"(?:subject to|by way of derogation from|without prejudice to|in accordance with)\s+"
+    r"Article\s+(\d+[a-z]?)(?:\((\d+[a-z]?)\))?(?!\w)", re.I,
+)
+_EXCEPTION = r"shall not apply|do not apply|derogation|exempt|non-application"
+
+
+def article_provisos(hit) -> list[tuple[str, str | None]]:
+    """Explicit one-hop references, excluding references naming a different legal instrument."""
+    out = []
+    for m in _ARTICLE_PROVISO.finditer(hit.text):
+        if re.match(r"\s+of\s+(?:Regulation|Directive|Delegated|Implementing)",
+                    hit.text[m.end():], re.I):
+            continue
+        out.append((m[1], m[2]))
+    return list(dict.fromkeys(out))
+
+
+def incoming_exceptions(conn, source_id: str, articles: list[str], filters=None) -> list:
+    """Bounded candidates pointing back to a rule, not a claim that an exception applies.
+
+    Uses indexed reverse edges; missing edges or other wording can still hide exceptions.
+    """
+    from reglens.agent.tools import Toolbox, _rows
+
+    return Toolbox(conn, filters=filters)._eligible(_rows(
+        conn,
+        "source_id = %s AND body ~* %s AND EXISTS "
+        "(SELECT 1 FROM edges e WHERE e.src = chunks.id AND e.target_source = %s "
+        "AND e.target_article = ANY(%s))",
+        [source_id, _EXCEPTION, source_id, articles], limit=40,
+    ))
+
+
 def expand_provisos(conn, hits: list, filters=None, *, max_extra: int = 4) -> list:
     """Read a bounded one-hop set before drafting, preserving every caller filter."""
     if conn is None:
         return hits
-    from reglens.agent.tools import Toolbox, _rows
+    from reglens.agent.tools import Toolbox, _rows, key_of, resolve_key
 
     box = Toolbox(conn, filters=filters)
     out, seen, left = list(hits), {h.id for h in hits}, 12000
+    incoming_by_source = {}
+    sources = {h.source_id for h in hits[:4] if re.match(r"Art\.\s*\d", h.ref)}
+    for source_id in sorted(sources):
+        articles = list(dict.fromkeys(
+            m[1] for h in hits[:4] if h.source_id == source_id
+            and (m := re.match(r"Art\.\s*(\d+[a-z]?)", h.ref))
+        ))
+        incoming_by_source[source_id] = incoming_exceptions(conn, source_id, articles, filters)
+    resolved = set()
     for h in hits[:4]:
         article = re.match(r"Art\.\s*(\d+[a-z]?)", h.ref)
-        if not article or not (paras := provisos(h)):
+        if not article:
             continue
+        paras = provisos(h)
         rows = box._eligible(
             _rows(
                 conn,
@@ -85,10 +141,22 @@ def expand_provisos(conn, hits: list, filters=None, *, max_extra: int = 4) -> li
                 [h.source_id, article[1], paras],
                 limit=20,
             )
-        )
+        ) if paras else []
         # Do not spend every slot on windows of the first (possibly irrelevant) proviso.
         # Prefer complete small units; leave oversized units for targeted agent research.
         groups = [[r for r in rows if r.paragraph == para] for para in paras]
+        for target_article, para in article_provisos(h)[:4]:
+            groups.append(box._eligible(_rows(
+                conn, "source_id = %s AND article = %s" +
+                (" AND paragraph = %s" if para else ""),
+                [h.source_id, target_article, *([para] if para else [])], limit=40,
+            )))
+        # Exceptions may point to this article without the article pointing back.
+        for candidate in incoming_by_source.get(h.source_id, [])[:4]:
+            key = key_of(candidate)
+            if key not in resolved:
+                resolved.add(key)
+                groups.append(box._eligible(resolve_key(conn, key)))
         for group in sorted(groups, key=len):
             group = [r for r in group if r.id not in seen]
             if not group:
@@ -112,6 +180,23 @@ def guard(question: str, data: dict, hits: list) -> list[str]:
     if data.get("abstain"):
         return []
     gaps = []
+    required_gaps = []
+    delivered = {f"C{n}" for n in range(1, len(hits) + 1)}
+    # On the API agent's pre-final check, keys are tool keys, not yet C# keys.
+    # Delivery is validated after resolution; unresolved entries still trigger a focused lookup.
+    for requirement in data.get("answer_requirements", []):
+        unresolved = requirement["status"] == "unresolved"
+        if hits and requirement["status"] == "supported":
+            unresolved = not set(requirement["citations"]) <= delivered
+        if unresolved:
+            required_gaps.append(requirement["requirement"])
+            if requirement["retrievable"]:
+                gaps.append("Resolve the required answer fact: " + requirement["requirement"])
+    if required_gaps:
+        data["missing_info"] = True
+        data["missing_requirements"] = list(dict.fromkeys([
+            *data.get("missing_requirements", []), *required_gaps,
+        ]))
     # Document-content questions may be fully answered by identifying a document's limits.
     document_bound = bool(
         re.search(
@@ -194,6 +279,15 @@ def guard(question: str, data: dict, hits: list) -> list[str]:
                     target = f"Art. {art[1]}({para})"
                     if (h.source_id, target.replace(" ", "").lower()) not in available:
                         gaps.append(f"Check the explicit proviso {h.source_id} {target}")
+                for target_article, para in article_provisos(h):
+                    target = f"Art. {target_article}" + (f"({para})" if para else "")
+                    present = any(
+                        other.source_id == h.source_id
+                        and (other.ref == target or other.ref.startswith(target + "("))
+                        for other in hits
+                    )
+                    if not present:
+                        gaps.append(f"Check the explicit dependency {h.source_id} {target}")
     if gaps:
         data["missing_info"], data["research_needed"] = True, True
         data["missing_requirements"] = list(

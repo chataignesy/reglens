@@ -66,6 +66,10 @@ def route_question(provider: LLMProvider, question: str) -> tuple[str, str, int]
 
 def gate_abstains(conn, config: Config, question: str, filters: Filters | None = None) -> bool:
     """The free retrieval gate: no relevant passage at all, so no router or answer call."""
+    from reglens.answer.scope import refusal_reason
+
+    if refusal_reason(question):
+        return True
     top = search(conn, question, mode="rerank", k=1, filters=filters)
     return not top or top[0].score < float((config.answer or {}).get("abstain_below", 0.05))
 
@@ -129,8 +133,21 @@ def answer_routed(
 def _failed(a) -> bool:
     """No usable answer (agent cost cap, no tool calls, invalid output, ...)."""
     if isinstance(a, dict):
-        return not a.get("answer") and bool(a.get("errors")) and not a.get("abstained")
-    return not a.answer and bool(a.errors) and not a.abstained
+        return not a.get("abstained") and (
+            not str(a.get("answer") or "").strip() or bool(a.get("unverified"))
+        )
+    return not a.abstained and (not a.answer.strip() or a.unverified)
+
+
+def _interrupted(a) -> bool:
+    """Changing answer strategy cannot repair a provider-wide outage or quota refusal."""
+    from reglens.llm.provider import transient_error
+
+    if isinstance(a, dict):
+        if "retryable_error" in a:
+            return bool(a["retryable_error"])
+        return any(transient_error(str(e)) for e in a.get("errors", []))
+    return a.retryable_error
 
 
 def _gap(a) -> bool:
@@ -181,21 +198,26 @@ def dispatch[A](
             a.get("usage_unknown_calls", 0) if isinstance(a, dict) else a.usage_unknown_calls
         )
         errors = a.get("errors", []) if isinstance(a, dict) else a.errors
+        if not errors and _failed(a):
+            errors = ["empty or unverified answer"]
         if errors:
             attempt_errors.append({"mode": mode, "errors": list(errors)})
         return a
 
     if planned == "agent":
         final = run("agent")
-        if _failed(final):
-            why = "; ".join(final.get("errors") if isinstance(final, dict) else final.errors)
+        if _failed(final) and not _interrupted(final):
+            why = "; ".join(
+                (final.get("errors", []) if isinstance(final, dict) else final.errors)
+                or ["empty or unverified answer"]
+            )
             emit({"stage": "agent_failed", "reason": why})
             final, route, reason = run("single"), "single", f"agent stopped ({why}); single pass"
         else:
             route = "agent"
     else:
         final, route = run("single"), "single"
-        if _gap(final):  # single pass reports a gap: let the agent look further
+        if not _interrupted(final) and (_failed(final) or _gap(final)):
             emit({"stage": "fallback"})
             first = final
             final = run("agent", first)

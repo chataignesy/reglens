@@ -100,6 +100,16 @@ def test_failed_call_without_usage_is_unknown_not_zero(cfg):
     assert entry["usage_known"] is False and entry["outcome"] == "error_during_execution"
 
 
+def test_quota_error_with_success_subtype_is_not_logged_as_success(cfg):
+    bad = {"is_error": True, "subtype": "success",
+           "result": "You've hit your session limit · resets 7:30pm",
+           "usage": {"input_tokens": 0, "output_tokens": 0}}
+    with pytest.raises(LLMError) as err:
+        ClaudeCLIProvider(cfg, runner=fake_runner(json.dumps(bad))).complete("q", purpose="p")
+    assert err.value.retryable and err.value.tokens == 0
+    assert Ledger(cfg).entries()[0]["outcome"] == "provider_error"
+
+
 def test_non_json_output_raises(cfg):
     with pytest.raises(LLMError, match="non-JSON"):
         ClaudeCLIProvider(cfg, runner=fake_runner("not json", returncode=1)).complete(

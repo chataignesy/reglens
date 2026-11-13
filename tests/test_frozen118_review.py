@@ -106,7 +106,8 @@ def test_proviso_expansion_is_bounded_and_preserves_filters(monkeypatch):
     filters = Filters(as_of="2026-01-01", require_known_validity=True, applies_to="LSI")
     hits = [hit("Art. 162(2)", "subject to paragraphs 3, 4 and 5")]
     out = expand_provisos(object(), hits, filters, max_extra=1)
-    assert len(out) == 2 and out[1].ref == "Art. 162(4)" and seen == [filters]
+    assert len(out) == 2 and out[1].ref == "Art. 162(4)"
+    assert seen and all(f == filters for f in seen)
 
 
 def test_an_explicit_date_question_keeps_its_required_date_gap():

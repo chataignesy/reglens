@@ -93,3 +93,8 @@ records all 118 items, including quota recovery and newly observed failures. The
 score remains unchanged. Format recovery and guards can still fail;
 tool/context limits and incomplete corpus dates remain explicit limitations. Practitioner
 adjudication of disputed historical verdicts remains separate from this implementation.
+
+The next [post-rerun follow-up](REVIEW-FROZEN118-FOLLOWUP-2026-11-13.md) addresses the remaining
+empty-output, retry-cache, dependency and scope failures. It records 223 passing tests and
+real SQL checks, together with the subscription-quota interruption that prevented confirmation
+of the two complex answers. The original full-run score and artifacts remain unchanged.

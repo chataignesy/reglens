@@ -31,7 +31,9 @@ TOOL_SCHEMAS: list[dict] = [
         "description": (
             "Full text of an article, or one paragraph, of a regulation (e.g. source 'CRR', "
             "article '151', paragraph '8'; or source 'RTS materiality threshold (Reg. 2018/171)', "
-            "article '1'). Long articles come in pages; the reply gives the offset for the next."
+            "article '1'). Long articles come in pages; the reply gives the offset for the next. "
+            "May include pointers to exceptions referring back to the article; read those "
+            "separately before relying on them."
         ),
         "input_schema": {
             "type": "object",
@@ -60,7 +62,8 @@ TOOL_SCHEMAS: list[dict] = [
         "name": "follow_reference",
         "description": (
             "List the articles, paragraphs and definitions a passage refers to, by its citation "
-            "key (e.g. 'CRR Art. 151(8)'), plus how many EBA Q&As exist on that article."
+            "key (e.g. 'CRR Art. 151(8)'), possible exceptions referring back to it, and how "
+            "many EBA Q&As exist on that article. Pointers are not read evidence."
         ),
         "input_schema": {
             "type": "object",

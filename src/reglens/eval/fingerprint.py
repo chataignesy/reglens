@@ -35,6 +35,7 @@ SINGLE_FILES = [
     "answer/pipeline.py",
     "answer/prompts.py",
     "answer/schema.py",
+    "answer/scope.py",
     *RETRIEVAL_FILES,
 ]
 AGENT_FILES = [

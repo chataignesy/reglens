@@ -308,6 +308,11 @@ def answer_agentic(
 
     opts["query_context"] = asdict(filters) if filters else {}
     today = today or date.today()
+    from reglens.answer.scope import refusal_reason
+
+    if reason := refusal_reason(question):
+        return Answer(question, True, reason, "", [], [], as_of_statement([], today),
+                      corpus_generation=current(conn))
     max_calls = int(opts.get("max_calls", 10))
     applies = filters.applies_to if filters else None
     asked = question
@@ -345,6 +350,7 @@ def answer_agentic(
         progress({"stage": "agent", "max_calls": max_calls})
     cost_spent = 0.0
     usage_unknown_calls = 0
+    retryable_error = False
     if isinstance(provider, AnthropicAPIProvider):  # bring-your-own-key: loop runs in RegLens
         from reglens.agent.api_loop import run_api_agent
 
@@ -366,6 +372,7 @@ def answer_agentic(
         except LLMError as e:
             text, trace, tokens, model, errors = "", [], e.tokens or 0, None, [str(e)]
             usage_unknown_calls += int(not e.usage_known)
+            retryable_error = e.retryable
     else:
         allowed = ",".join(f"mcp__reglens__{t}" for t in TOOLS)
         budget = str(opts.get("max_budget_usd", 0.75))
@@ -404,6 +411,7 @@ def answer_agentic(
             text, model, trace = "", None, []
             tokens += e.tokens or 0
             usage_unknown_calls += int(not e.usage_known)
+            retryable_error = e.retryable
             errors.append(
                 (AGENT_CAP_ERROR if "max_budget" in str(e) else str(e))
                 + ("" if e.usage_known else " (usage unknown)")
@@ -411,12 +419,16 @@ def answer_agentic(
 
     ans = Answer(asked, False, "", "", [], [], "", model=model, usage_tokens=tokens, trace=trace)
     ans.usage_unknown_calls = usage_unknown_calls
+    ans.retryable_error = retryable_error
     ans.corpus_generation = current(conn)
     from reglens.sources import load_sources
 
     ans.source_registry = {s.id: asdict(s) for s in load_sources(conn=conn)}
     ans.errors += errors
-    if not text:
+    if not text.strip():
+        ans.unverified = True
+        if not ans.errors:
+            ans.errors.append("agent returned empty answer text")
         return ans
     data, found = parse_reply(text)
     if found:
@@ -446,6 +458,7 @@ def answer_agentic(
     claims_raw = data.get("claims") or []
     text = str(data.get("answer") or "")
     keys = [str(k) for c in claims_raw for k in c.get("citations", [])]
+    keys += [k for r in data.get("answer_requirements", []) for k in r["citations"]]
     received = [k for t in trace for k in t.get("keys", [])]  # passages with text, not refs
     # Preserve ordinary bracketed text (file-name placeholders, Markdown links, etc.).
     # Declared or recognisable legal citation keys still undergo delivery checks.
@@ -490,6 +503,10 @@ def answer_agentic(
     ans.missing_info = bool(data.get("missing_info")) or bool(ans.partial_cids)
     ans.research_needed = data.get("research_needed")
     ans.missing_requirements = data.get("missing_requirements", [])
+    ans.answer_requirements = [
+        r | {"citations": [cid for k in r["citations"] for cid in mapping.get(k, ["C?"])]}
+        for r in data.get("answer_requirements", [])
+    ]
     if ans.partial_cids:
         ans.research_needed = True
         ans.missing_requirements = [*ans.missing_requirements, "Read cited passages in full"]
@@ -520,6 +537,7 @@ def answer_agentic(
         "missing_info": ans.missing_info,
         "research_needed": ans.research_needed,
         "missing_requirements": ans.missing_requirements,
+        "answer_requirements": ans.answer_requirements,
     }
     if gaps := guard(asked, checked, context):
         ans.missing_info, ans.research_needed = True, True
@@ -590,8 +608,28 @@ def repair_format(provider, question, raw, problems, opts, spent_tokens, cost_sp
             citations = [json.loads(s) for s in re.findall(r'"citations"\s*:\s*(\[[^\]]*\])', raw)]
         except ValueError:
             citations = None
-        if citations != [c.get("citations") for c in data.get("claims", [])]:
+        def citation_lists(value):
+            if isinstance(value, dict):
+                return [value["citations"]] if "citations" in value else [
+                    c for v in value.values() for c in citation_lists(v)
+                ]
+            if isinstance(value, list):
+                return [c for v in value for c in citation_lists(v)]
+            return []
+
+        if citations is None or sorted(map(tuple, citations)) != sorted(
+            map(tuple, citation_lists(data))
+        ):
             errors.append("format repair changed citations")
+        for field in ("answer_requirements", "missing_requirements", "research_checks"):
+            if match := re.search(r'"' + field + r'"\s*:\s*', raw):
+                try:
+                    before, _ = json.JSONDecoder().raw_decode(raw[match.end():])
+                except ValueError:
+                    errors.append("format repair could not verify " + field)
+                else:
+                    if before != data.get(field):
+                        errors.append("format repair changed " + field)
         for field in ("abstain", "missing_info", "research_needed"):
             before = re.search(r'"' + field + r'"\s*:\s*(true|false)', raw)
             if before and data.get(field) != (before[1] == "true"):

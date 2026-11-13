@@ -62,6 +62,8 @@ class Answer:
     research: dict = field(default_factory=dict)
     semantic_review: dict = field(default_factory=lambda: {"status": "not_run"})
     usage_unknown_calls: int = 0
+    retryable_error: bool = False  # provider interruption; safe to retry on a later eval run
+    answer_requirements: list[dict] = field(default_factory=list)
 
     def cited_hits(self) -> list[Hit]:
         ids = {c for cl in self.claims for c in cl.citations}
@@ -181,6 +183,10 @@ def answer_question(
     opts = config.answer or {}
     today = today or date.today()
     emit = progress or _no_progress
+    from reglens.answer.scope import refusal_reason
+
+    if reason := refusal_reason(question):
+        return Answer(question, True, reason, "", [], [], as_of_statement([], today))
     hits = search(conn, question, mode="rerank", k=int(opts.get("k", 8)), filters=filters)
     from reglens.answer.research import expand_provisos
 
@@ -233,6 +239,7 @@ def answer_question(
             ans.usage_unknown_calls += int(not exc.usage_known)
             ans.unverified = True
             ans.errors.append(str(exc))
+            ans.retryable_error = exc.retryable
             return ans
         ans.model = completion.model
         ans.usage_tokens += completion.usage.total_tokens
@@ -254,6 +261,7 @@ def answer_question(
     ans.missing_info = bool(data.get("missing_info"))
     ans.research_needed = data.get("research_needed")
     ans.missing_requirements = data.get("missing_requirements", [])
+    ans.answer_requirements = data.get("answer_requirements", [])
     ans.answer = str(data.get("answer") or "")
     from reglens.answer.research import report
 

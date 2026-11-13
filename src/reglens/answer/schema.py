@@ -41,6 +41,21 @@ def problems(data: object) -> list[str]:
         elif bool(requirements) != bool(data.get("missing_info")):
             out.append("missing_requirements must agree with missing_info")
     claims = data.get("claims") or []
+    if "answer_requirements" in data:
+        requirements = data["answer_requirements"]
+        if not isinstance(requirements, list) or len(requirements) > 12:
+            out.append("answer_requirements must be a list of at most 12 requested facts")
+        else:
+            for n, r in enumerate(requirements, 1):
+                if not isinstance(r, dict) or not (
+                    isinstance(r.get("requirement"), str) and r["requirement"].strip()
+                    and r.get("status") in ("supported", "unresolved")
+                    and isinstance(r.get("retrievable"), bool)
+                    and isinstance(r.get("citations"), list)
+                    and all(isinstance(c, str) and c.strip() for c in r["citations"])
+                    and (r["status"] != "supported" or bool(r["citations"]))
+                ):
+                    out.append(f"invalid answer requirement {n}")
     if not isinstance(claims, list):
         return [*out, "'claims' is not a list"]
     if abstain:

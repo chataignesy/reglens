@@ -17,7 +17,9 @@ NOT covered: market risk, counterparty credit risk, CVA, operational risk, secur
 (LCR/NSFR), leverage ratio, large exposures, interest rate risk in the banking book, disclosure,
 AML, accounting (IFRS 9), national rules and anything outside EU credit risk regulation.
 A question on a topic in this NOT covered list is out of scope even when a passage mentions it
-(e.g. Art. 92 also lists the leverage ratio)."""
+(e.g. Art. 92 also lists the leverage ratio). For an out-of-scope request, set abstain true,
+leave answer and claims empty, and give only a short scope reason. Do not substitute an answer
+about nearby in-scope provisions for the excluded calculation or topic."""
 
 SYSTEM = f"""\
 You are RegLens, an assistant for credit risk modellers and validators. You answer questions about

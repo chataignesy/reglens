@@ -320,7 +320,18 @@ class Toolbox:
         if not rows:
             where_ = f" at offset {offset} of {total}." if total else "."
             return f"No passages for {what}{where_}"
-        text = self._out(rows)
+        from reglens.answer.research import incoming_exceptions
+
+        candidates = incoming_exceptions(self.conn, s.id, [art], self.filters)
+        keys = list(dict.fromkeys(key_of(r) for r in candidates))[:4]
+        note = ""
+        if keys:
+            note = (
+                "Possible exceptions referring back to this rule (pointers only; "
+                "read the passage and check its conditions before concluding):\n"
+                + "\n".join(f"- candidate: {key}" for key in keys)
+            )[:1000]
+        text = self._out(rows, note)
         end = offset + self.last_shown
         if offset or end < total:
             more = (
@@ -362,6 +373,16 @@ class Toolbox:
         )
         hint = f"\n{n_qa} EBA Q&As concern this article (use get_qa)." if n_qa else ""
         body = "\n".join(lines) if lines else "No outgoing references."
+        from reglens.answer.research import incoming_exceptions
+
+        incoming = incoming_exceptions(
+            self.conn, rows[0].source_id,
+            list(dict.fromkeys(r.article for r in rows if r.article)), self.filters,
+        )
+        candidates = list(dict.fromkeys(key_of(r) for r in incoming))[:4]
+        if candidates:
+            body += "\nPossible exceptions referring back to this rule (check applicability):\n"
+            body += "\n".join(f"- candidate: {key}" for key in candidates)
         return (
             f"References from [{key_of(rows[0])}]:\n{body}{hint}\n"
             "Use get_article / get_definition to read them."

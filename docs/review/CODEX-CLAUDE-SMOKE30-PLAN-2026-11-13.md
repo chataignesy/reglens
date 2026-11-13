@@ -43,8 +43,12 @@ The historical Claude subset's original Haiku grades are 16 fully correct, 8 par
 
 ## Budget and execution status
 
-**Live generation and common grading have not started.** Explicit token-budget confirmation
-was requested because the project requires it above one million tokens.
+**Completed after explicit user approval of 2–4 million Codex subscription tokens.** The
+[comparison report](../results/codex-claude-smoke30-2026-11-13.md) records all 30 answers, both
+common-grader passes and the quota interruption/recovery. Known new usage was 1,614,356 tokens,
+plus one refused call with unreported usage. The original cohort JSON retains its initial
+pre-approval planning status as a historical selection record; the result includes the actual
+approval evidence. The estimate below is the original planning estimate, not actual usage.
 
 Central estimate: **2,740,000 Codex subscription tokens**, with a planning range of **2–4 million**:
 

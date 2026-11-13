@@ -2,8 +2,9 @@
 
 Personal open-source project; not affiliated with an employer or supervisor; not legal advice.
 
-This compares the three cases already executed. **It is not the proposed 30-question comparison,
-which is awaiting token-budget approval.** No new model calls were made for this document.
+This compares the three cases already executed. **The subsequent approved
+[30-question comparison is now complete](codex-claude-smoke30-2026-11-13.md).** No new model calls
+were made for this preliminary document; its original three-case observations remain unchanged.
 
 | Case | Saved Claude result | Saved Codex result | What this shows |
 |---|---|---|---|

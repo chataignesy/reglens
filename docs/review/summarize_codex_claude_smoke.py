@@ -129,6 +129,8 @@ def main():
         "claude_higher": sum(p["score_difference"] < 0 for p in ins),
     }
     out = {
+        "disclaimer": "Personal open-source project; not affiliated with an employer or "
+        "supervisor; not legal or regulatory advice.",
         "source_result": str(args.result.resolve()),
         "source_result_sha256": file_sha(args.result),
         "methodology": plan,
@@ -140,6 +142,14 @@ def main():
         "historical_latency_available": False,
         "pairs": pairs,
     }
+    authorization_path = (
+        PROJECT_ROOT / "data/evals/comparisons/authorization-smoke30-20261113.json"
+    )
+    authorization = json.loads(authorization_path.read_text(encoding="utf-8"))
+    if authorization["cohort_sha256"] != run["cohort_sha256"]:
+        raise ValueError("Token approval refers to another cohort")
+    out["authorization"] = authorization
+    out["authorization_sha256"] = file_sha(authorization_path)
     base = PROJECT_ROOT / "docs/results/codex-claude-smoke30-2026-11-13"
     with base.with_suffix(".json").open("x", encoding="utf-8") as stream:
         json.dump(out, stream, indent=2, ensure_ascii=False)

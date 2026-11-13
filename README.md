@@ -183,8 +183,9 @@ evaluation, used about 10.6M tokens (≈ €19 at API prices; 8 Nov 2026).
 `reglens --config config.codex.yaml ...` after `codex login` with ChatGPT. This uses
 `gpt-6.1-sol` through the Codex CLI and the bounded RegLens research loop; the default
 configuration remains Claude. No OpenAI API key is used. See the
-[three-question run and reproduction steps](docs/review/CODEX-SUBSCRIPTION-FOLLOWUP-2026-11-13.md)
-for results, usage and comparison limitations. Codex API-equivalent prices are unconfigured;
+[30-question comparison](docs/results/codex-claude-smoke30-2026-11-13.md) and
+[initial three-question run](docs/review/CODEX-SUBSCRIPTION-FOLLOWUP-2026-11-13.md)
+for results, usage and reproduction steps. Codex API-equivalent prices are unconfigured;
 unpriced ledger entries do not mean zero subscription usage or a zero-cost API run.
 
 ## Licence

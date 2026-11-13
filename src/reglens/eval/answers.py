@@ -44,6 +44,7 @@ RUNS_DIR = PROJECT_ROOT / "data" / "evals" / "runs"
 def answer_version(config: Config, conn, agent: bool = False) -> str:
     """Cache namespace of one answering mode (see eval/fingerprint.py)."""
     opts = dict(config.answer or {})
+    opts |= {"provider": config.provider, "billing": config.billing}
     if agent:
         opts |= dict(config.agent or {})
     model = config.model(opts.get("tier", "dev"))

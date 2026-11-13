@@ -18,6 +18,7 @@ import re
 from reglens.agent.contracts import TOOL_SCHEMAS
 from reglens.agent.contracts import invoke as _run_tool
 from reglens.agent.tools import Toolbox, partial_reads, trace_entry
+from reglens.llm.codex import CodexCLIProvider
 from reglens.llm.provider import AnthropicAPIProvider, LLMError
 
 STOP_NOTE = (
@@ -83,7 +84,7 @@ def _completeness_note(text: str, trace: list[dict], conn=None, question: str = 
 
 def run_api_agent(
     conn,
-    provider: AnthropicAPIProvider,
+    provider: AnthropicAPIProvider | CodexCLIProvider,
     question: str,
     *,
     system: str,

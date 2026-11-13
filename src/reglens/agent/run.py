@@ -26,6 +26,7 @@ from reglens.answer.prompts import SCOPE
 from reglens.answer.research import INSTRUCTION, guard
 from reglens.answer.schema import parse_reply
 from reglens.config import Config
+from reglens.llm.codex import CodexCLIProvider
 from reglens.llm.provider import AnthropicAPIProvider, ClaudeCLIProvider, LLMError
 from reglens.retrieve.search import Filters, Hit, search
 
@@ -286,7 +287,7 @@ def _run_once(provider, question, max_calls, opts, extra, progress=None, applies
 
 def answer_agentic(
     conn,
-    provider: ClaudeCLIProvider | AnthropicAPIProvider,
+    provider: ClaudeCLIProvider | AnthropicAPIProvider | CodexCLIProvider,
     config: Config,
     question: str,
     *,
@@ -351,7 +352,7 @@ def answer_agentic(
     cost_spent = 0.0
     usage_unknown_calls = 0
     retryable_error = False
-    if isinstance(provider, AnthropicAPIProvider):  # bring-your-own-key: loop runs in RegLens
+    if isinstance(provider, (AnthropicAPIProvider, CodexCLIProvider)):
         from reglens.agent.api_loop import run_api_agent
 
         try:

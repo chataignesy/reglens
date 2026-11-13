@@ -28,6 +28,7 @@ RETRIEVAL_FILES = [
     "index/generations.py",
 ]
 SINGLE_FILES = [
+    "llm/codex.py",
     "llm/provider.py",
     "llm/ledger.py",
     "answer/route.py",

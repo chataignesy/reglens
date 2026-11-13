@@ -22,6 +22,8 @@ SNAPSHOT = "20d15f898cdbb3884c604c0fd36d67f414b764833768b200baaa8122132eba7b"
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--live", action="store_true")
+    parser.add_argument("--config", default=None,
+                        help="e.g. config.codex.yaml for subscription Codex")
     args = parser.parse_args()
     print("Estimate: 650,000–900,000 new tokens including helper usage and grading.", flush=True)
     if not args.live:
@@ -31,7 +33,7 @@ def main():
     from reglens.inference_client import ready
 
     identity = ready()
-    config = load_config()
+    config = load_config(args.config)
     frozen, all_items = load(PROJECT_ROOT / f"evals/frozen/{SNAPSHOT}.json")
     items = [i for i in all_items if i.id in {"mh-013", "mh-014", "oos-006"}]
     routes = {
@@ -43,12 +45,16 @@ def main():
     ledger_start = len(config.ledger_path.read_text(encoding="utf-8").splitlines())
     with connect() as conn:
         summary = run(conn, get_provider(config), config, items, routes=routes,
-                      dataset=frozen, label="followup-3", log=lambda s: print(s, flush=True))
+                      dataset=frozen, label=f"{config.provider}-followup-3",
+                      log=lambda s: print(s, flush=True))
     print(json.dumps(summary, ensure_ascii=False), flush=True)
     manifest = load_run(summary["run_id"])
     manifest_path = PROJECT_ROOT / summary["file"]
     report = {
         "started_utc": start, "snapshot": SNAPSHOT, "model_identity": identity,
+        "provider": config.provider, "billing": config.billing,
+        "config": args.config or "config.yaml",
+        "answer_model": config.model("dev"), "judge_model": config.model("bulk"),
         "route_basis": "fixed replay of prior route plans; router not re-evaluated",
         "summary": summary,
         "manifest_sha256": hashlib.sha256(manifest_path.read_bytes()).hexdigest(),

@@ -393,6 +393,12 @@ class AnthropicAPIProvider:
 def get_provider(
     config: Config, ledger: Ledger | None = None, *, api_key: str | None = None
 ) -> LLMProvider:
+    if config.provider == "codex":
+        if config.billing != "subscription" or api_key:
+            raise ValueError("Codex uses ChatGPT subscription authentication, not an API key")
+        from reglens.llm.codex import CodexCLIProvider
+
+        return CodexCLIProvider(config, ledger)
     if config.billing == "subscription":
         return ClaudeCLIProvider(config, ledger)
     return AnthropicAPIProvider(config, api_key, ledger)

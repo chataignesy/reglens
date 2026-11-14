@@ -1,8 +1,18 @@
 # RegLens — design choices
 
-Architecture update (11 November 2026): staged corpus publication, explicit legal constraints,
-shared inference and frozen evaluations are implemented. See [implementation steps](ARCHITECTURE-IMPLEMENTATION.md)
-and [operation and remaining limits](ARCHITECTURE-OPERATIONS.md).
+Current architecture update (14 November 2026): staged corpus publication, explicit legal constraints,
+shared inference, frozen evaluations, and bounded context expansion are implemented. Claude remains
+the default; an opt-in Codex subscription backend has completed the full frozen118 benchmark.
+See [implementation status](ARCHITECTURE-IMPLEMENTATION.md),
+[operation and remaining limits](ARCHITECTURE-OPERATIONS.md), and the
+[next-session handoff](HANDOFF.md).
+
+The current bottleneck is **answer completeness**: the latest Codex run scored 86.4% across 103
+in-scope questions (76 full, 26 partial, one wrong/unanswered), with 15/15 out-of-scope refusals.
+Mechanical checks averaged 99.0%, but 22 of the 26 partial answers did not report a gap.
+These are automated development-set scores, not practitioner certification. Older measurements
+below remain historical evidence; [the full current report](results/codex-frozen118-2026-11-14.md)
+and [review findings](review/CODEX-FULL118-FINDINGS-2026-11-14.md) govern the next work.
 
 RegLens answers questions about EU credit risk regulation (CRR3, RTS, EBA guidelines and Q&A,
 ECB guide to internal models) with paragraph-level citations. This document records each design
@@ -24,7 +34,7 @@ them, take the top-k by cosine similarity, and ask an LLM to answer from them.
 | Retrieval | Dense top-k | Hybrid lexical (Postgres `ts_rank` on rare terms) + dense (RRF) → cross-encoder reranker → practitioner glossary expansion | recall@10 0.59 (lexical) / 0.76 (dense) → **0.81** reranked (103 questions, 8 Nov 2026) |
 | Grounding | "Answer from the context" | JSON claims, each citing passages the model actually received; a deterministic checker verifies citations, numbers and legal level; abstention gate; dates built by code | **0.99** of claims pass the mechanical checks (a mechanical pass rate, not semantic support) |
 | Multi-step questions | Same single pass | Router → bounded agent with 6 corpus tools over the graph, agent fallback when a quick answer has gaps; runs on the Messages API or as an MCP server | Correctness 0.86 → **0.91**, no wrong answers (70 questions) |
-| Evaluation | Eyeballing answers | 120-question expert golden set, retrieval metrics, deterministic citation metrics, LLM judge, router eval, repeat runs for variance | — |
+| Evaluation | Eyeballing answers | Frozen 118-question reviewed development set (revised from 120), retrieval/citation metrics, LLM judge, immutable run evidence; holdout tooling available | Latest scores are automated and unreviewed by a practitioner; no independent holdout exists yet |
 | Cost | Unknown | Token ledger on every call (failed and cancelled calls included), model tiers, prompt caching, estimates before every run | 10.6M tokens, ≈ €19 API-equivalent so far (8 Nov 2026) |
 
 ## 1. Sources and ingestion
@@ -105,8 +115,17 @@ The reranker also scores against the expanded query.
 hit@10 0.93, MRR 0.73. Known trade-off: one multi-hop question lost a passage, which the agent
 now recovers.
 
-**3.5 Scope and metadata filters.** Default scope excludes the amending act and rationale text;
-filters by source, legal level and `applies_to` (SI / LSI) are available to the UI and agent.
+**3.5 Scope and metadata filters.** Default scope excludes the amending act and rationale text.
+Explicit change questions naming an amending instrument can opt it in using registry aliases;
+explicit caller restrictions win. Source, legal-level, institution, date and applicability constraints
+remain in force through research. Metadata coverage does not itself establish legal applicability.
+
+**3.6 Bounded contextual reads (implemented 13 November).** Before single-pass drafting, the pipeline
+can fill a small explicitly requested paragraph range anchored to one source and document part,
+read a child point's parent qualifiers, and consider relevant parallel paragraphs in the same
+article. These reads share the existing proviso-expansion allowance: four extra rows and 12,000
+characters. Whole logical units and caller filters are preserved. This recovers useful context;
+it cannot guarantee that every relevant condition or exception has been found.
 
 ## 4. Answering and grounding
 
@@ -117,32 +136,36 @@ which is which.
 
 **4.2 A deterministic citation checker.** Code, not an LLM, checks every claim: it must cite a
 passage that was actually provided, numbers in the claim must appear in that passage
-(normalised: "0,05 %" = "0.05%", period words like "ninety days"), and law claims must cite law.
+(normalised: "0,05 %" = "0.05%", supported period words such as "three months"), and law claims must cite law.
 *Evidence:* **0.99** of claims pass on the smoke set; failures are shown to the user.
 It is a *mechanical* check, and the UI labels it so: it does not test whether the passage
 supports the claim's meaning (conditions, negation, scope). That is what the judged correctness
 measures. A reply that breaks the JSON answer contract (`answer/schema.py`) is retried once,
 then shown as *unverified output*, never as an ordinary answer.
 
-**4.3 Abstention in two layers.** A free retrieval gate (no LLM call if the best rerank score is
-below 0.05) plus a scope rule in the prompt, which also covers off-topic provisions that are in
-the corpus (Art. 92 lists the leverage ratio). Partial answers say what is missing instead of
-guessing. *Evidence:* 5/5 out-of-scope questions declined; 25/25 in-scope answered.
+**4.3 Abstention in two layers.** Free checks reject explicit unsupported requests or stop when
+the best rerank score is below 0.05. The model also receives scope instructions for topics that
+may appear incidentally in the corpus. Partial answers are expected to identify missing facts,
+but the latest benchmark shows that many do not: the flag is a signal, not a guarantee.
+*Historical smoke evidence:* 5/5 out-of-scope questions declined; 25/25 in-scope answered.
 
 **4.4 "As of" dates built by code.** The answer header states the as-of date and the
 consolidated version of each cited source, generated from metadata, never by the model.
 
-**4.5 Model tiers and a thin provider layer.** Model IDs live in `config.yaml` only: Haiku 5.5
-for bulk work (judge, router), Sonnet 5.5 for answering and the agent, Opus 5.5 reserved for
-milestone evals. One provider interface runs either the Claude subscription (`claude -p`) for
-development, or the **Anthropic SDK** with the user's own key.
+**4.5 Model tiers and a thin provider layer.** Model IDs and tiers live in configuration.
+`config.yaml` defaults to Claude subscription access; the Anthropic SDK supports the user's API
+key. Opt-in `config.codex.yaml` uses Codex subscription access. Codex supplies text/JSON requests
+to the RegLens-owned bounded loop; it does not drive native shell/web tools or the MCP CLI loop.
+Generic LLM-provider APIs and an OpenAI API adapter are not implemented. Codex API-equivalent
+prices are unconfigured: unknown costs remain null, not zero.
 
 **4.6 How the demo runs.** There is no hosted deployment: the two local models (~2 GB each)
 don't fit free hosting tiers. The demo is a recorded video, and anyone can run the app locally.
-Three processes:
+Recommended local processes:
 - Postgres + pgvector in Docker;
-- the FastAPI backend (`reglens.api`), which keeps the embedding model and the reranker warm
-  and streams progress over SSE;
+- the optional shared inference service (`reglens.inference`), recommended for API plus agents,
+  which owns the embedding model and reranker and bounds concurrent work;
+- the FastAPI backend (`reglens.api`), which streams progress over SSE;
 - the Next.js UI in `web/`.
 
 Steps are in the README under *Start the web UI*.
@@ -152,7 +175,10 @@ Steps are in the README under *Start the web UI*.
 **5.1 Route first: most questions don't need an agent.** A Haiku router (~1k tokens) decides
 between single-pass (~6k tokens) and the agent (~40k tokens).
 *Evidence:* router accuracy 0.81 on 70 questions; it sends 11 of 14 multi-hop and comparison
-questions to the agent. Over-routing costs tokens, not quality.
+questions to the agent. These are historical Claude measurements, not current cross-provider
+cost assumptions. In the latest full Codex run, fresh routing used 1,417,530 tokens, 24.5% of
+known total usage. Routing optimisation is queued after completeness work and must be evaluated
+for quality as well as cost.
 
 **5.2 A bounded agent with domain tools.** Six read-only tools over the corpus: `search`,
 `get_article`, `get_passage`, `follow_reference` (walks the graph), `get_definition` (CRR
@@ -175,6 +201,19 @@ the same checker applies to agent answers.
 - *Stop means stop:* when the browser disconnects (the Stop button, a closed tab), no new model
   or tool call starts and a running `claude -p` process is killed. At most two questions run
   at once. `/api/health` is liveness; `/api/ready` reports the model warm-up and the database.
+
+*Codex subscription:* the same RegLens-owned loop and validated Toolbox used by the API path
+handle JSON tool requests from the Codex CLI. Model-native tools are rejected. This transport
+has different orchestration and token accounting from Claude's MCP loop, so observed scores
+and usage must not be presented as an isolated comparison of model intelligence.
+
+**Current stopping limitation.** Structured `answer_requirements`, the research checklist,
+`missing_info`, and `research_needed` are model reports with selected independent guards.
+The guard can confirm an available required quoted definition and request focused completion.
+That worked for `mh-015` in the full run. It does not yet reliably recover missing scope/addressee
+clauses (`app-004`) or complete condition/component/exception lists. The next work is bounded
+coverage and escalation for those gaps; it is **planned, not implemented**. A successful citation
+check or `missing_info=false` is not proof of a complete answer.
 
 **5.3 Tools exposed as an MCP server.** The same tools run as a **Model Context Protocol**
 server (stdio), so any MCP client — Claude Desktop, Claude Code, other agents — can query the
@@ -295,8 +334,10 @@ exactly what it affects.
 
 ## 9. Engineering
 
-Python 3.12+ (developed on 3.14), **uv**, src layout, **ruff**, **pytest** (65 tests; no test
-calls a paid API — the CLI and the SDK client are faked), Docker for the database.
+Python 3.12+ (developed on 3.14), **uv**, src layout, **ruff**, **pytest**, Docker for the database.
+The latest recorded product verification passed 247 tests, including disposable Postgres
+integration checks; unit tests do not call paid models. Live benchmark calls are separately
+estimated, approved and logged.
 
 **Web UI:** **Next.js** (App Router, TypeScript) with Tailwind and shadcn/ui, over a small
 **FastAPI** backend. Answers stream as **Server-Sent Events**: retrieval, the routing decision
@@ -309,9 +350,12 @@ earlier Streamlit UI remains as a fallback.
 
 - **Gap analysis:** a second synthetic policy for an untuned recall test; precision calibration.
 - **Batch API** for offline jobs (obligation extraction, bulk judging).
-- National regulators (DNB first), point-in-time version switching (effective-date intervals),
-  staged corpus generations with rollback, a frozen holdout set, semantic citation-support
-  checks (see [the review plan](REVIEW-PLAN.md)).
+- Next Q&A work: scope/addressee coverage and detection of omitted conditions, components and
+  exceptions; see [handoff](HANDOFF.md) and [roadmap](ROADMAP.md).
+- National regulators (DNB first), complete reviewed multi-version legal history, an independently
+  authored holdout, and practitioner adjudication. Staged publication/rollback, temporal annotation,
+  holdout-freezing tools and opt-in semantic review already exist; they do not establish complete
+  historical coverage or provide an unseen evaluation set by themselves.
 
 Details and full results: [ROADMAP](ROADMAP.md) · [retrieval](results/retrieval-phase1.md) ·
 [answers](results/answers-phase2.md) · [agent](results/agent-phase3.md).

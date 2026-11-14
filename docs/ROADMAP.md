@@ -4,7 +4,8 @@ Architecture update (11 November 2026): staged corpus publication, explicit lega
 shared inference and frozen evaluations are implemented. See [implementation steps](ARCHITECTURE-IMPLEMENTATION.md)
 and [operation and remaining limits](ARCHITECTURE-OPERATIONS.md).
 
-Project rules and budget policy: [../CLAUDE.md](../CLAUDE.md). Last updated: 2026-11-08.
+Project rules and budget policy: [../CLAUDE.md](../CLAUDE.md). Last updated: 2026-11-14.
+Next-session entry point: [HANDOFF.md](HANDOFF.md).
 
 ## Goal
 
@@ -15,7 +16,8 @@ against regulation — and publish **measured** evidence (benchmarks) of why the
 **Timeline assumption:** part-time (~8–10 h/week), start 2026-10-26, public launch early March 2027.
 Dates are targets; phase exit criteria matter more than dates.
 
-**Budget:** development runs on a Claude subscription, so usage is tracked in **tokens**
+**Budget:** development supports Claude subscription access and opt-in Codex subscription access,
+so usage is tracked in **tokens**
 (`reglens usage`). Phase budgets are in **API-equivalent EUR** as a yardstick (target €150, ceiling
 €250 for the MVP); any single run above 1M tokens needs approval first.
 
@@ -28,7 +30,35 @@ Dates are targets; phase exit criteria matter more than dates.
 | 2 — Grounded Q&A | 30 Nov – 20 Dec 2026 | ✅ Done early — pipeline, verifier, LLM judge ([results](results/answers-phase2.md)) |
 | 3 — Agentic retrieval & MCP | 4 – 24 Jan 2027 | ✅ Done early — router, bounded agent, MCP server; routed correctness 0.89 on 104 in-scope questions ([results](results/golden-120.md)) |
 | 4 — Policy gap analysis | 25 Jan – 21 Feb 2027 | ✅ Done early — register, synthetic policy, 15/15 planted gaps (tuned; [results](results/gap-phase4.md)) |
-| 5 — Polish & launch | 22 Feb – 7 Mar 2027 | **In progress** — Next.js UI done; review fixes on branch `review-fixes` ([plan](REVIEW-PLAN.md)); headline numbers to be re-measured from run manifests |
+| 5 — Polish & launch | 22 Feb – 7 Mar 2027 | **In progress** — UI and architecture foundations implemented; full frozen118 Codex benchmark complete; completeness fixes are next on `codex/frozen118-followup` |
+
+## Current priority — Q&A completeness (14 November 2026)
+
+The latest [full Codex benchmark](results/codex-frozen118-2026-11-14.md) measured **86.4% mean score**
+across 103 in-scope questions: 76 full, 26 partial, one wrong/unanswered. All 15 out-of-scope
+requests were refused. Full-credit rate is 73.8%; the mean awards partial credit. Mechanical checks
+averaged 99.0%, but 22 of the 26 graded partial answers reported no gap. The set is reviewed
+development material, and the grades remain automated, without practitioner sign-off.
+
+The foundation milestone is implemented; the following product-quality work is still open:
+
+| Order | Work | Status / evidence | Acceptance direction |
+|---|---|---|---|
+| 1 | Required scope/addressee retrieval and escalation | **Next, not implemented**; `app-004` misses indexed EBA scope text and stops on a single-pass answer | Recover available required scope evidence under caller constraints; exercise single and agent paths; preserve genuine missing-user-input cases |
+| 2 | Coverage of conditions, components and exceptions | **Next, not implemented**; examples `dod-005`, `val-001`, `lom-001`, `mh-012`, `irb-007` | Cover requested facts or report a specific gap; test new development variations and adjacent topics; optional detail must not trigger indiscriminate research |
+| 3 | Targeted verification of 1–2 | Pending | Free SQL/retrieval and regression checks first, then a small estimated live cohort; record all attempts, grades, omissions and tokens |
+| 4 | Enclosing amendment introductions in citations | Queued; `cmp-001` retains `unsupported_number(160)` despite full semantic credit | Deliver and cite the context needed to support the amended article number |
+| 5 | Routing efficiency | Later; 24.5% of known full-run tokens went to routing | Compare cost and quality on a fixed cohort after coverage behaviour is reliable |
+| Parallel review track | Rubric adjudication and independent holdout | Practitioner review pending for `mh-006` / `mh-014`; no independent holdout yet | Preserve original references/scores; create explicit adjudications and separately authored holdout questions |
+
+Use [the handoff](HANDOFF.md) for saved artifacts, code entry points and verification constraints.
+The next session is to design and implement the first two fixes, not to repeat the completed
+full benchmark immediately. A later full rerun should use a fresh run identity after focused checks
+justify it. Existing frozen references, historical answers and scores remain immutable.
+
+The completed run's 8-million-token approval does not authorise a new evaluation. Estimate new
+model calls and obtain confirmation when the project threshold requires it. Phase history and
+older measurements below retain their original dates; they are not current quality guarantees.
 
 ## Success metrics (MVP targets, calibrate after Phase 1)
 

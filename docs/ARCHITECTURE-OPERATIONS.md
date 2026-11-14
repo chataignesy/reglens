@@ -3,6 +3,10 @@
 Implemented on `codex/architecture-foundations`, 11 November 2026. The application remains
 local and uses one Postgres database. Shared inference is an optional local process.
 
+Current Q&A follow-up and session entry point: [HANDOFF.md](HANDOFF.md). The foundation description
+below is supplemented by the dated runtime updates; completed infrastructure is not a guarantee
+of complete legal answers.
+
 ## Corpus publication and interrupted builds
 
 `uv run reglens index` builds chunks, edges and embeddings in a new private schema. It validates
@@ -128,6 +132,33 @@ current-invocation tokens from immutable cumulative receipts. They include citat
 in both prompts and cache identity, and flag inconsistent raw scores for review. Defaults
 are estimates, not spending caps; newly discovered gaps and repairs can add calls. Known
 fallbacks from cached incomplete answers are included in the dry-run estimate.
+
+## Codex and completeness follow-up — 14 November 2026
+
+Claude subscription remains the default, Anthropic API is the implemented BYOK API, and Codex
+subscription is opt-in through `config.codex.yaml`. Codex uses the shared in-process bounded loop;
+its CLI supplies text and validated JSON tool requests. Native tool activity is rejected. Shared
+tool semantics do not make provider trajectories, token accounting or grades directly comparable.
+
+`answer/context_plan.py` adds bounded requested ranges, parent qualifiers and relevant sibling
+provisions before drafting. It confirms availability of model-declared required quoted definitions;
+`answer/research.py` feeds these findings into existing completion/fallback paths. Additional context
+shares a four-row / 12,000-character allowance with proviso expansion. Existing source, date and
+applicability restrictions remain binding; optional background does not become mandatory research.
+
+The full frozen118 Codex run completed with 76 full / 26 partial / one wrong or unanswered in-scope
+answer, and 15/15 out-of-scope refusals. Although mechanical checks averaged 99.0%, 22/26 graded
+partial answers reported no missing information. `app-004` declares a required scope gap but does
+not escalate to the indexed addressee text. These are open coverage/stopping limitations, not
+unfinished corpus-publication infrastructure. See [findings](review/CODEX-FULL118-FINDINGS-2026-11-14.md).
+
+The benchmark harness is `docs/review/run_codex_frozen118.py`, dry-run by default. Its isolated answer
+cache prevents pilot reuse; explicit resume checks source/config/corpus/snapshot identity and
+preserves completed work. The completed run consumed 5,776,251 known tokens plus one rejected
+request with unknown usage. After its quota reset, the user explicitly resumed it. Preserve that
+unknown receipt; elapsed overnight waiting is not active processing time. The old 8-million-token
+approval applied to this completed run, not new evaluations. Estimate new calls and follow
+`CLAUDE.md` before launching them. Do not resume the completed benchmark to test modified code.
 
 ## One local GPU owner
 

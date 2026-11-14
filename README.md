@@ -10,6 +10,8 @@ approach, credit risk mitigation and the definition of default.
 
 There is no hosted demo: watch the demo video (link to follow) or run it locally (below).
 
+Continuing development: [current handoff and next fixes](docs/HANDOFF.md).
+
 > **Disclaimer.** Personal open-source project. Not affiliated with any employer, supervisor or
 > regulator. Not legal or regulatory advice. Always check the official texts.
 

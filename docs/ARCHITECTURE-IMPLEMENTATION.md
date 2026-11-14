@@ -2,6 +2,10 @@
 
 Branch: `codex/architecture-foundations`, started 11 November 2026.
 
+This table records the completed foundation milestone. Current Q&A work is on
+`codex/frozen118-followup`; see the [14 November handoff](HANDOFF.md). Foundation steps marked
+done below do not imply that answer completeness is solved.
+
 The target remains a local modular application using Postgres. Each step includes runnable
 acceptance checks. Unknown legal dates/conditions remain unknown rather than being inferred.
 
@@ -21,3 +25,20 @@ Fresh paid/subscription evaluations are separate: estimate tokens first and resp
 budget. Historical scores will not be relabelled as measurements of the new architecture.
 
 Operation, migration and remaining limits: [ARCHITECTURE-OPERATIONS.md](ARCHITECTURE-OPERATIONS.md).
+
+## Q&A follow-up status — 14 November 2026
+
+| Work | Status and evidence |
+|---|---|
+| Codex subscription transport using the shared bounded tool loop | Implemented; Claude remains default; API keys still use the Anthropic adapter |
+| Amendment source opt-in, requested ranges, parent qualifiers, relevant sibling paragraphs, available required definitions | Implemented in `d8c8b40`; bounded to four extra rows / 12,000 characters; filters and whole units preserved |
+| Full frozen118 Codex runtime benchmark | Complete, documented in `482d52e`; 86.4% mean, 76 full / 26 partial / one wrong or unanswered; 15/15 refusals; 247-test product baseline |
+| Scope/addressee recovery for required applicability gaps | **Next — not implemented**; reproduce `app-004` without changing its reference |
+| Broader completeness checks for conditions, components and exceptions | **Next — not implemented**; 22/26 graded partial answers did not report a gap |
+| Nested amendment introduction and citation support | Queued after the two completeness tasks; retain `cmp-001`'s mechanical warning |
+| Routing cost reduction | Later; 24.5% of known benchmark tokens, with quality-regression checks required |
+| Rubric adjudication and independent holdout | Pending; tools exist, actual practitioner decisions and independent questions still needed |
+
+The next session should start from [HANDOFF.md](HANDOFF.md), reproduce the saved failures with
+free local checks, settle the implementation design, and then make scoped fixes. The full
+benchmark's code and reference artifacts remain historical evidence and must not be rewritten.

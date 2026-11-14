@@ -1,0 +1,58 @@
+{
+  "disclaimer": "Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.",
+  "run_id": "20261114-090457-612837-routed-codex-full118",
+  "source_integrity": "all source hashes match the benchmark start",
+  "snapshot_file_sha256": "47c5cfd9f9307fcbbff8c00f1a853e44acbda45cc4103c99ba10995bfc4ff65e",
+  "result_path": "data\\evals\\comparisons\\20261113-224005-859471-codex-full118\\result-20261114-081359-431720.json",
+  "result_sha256": "aa8b27dac553a3a7a58d158a27556e54e268a5b6d0061895f065ca5539241a7a",
+  "manifest_sha256": "cad427771b9397271c0dffc85112984df7cbf120922ec1325dea3f47d107f89c",
+  "verified_selected_answers": 118,
+  "verified_attempt_artifacts": 119,
+  "verified_grades": 118,
+  "csv_rows": 118,
+  "known_tokens": 5776251,
+  "usage_unknown_calls": 1,
+  "requests_by_purpose": {
+    "route": 116,
+    "answer": 98,
+    "agent": 78,
+    "judge": 100
+  },
+  "newly_generated_judgments": 100,
+  "cached_judgment_ids": [
+    "cmp-002",
+    "floor-001",
+    "pd-001"
+  ],
+  "maturity_guard_draft": {
+    "path": "data\\evals\\answers\\20261113-224005-859471-codex-full118\\single-57fd43cb4c\\attempts\\mh-015-e6077925-26ff0add352c497bb38447c19da86ddb.json",
+    "sha256": "b56c1ec8a9f17e139a3ab366c4bc8f32e59ff7be15d1de16c29c60368decb380",
+    "guard": [
+      {
+        "tool": "research_guard",
+        "gaps": [
+          "Read the required definition of 'large corporate': CRR Art. 142(1)(5a)",
+          "Check the explicit proviso crr3-consolidated Art. 162(3)"
+        ]
+      }
+    ]
+  },
+  "applicability_scope_paragraph_ids": [
+    [
+      "eba-gl-dod:paragraph:b0:7:",
+      "para. 7"
+    ],
+    [
+      "eba-gl-dod:paragraph:b0:8:",
+      "para. 8"
+    ]
+  ],
+  "silent_partial_count": 22,
+  "test_result": "247 passed, including disposable PostgreSQL integration checks",
+  "outputs_sha256": {
+    "docs\\results\\codex-frozen118-2026-11-14.md": "cbffb4f9968d78a0d28473150177108013061c167d5faddc7bf6c1e627bea835",
+    "docs\\results\\codex-frozen118-2026-11-14.json": "39a71cb7cfa56f5425722bc7a2ee5008babc6053f3ca351a18a33fc1c785fe8c",
+    "docs\\results\\codex-frozen118-2026-11-14.csv": "7b8fcb494f8e06edb4bbe92a0fe6085b86e8e5ca3852616330ccfa08200cf1ee",
+    "docs\\review\\CODEX-FULL118-FINDINGS-2026-11-14.md": "b7df55376b30bb70e76257003e2ffd40b41de70ec3240c8ffe17f0349daac79f"
+  }
+}

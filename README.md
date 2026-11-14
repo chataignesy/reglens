@@ -187,7 +187,11 @@ configuration remains Claude. No OpenAI API key is used. See the
 [initial three-question run](docs/review/CODEX-SUBSCRIPTION-FOLLOWUP-2026-11-13.md)
 for results, usage and reproduction steps. The subsequent
 [completeness fixes and focused runtime checks](docs/review/COMPLETENESS-FOLLOWUP-2026-11-13.md)
-record the evidence-selection changes and remaining limitations. Codex API-equivalent prices are unconfigured;
+record the evidence-selection changes and remaining limitations. The subsequent
+[full 118-question Codex benchmark](docs/results/codex-frozen118-2026-11-14.md) scored 86.4%
+across 103 in-scope questions, with 15/15 out-of-scope refusals;
+[review findings](docs/review/CODEX-FULL118-FINDINGS-2026-11-14.md) document the remaining gaps.
+These are automated development-set scores. Codex API-equivalent prices are unconfigured;
 unpriced ledger entries do not mean zero subscription usage or a zero-cost API run.
 
 ## Licence

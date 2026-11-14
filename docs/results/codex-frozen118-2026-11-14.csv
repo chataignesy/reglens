@@ -1,0 +1,119 @@
+id,type,route,attempts,score,tokens,citation_recall,mechanical_pass_rate,missing_info,missing,contradictions,disclaimer
+dod-001,factual,single,single,2,29628,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+dod-002,factual,single,single,2,27628,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+dod-003,factual,single,single,1,28505,0.5,1.0,False,"The relative component ranges from 0% to 2.5%.; The relative component's denominator comprises the institution's, parent's and subsidiaries' total on-balance-sheet exposures to the obligor, excluding equity exposures.; Both components must be exceeded and the applicable consecutive-day period must be met.",,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+dod-004,factual,single,single,2,27780,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+dod-005,factual,single,single,1,27516,1.0,1.0,False,"The cure conditions include a material payment during the probation period, no past-due amounts, and no remaining concerns about full repayment.",,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+dod-006,factual,single,single,1,28684,0.5,1.0,False,"The diminished financial obligation is calculated as DO = (NPV0 − NPV1)/NPV0, with both net present values discounted at the original effective interest rate.",,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+dod-007,factual,single,single,1,27351,0.5,1.0,False,"The economic loss is calculated as L = (E - P)/E.; Institutions set the materiality threshold, which should not be higher than 5%.",,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+pd-001,factual,single,single,2,28325,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+pd-002,factual,single,single,1,28597,0.5,1.0,False,PD of defaulted retail exposures is 100%.,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+pd-003,factual,single,single,2,29754,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+lgd-001,factual,single,single,2,29494,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+moc-001,factual,single,single,2,28145,0.5,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+scope-001,factual,single,single,2,29249,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+sa-001,factual,single,single,2,28570,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+floor-001,factual,single,single,2,28723,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+mh-001,multi_hop,agent,agent,2,59479,0.6666666666666666,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+mh-002,multi_hop,agent,agent,2,100185,0.6666666666666666,1.0,True,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+mh-003,multi_hop,agent,agent,2,93817,0.5,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+mh-004,multi_hop,agent,agent,2,101289,0.75,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+mh-005,multi_hop,agent,agent,1,109362,1.0,1.0,False,"The unsecured other-retail LGD input floor is 30%, compared with the fully secured floor of 0%.",,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+mh-006,multi_hop,agent,agent,1,78799,1.0,1.0,False,Institutions using own LGD and conversion-factor estimates must perform analogous comparisons for those estimates.,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+mh-007,multi_hop,agent,agent,2,112696,1.0,1.0,True,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+cmp-001,comparison,single,single,2,26374,0.5,0.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+cmp-002,comparison,single,single,2,29158,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+app-001,applicability,single,single,2,30292,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+oos-001,out_of_scope,single,single,2,29706,,,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+oos-002,out_of_scope,single,single,2,29820,,,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+oos-003,out_of_scope,single,single,2,0,,,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+oos-004,out_of_scope,single,single,2,28559,,,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+oos-005,out_of_scope,single,single,2,29179,,,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+sa-002,factual,single,single,2,27854,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+sa-003,factual,single,single,2,28949,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+sa-004,factual,single,single,2,28272,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+sa-005,factual,single,single,2,28283,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+sa-006,factual,single,single,2,29149,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+sa-007,factual,single,single,2,27067,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+sa-008,factual,single,single,2,25077,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+sa-009,factual,single,single,2,29237,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+irb-001,factual,single,single,2,28516,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+irb-002,factual,single,single,1,29308,1.0,1.0,False,"Implementation must be together with the institution’s parent and subsidiaries.; IRB must cover all exposures within an implemented exposure class unless permanent partial use of the Standardised Approach is permitted under Article 150.; With prior permission, implementation may be sequential across exposure types, business units, own-LGD use or IRB-CCF.",,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+irb-003,factual,single,single,2,27118,0.5,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+irb-004,factual,single,single,1,45272,0.3333333333333333,1.0,True,"The mandatory SA-CCF restriction under Article 151(8) for exposures to institutions, other financial-sector entities, and large corporates outside specialised lending.",,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+irb-005,factual,single,single,2,26503,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+irb-006,factual,single,single,2,28210,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+rs-001,factual,single,single,2,28508,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+rs-002,factual,single,single,2,25877,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+rs-003,factual,single,single,2,29141,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+rs-004,factual,single,single,1,27676,1.0,1.0,False,A PD or LGD model within a rating system may comprise several calibration segments.,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+rs-005,factual,single,single,2,28006,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+pd-005,factual,single,single,2,28697,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+lgd-002,factual,single,single,2,29714,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+lgd-003,factual,single,single,2,29805,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+lgd-004,factual,single,single,2,28456,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+lgd-005,factual,agent,agent,2,61850,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+lgd-006,factual,single,single,2,28897,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+lgd-007,factual,single,single,2,29235,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+lgd-008,factual,single,single,2,30112,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+lgd-009,factual,single,single,2,27794,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+dt-001,factual,single,single,2,28520,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+dt-002,factual,single,single,2,27728,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+val-001,factual,single,single,1,30330,0.0,1.0,False,"Comparisons with relevant external data sources.; Validation data must be appropriate to the portfolio, regularly updated and cover a relevant observation period.",,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+val-002,factual,single,single,2,29355,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+val-003,factual,single,single,2,28279,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+lom-001,factual,single,single,1,28628,1.0,1.0,False,"Setting credit risk appetite, including credit-granting standards, metrics, limits and escalation thresholds.; Ensuring oversight of credit risk quality and provisioning.; Ensuring adequate credit approval, monitoring and control processes.; Ensuring staff involved in credit risk are adequately skilled.",,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+dod-008,factual,single,single,2,29709,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+dod-009,factual,single,single,2,29095,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+dod-010,factual,single,single,2,28025,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+floor-002,factual,single,single,2,28887,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+crm-001,factual,single,single,2,46040,1.0,1.0,True,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+mh-008,multi_hop,agent,agent,2,80231,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+mh-009,multi_hop,agent,agent,1,85555,0.6666666666666666,1.0,False,Large-corporate exposures must use supervisory LGD values and SA-CCFs under Article 151(8)(c).,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+mh-010,multi_hop,agent,agent,2,84465,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+mh-011,multi_hop,single,single,1,29600,0.0,1.0,False,"Relevant indicators by exposure type, including GDP, unemployment, available aggregate default rates/losses, and appropriate sector/property and other indicators.; A 20-year historical window ending at identification, extended where its variability is not representative of the likely future range.; Downturn periods must last at least 12 months and be extended where needed to cover related prolonged severity or adjacent peaks/troughs.",,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+mh-012,multi_hop,single,single,1,29857,0.0,1.0,False,"Additional drawings after default must be included in economic loss.; All post-default recoveries, costs and additional drawings must be discounted using the interbank rate at default (e.g. 3-month EURIBOR) plus 5 percentage points, as specified in paragraph 143.",,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+oos-006,out_of_scope,single,single,2,0,,,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+oos-007,out_of_scope,single,single,2,28287,,,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+oos-008,out_of_scope,single,single,2,29510,,,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+oos-009,out_of_scope,single,single,2,25755,,,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+oos-010,out_of_scope,single,single,2,28314,,,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+mh-013,multi_hop,single,single,2,29753,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+mh-014,multi_hop,agent,agent,2,60216,0.6666666666666666,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+mh-015,multi_hop,agent,"single,agent",2,106461,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+mh-016,multi_hop,single,single,1,46596,0.3333333333333333,1.0,True,"The loss calculation L = (E − P)/E confirms that the stated discount is a 4% economic loss.; A definitive conclusion that the 4% loss is below the 5% threshold and therefore does not trigger default on this indicator.; A material credit-related sale loss indicates unlikeliness to pay under Article 178(3)(c), and other indications of unlikeliness to pay still require assessment.",,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+mh-017,multi_hop,single,single,2,28168,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+mh-018,multi_hop,single,single,2,26602,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+mh-020,multi_hop,agent,agent,2,80197,1.0,1.0,True,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+mh-021,multi_hop,agent,agent,1,59414,0.3333333333333333,1.0,False,The review-of-estimates framework must include predefined actions for adverse review results depending on severity (para. 217(c)).; Estimates must be reviewed at least annually (Art. 179(1)(c)); annual updates to validation analysis and documentation do not state this requirement.,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+mh-022,multi_hop,single,single,1,27652,0.3333333333333333,1.0,False,The applicable past-due period is 90 consecutive days with both threshold components exceeded.; Unlikeliness to pay must still be assessed.,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+mh-023,multi_hop,agent,agent,1,83941,0.5,1.0,True,"Article 108(3) makes Chapter 3 recognition conditional on using own LGD estimates for both the original exposure and comparable direct exposures to the protection provider, and directs recognition under Chapter 4 otherwise.; Article 160(4) permits recognition in PD in accordance with Article 183 subject to that own-LGD condition; the answer states the condition only for LGD recognition.",,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+mh-024,multi_hop,single,single,2,27952,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+cmp-003,comparison,agent,agent,2,82812,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+cmp-004,comparison,agent,agent,2,57074,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+cmp-005,comparison,agent,agent,1,77534,1.0,1.0,False,"The sale loss is calculated as L = (E − P)/E, where E is the outstanding obligation amount and P is the sale price.",,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+cmp-006,comparison,agent,agent,2,91421,0.6666666666666666,1.0,True,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+app-002,applicability,single,single,2,27120,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+app-003,applicability,single,single,1,28323,1.0,1.0,False,The guidelines’ standardised-approach requirements may also be applied to exposures included in sequential implementation under Article 148 CRR.,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+app-004,applicability,single,single,0,27864,0.0,1.0,True,The guidelines apply to less significant institutions without distinction by supervisory significance (paragraph 8).; The addressees include competent authorities and financial institutions as defined in Regulation (EU) No 1093/2010.; IRB and Standardised Approach institutions apply the respective requirements (paragraph 7).,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+app-005,applicability,single,single,2,28104,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+dt-003,factual,single,single,2,29430,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+dt-004,factual,single,single,2,28409,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+moc-002,factual,single,single,1,26569,1.0,1.0,False,The final MoC must not lower the risk parameter estimates (para. 47).,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+moc-003,factual,single,single,2,26726,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+dod-011,factual,single,single,1,28080,0.5,1.0,False,"Regularly monitor the effectiveness of cure policies, including status changes and their impact on cure rates and multiple defaults.; Only a limited number of quick re-defaults is expected.",,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+dod-012,factual,single,single,2,28158,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+dod-013,factual,single,single,1,28246,0.5,1.0,False,Separate unlikeliness-to-pay triggers remain relevant.,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+dod-014,factual,single,single,2,27935,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+ccf-002,factual,single,single,2,29259,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+irb-007,factual,single,single,1,46831,1.0,1.0,True,"Exposures to institutions or investment firms arising from settlement of foreign exchange obligations.; Self-liquidating short-term trade finance transactions and corporate purchased receivables with residual maturity up to one year.; Settlement of securities purchases and sales within the usual delivery period or two business days.; Cash settlements by wire transfer and electronic payments, including short overdrafts arising from failed transactions.; Issued and confirmed self-liquidating short-term letters of credit with maturity below one year.",,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+val-004,factual,single,single,2,29349,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+val-005,factual,single,single,1,27415,0.5,1.0,False,"Reviews must occur at least annually, use the predefined metrics, and start with an analysis of data representativeness (para. 218).",,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+crm-002,factual,single,single,2,27307,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+crm-003,factual,single,single,2,29557,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+oos-011,out_of_scope,single,single,2,26019,,,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+oos-012,out_of_scope,single,single,2,28781,,,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+oos-013,out_of_scope,single,single,2,30282,,,True,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+oos-015,out_of_scope,single,single,2,30437,,,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+oos-016,out_of_scope,single,single,2,29768,,,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.
+lgd-010,factual,single,single,2,27417,1.0,1.0,False,,,Personal project; not affiliated with an employer or supervisor; not legal or regulatory advice.

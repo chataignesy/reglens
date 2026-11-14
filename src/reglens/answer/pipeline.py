@@ -225,11 +225,14 @@ def answer_question(
     ans.source_registry = {s.id: asdict(s) for s in load_sources(conn=conn)}
     ans.corpus_generation = current(conn)
     found: list[str] = []
-    for attempt in range(2):  # one retry when the reply breaks the answer contract
+    next_prompt, purpose = prompt, "answer"
+    from reglens.answer.research import guard
+
+    for attempt in range(2):  # one shared second draft for contract repair or delivered omissions
         try:
             completion = provider.complete(
-                prompt if attempt == 0 else prompt + retry_note(found),
-                purpose="answer" if attempt == 0 else "answer_retry",
+                next_prompt,
+                purpose=purpose,
                 system=SYSTEM,
                 tier=opts.get("tier", "dev"),
                 effort=opts.get("effort"),
@@ -245,16 +248,32 @@ def answer_question(
         ans.usage_tokens += completion.usage.total_tokens
         ans.usage_unknown_calls += int(not completion.usage_known)
         data, found = parse_reply(completion.text)
-        if not found:
-            break
-        emit({"stage": "invalid_reply", "problems": found, "retry": attempt == 0})
+        if found:
+            emit({"stage": "invalid_reply", "problems": found, "retry": attempt == 0})
+            next_prompt, purpose = prompt + retry_note(found), "answer_retry"
+            continue
+        gaps = guard(question, data, hits, conn=conn, filters=filters)
+        review_prefix = "Review requested list coverage"
+        if (attempt == 0 and gaps
+                and all(g.startswith(review_prefix) for g in data.get("missing_requirements", []))):
+            ans.trace.append({"tool": "answer_completion", "requirements": gaps,
+                              "basis": "required facts already delivered; no new retrieval"})
+            emit({"stage": "completing", "reason": "Required facts are already in the context"})
+            next_prompt = (
+                prompt + "\n\nPrevious draft:\n" + completion.text
+                + "\n\nRevise the answer using ONLY the context already supplied. "
+                "Cover these required source items explicitly in the answer, with citations: "
+                + "; ".join(gaps)
+                + ". Do not research or introduce optional background. Return the final JSON."
+            )
+            purpose = "answer_completion"
+            continue
+        break
     if found:
         ans.unverified, ans.raw_output = True, completion.text
         ans.errors.append("invalid model output after one retry: " + "; ".join(found))
         return ans
-    from reglens.answer.research import guard
-
-    if gaps := guard(question, data, hits, conn=conn, filters=filters):
+    if gaps:
         ans.trace.append({"tool": "research_guard", "gaps": gaps})
     ans.abstained = bool(data.get("abstain"))
     ans.abstain_reason = str(data.get("abstain_reason") or "")

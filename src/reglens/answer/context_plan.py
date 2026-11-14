@@ -50,6 +50,11 @@ def expand_context(conn, question, hits, filters=None, *, max_extra=4, max_chars
     box = Toolbox(conn, filters=filters)
     out, seen, left = list(hits), {h.id for h in hits}, max_chars
     groups = requested_units(conn, question, hits, filters)
+    from reglens.answer.conditions import condition_units
+    from reglens.answer.required_evidence import evidence_units
+
+    groups += condition_units(conn, question, hits, filters)
+    groups += evidence_units(conn, question, hits, filters)
     peer_article = None
     # A broad question can span parallel paragraphs (e.g. retail and non-retail).
     # Require three literal question terms in the sibling body, not merely its title.

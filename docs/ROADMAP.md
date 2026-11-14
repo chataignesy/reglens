@@ -30,7 +30,7 @@ so usage is tracked in **tokens**
 | 2 — Grounded Q&A | 30 Nov – 20 Dec 2026 | ✅ Done early — pipeline, verifier, LLM judge ([results](results/answers-phase2.md)) |
 | 3 — Agentic retrieval & MCP | 4 – 24 Jan 2027 | ✅ Done early — router, bounded agent, MCP server; routed correctness 0.89 on 104 in-scope questions ([results](results/golden-120.md)) |
 | 4 — Policy gap analysis | 25 Jan – 21 Feb 2027 | ✅ Done early — register, synthetic policy, 15/15 planted gaps (tuned; [results](results/gap-phase4.md)) |
-| 5 — Polish & launch | 22 Feb – 7 Mar 2027 | **In progress** — UI and architecture foundations implemented; full frozen118 Codex benchmark complete; completeness fixes are next on `codex/frozen118-followup` |
+| 5 — Polish & launch | 22 Feb – 7 Mar 2027 | **In progress** — UI and architecture foundations implemented; full118, focused8 and precision2 evaluations complete; wider quality, cost and independent verification remain |
 
 ## Current priority — Q&A completeness (14 November 2026)
 
@@ -44,16 +44,17 @@ The foundation milestone is implemented; the following product-quality work is s
 
 | Order | Work | Status / evidence | Acceptance direction |
 |---|---|---|---|
-| 1 | Required scope/addressee retrieval and escalation | **Next, not implemented**; `app-004` misses indexed EBA scope text and stops on a single-pass answer | Recover available required scope evidence under caller constraints; exercise single and agent paths; preserve genuine missing-user-input cases |
-| 2 | Coverage of conditions, components and exceptions | **Next, not implemented**; examples `dod-005`, `val-001`, `lom-001`, `mh-012`, `irb-007` | Cover requested facts or report a specific gap; test new development variations and adjacent topics; optional detail must not trigger indiscriminate research |
-| 3 | Targeted verification of 1–2 | Pending | Free SQL/retrieval and regression checks first, then a small estimated live cohort; record all attempts, grades, omissions and tokens |
+| 1 | Required scope/addressee retrieval and escalation | **Implemented and exercised live**; `app-004` improves from zero to full credit in one pass | Caller constraints and missing-user-input controls pass locally; evidence remains development-set only |
+| 2 | Coverage of conditions, components and exceptions | **Implemented bounded signals**, including source-linked conditions and context-only rewrites; discovery alone does not force research | Demonstrated cure/economic-loss issues resolved in [precision2](results/codex-coverage-precision2-2026-11-14.md); broader completeness remains unproven |
+| 3 | Targeted verification of 1–2 | **Complete**: 267 tests; focused8 seven full / one partial (582,354 tokens); subsequent precision2 two full / no gaps (109,121 tokens) | Precision2 answer/routing usage falls 40.2% for that pair; no claim of a new full or eight-case score on the latest revision |
 | 4 | Enclosing amendment introductions in citations | Queued; `cmp-001` retains `unsupported_number(160)` despite full semantic credit | Deliver and cite the context needed to support the amended article number |
 | 5 | Routing efficiency | Later; 24.5% of known full-run tokens went to routing | Compare cost and quality on a fixed cohort after coverage behaviour is reliable |
 | Parallel review track | Rubric adjudication and independent holdout | Practitioner review pending for `mh-006` / `mh-014`; no independent holdout yet | Preserve original references/scores; create explicit adjudications and separately authored holdout questions |
 
 Use [the handoff](HANDOFF.md) for saved artifacts, code entry points and verification constraints.
-The next session is to design and implement the first two fixes, not to repeat the completed
-full benchmark immediately. A later full rerun should use a fresh run identity after focused checks
+The demonstrated cure-condition omission and economic-loss over-research are resolved in the
+two-case follow-up. Broader verification and the queued citation/routing/holdout work remain.
+A later full rerun should use a fresh run identity after focused checks
 justify it. Existing frozen references, historical answers and scores remain immutable.
 
 The completed run's 8-million-token approval does not authorise a new evaluation. Estimate new

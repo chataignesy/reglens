@@ -1,0 +1,67 @@
+{
+  "basis": "raw provider drafts before the old guard mutated gap flags; no model calls",
+  "answer_code_hash": "2f01c89494ff",
+  "items": [
+    {
+      "id": "dod-005",
+      "old_missing_info": false,
+      "new_missing_info": true,
+      "gaps": [
+        "Review requested list coverage in EBA GL definition of default (GL/2016/07) para. 73, item (a): during that period a material payment has been made by the obligor; material payment may be considered to be made where the debtor has paid, via its regular payments in accordance with the restructuring arrangements, a total equal to the amount that was previously past-due (if there were past-due amounts) or that has been written-off (if there were",
+        "Review requested list coverage in EBA GL definition of default (GL/2016/07) para. 73, item (b): during that period the payments have been made regularly according to the schedule applicable after the restructuring arrangements",
+        "Review requested list coverage in EBA GL definition of default (GL/2016/07) para. 73, item (c): there are no past due credit obligations according to the schedule applicable after the restructuring arrangements",
+        "Review requested list coverage in EBA GL definition of default (GL/2016/07) para. 73, item (d): no indications of unlikeliness to pay as specified in Article 178(3) of Regulation (EU) No 575/2013 or any additional indications of unlikeliness to pay specified by the institution apply",
+        "Review requested list coverage in EBA GL definition of default (GL/2016/07) para. 73, item (e): the institution does not consider it otherwise unlikely that the obligor will pay its credit obligations in full according to the schedule after the restructuring arrangements without recourse to realising security. In this assessment institutions should examine in particular situations where a large lumpsum payment or significantly larger payments"
+      ]
+    },
+    {
+      "id": "app-001",
+      "old_missing_info": false,
+      "new_missing_info": false,
+      "gaps": []
+    },
+    {
+      "id": "lgd-007",
+      "old_missing_info": false,
+      "new_missing_info": false,
+      "gaps": []
+    },
+    {
+      "id": "val-001",
+      "old_missing_info": false,
+      "new_missing_info": false,
+      "gaps": []
+    },
+    {
+      "id": "lom-001",
+      "old_missing_info": true,
+      "new_missing_info": true,
+      "gaps": [
+        "Review requested list coverage in EBA GL loan origination (GL/2020/06) para. 25, item (b): set the credit risk appetite within the overall RAF, including credit-granting standards, qualitative statements, quantitative metrics and limits, and escalation thresholds, without business performance biases",
+        "Review requested list coverage in EBA GL loan origination (GL/2020/06) para. 25, item (d): ensure an effective oversight of credit risk quality, in particular at the point of credit granting, and provisioning",
+        "Review requested list coverage in EBA GL loan origination (GL/2020/06) para. 25, item (f): ensure that all staff involved in credit risk taking, and the managing, monitoring and controlling of credit risk, are adequately skilled, resourced and experienced"
+      ]
+    },
+    {
+      "id": "mh-012",
+      "old_missing_info": true,
+      "new_missing_info": false,
+      "gaps": []
+    },
+    {
+      "id": "app-004",
+      "old_missing_info": false,
+      "new_missing_info": false,
+      "gaps": []
+    },
+    {
+      "id": "irb-007",
+      "old_missing_info": true,
+      "new_missing_info": true,
+      "gaps": [
+        "Read required scope/list evidence: CRR Art. 162(3)(e)",
+        "Review requested list coverage in CRR Art. 162(3), item (a): fully or nearly-fully collateralised derivative instruments listed in Annex II"
+      ]
+    }
+  ]
+}

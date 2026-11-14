@@ -542,7 +542,15 @@ def answer_agentic(
         "missing_requirements": ans.missing_requirements,
         "answer_requirements": ans.answer_requirements,
     }
-    if gaps := guard(asked, checked, context, conn=conn, filters=filters, delivered=got):
+    from reglens.agent.tools import _rows
+
+    evidence = (
+        [r.hit() for r in _rows(conn, "id = ANY(%s)", [list(got)], limit=80)]
+        if conn is not None and got else context
+    )
+    if gaps := guard(
+        asked, checked, context, conn=conn, filters=filters, delivered=got, evidence_hits=evidence
+    ):
         ans.missing_info, ans.research_needed = True, True
         ans.missing_requirements = checked["missing_requirements"]
         ans.trace.append({"tool": "research_guard", "gaps": gaps})

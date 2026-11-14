@@ -35,6 +35,8 @@ SINGLE_FILES = [
     "answer/route.py",
     "answer/research.py",
     "answer/context_plan.py",
+    "answer/required_evidence.py",
+    "answer/conditions.py",
     "agent/tools.py",
     "answer/pipeline.py",
     "answer/prompts.py",

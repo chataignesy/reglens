@@ -64,13 +64,12 @@ def _completeness_note(
 
     got = delivered_chars(trace)
     read_hits = []
-    if (
-        conn is not None
-        and got
-        and re.search(r"\b(?:paragraphs|paras\.)\s*\d+\s*[–—-]", question, re.I)
-    ):
+    if conn is not None and got:
         read_hits = [r.hit() for r in _rows(conn, "id = ANY(%s)", [list(got)], limit=80)]
-    guard(question, data, [], conn=conn, filters=filters, delivered=got, evidence_hits=read_hits)
+    guard(
+        question, data, read_hits, conn=conn, filters=filters, delivered=got,
+        citation_keys={k for t in trace for k in t.get("keys", [])},
+    )
     cited = {str(k) for c in data.get("claims") or [] for k in c.get("citations") or []}
     cited |= set(re.findall(r"\[([^\[\]]+?)\]", str(data.get("answer") or "")))
     cut = sorted(cited & partial_reads(trace, conn))

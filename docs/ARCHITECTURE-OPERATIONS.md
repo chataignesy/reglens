@@ -7,6 +7,18 @@ Current Q&A follow-up and session entry point: [HANDOFF.md](HANDOFF.md). The fou
 below is supplemented by the dated runtime updates; completed infrastructure is not a guarantee
 of complete legal answers.
 
+Scope/list coverage update (14 November 2026): bounded evidence planning now adds scope/addressee
+units and requested-list children/peers under the existing context budget. The shared guard checks
+whole-window delivery and conservative enumeration omissions, including API/Codex pre-final and
+all agent post-resolution paths. See [local verification](review/COMPLETENESS-VERIFICATION-2026-11-14.md)
+for probe bounds and specificity costs. The
+[focused live evaluation](results/codex-completeness8-2026-11-14.md) completed at 582,354 tokens:
+seven full / one partial, with a silent cure-condition omission and additional research overhead.
+The [subsequent precision check](review/COVERAGE-PRECISION-VERIFICATION-2026-11-14.md) resolves
+those two observed issues in a two-case run. Time-linked conditions use whole logical lists;
+broad neighbours alone do not force research; format repair and context-only completion share
+the existing two-call single-pass maximum. Detected unresolved facts still remain visible.
+
 ## Corpus publication and interrupted builds
 
 `uv run reglens index` builds chunks, edges and embeddings in a new private schema. It validates

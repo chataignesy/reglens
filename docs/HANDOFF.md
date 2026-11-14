@@ -4,6 +4,17 @@ Personal project; not affiliated with any employer or supervisor. Not legal or r
 
 ## Start here
 
+Latest follow-up (14 November 2026): source-linked conditions and research specificity are
+implemented and locally verified (**267 tests**, including disposable Postgres). The
+[two-question follow-up](results/codex-coverage-precision2-2026-11-14.md) gives full credit to both
+cure conditions and economic loss, with no gap flags, at 109,121 tokens total. Routing plus
+answers cost 40.2% less than the same pair in the prior focused run. Read the
+[implementation/verification report](review/COVERAGE-PRECISION-VERIFICATION-2026-11-14.md) and
+its limits before continuing. The earlier [eight-question run](results/codex-completeness8-2026-11-14.md)
+remains seven full / one partial at 582,354 tokens; it was not rerun or rewritten.
+The inference services started for these runs were stopped. The original handoff below records
+the baseline and motivation, not the current implementation status.
+
 The full frozen118 Codex benchmark is **complete**. The user requested this documentation/handoff
 update and intends to open a new session for the fixes. This documentation session makes no
 product changes or model calls. The next session should work on **scope/addressee recovery and

@@ -55,6 +55,18 @@ covered portion from an uncovered portion when the scenario splits an exposure. 
 exceptions that refer BACK to the rule as well as references appearing in the rule itself.
 Only treat an exception as applicable after reading its conditions. This list is a model
 self-check, not proof that every legal dependency has been discovered.
+
+For requested lists, use source structure to identify the individual conditions, components,
+responsibilities or qualifying exceptions. An introduction saying 'all conditions' or 'the
+following' does not supply unread child points. State the indispensable conditions in the
+answer rather than merely saying they must be met. When a bounded coverage signal names a
+passage or list item, read/review that specific evidence and either cover the requested fact
+or preserve a specific unresolved requirement. Do not turn optional background into a checklist.
+When a source explicitly links a waiting/probation period to conditions for the resulting
+status change, include those indispensable conditions even when the question asks how long.
+Relevant neighbouring passages are discovery candidates, not automatically unanswered facts.
+Finish once the requested facts and explicit qualifications are covered; distinguish a missing
+asked fact from optional specialised adjustments or detail in other paragraphs.
 """
 
 _PROVISO = re.compile(
@@ -209,24 +221,31 @@ def guard(
     filters=None,
     delivered=None,
     evidence_hits=None,
+    citation_keys=None,
 ) -> list[str]:
     """Independent, auditable conservative signals; this does not prove completeness."""
     if data.get("abstain"):
         return []
     from reglens.answer.context_plan import known_definition_gaps, requested_gaps
+    from reglens.answer.required_evidence import coverage_gaps
 
     gaps = known_definition_gaps(conn, data, filters)
+    gaps += coverage_gaps(
+        conn, question, data, hits, filters, delivered, evidence_hits
+    )
     gaps += requested_gaps(
         conn, question, hits if evidence_hits is None else evidence_hits, filters, delivered
     )
     required_gaps = []
-    delivered = {f"C{n}" for n in range(1, len(hits) + 1)}
+    delivered_keys = (
+        {f"C{n}" for n in range(1, len(hits) + 1)} if citation_keys is None else citation_keys
+    )
     # On the API agent's pre-final check, keys are tool keys, not yet C# keys.
     # Delivery is validated after resolution; unresolved entries still trigger a focused lookup.
     for requirement in data.get("answer_requirements", []):
         unresolved = requirement["status"] == "unresolved"
-        if hits and requirement["status"] == "supported":
-            unresolved = not set(requirement["citations"]) <= delivered
+        if (hits or citation_keys is not None) and requirement["status"] == "supported":
+            unresolved = not set(requirement["citations"]) <= delivered_keys
         if unresolved:
             required_gaps.append(requirement["requirement"])
             if requirement["retrievable"]:

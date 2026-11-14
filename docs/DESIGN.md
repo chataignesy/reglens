@@ -1,5 +1,16 @@
 # RegLens — design choices
 
+Scope/list follow-up (14 November 2026): source-bound scope probes, structural list expansion
+and conservative omission signals are implemented and locally tested. See
+[verification and remaining limits](review/COMPLETENESS-VERIFICATION-2026-11-14.md).
+The published full-benchmark scores below remain the pre-fix baseline. The
+[focused live evaluation](results/codex-completeness8-2026-11-14.md) reached seven full / one partial
+on eight selected development questions; silent omissions and research overhead remain open.
+The subsequent [two-case precision check](results/codex-coverage-precision2-2026-11-14.md)
+resolves the demonstrated cure omission and economic-loss gap/cost issue on that pair. Source-linked
+conditions, mandatory-vs-discovery selection and context-only second drafts are implemented;
+267 tests pass. The wider development cohort and an independent holdout remain unmeasured on this revision.
+
 Current architecture update (14 November 2026): staged corpus publication, explicit legal constraints,
 shared inference, frozen evaluations, and bounded context expansion are implemented. Claude remains
 the default; an opt-in Codex subscription backend has completed the full frozen118 benchmark.
@@ -7,7 +18,7 @@ See [implementation status](ARCHITECTURE-IMPLEMENTATION.md),
 [operation and remaining limits](ARCHITECTURE-OPERATIONS.md), and the
 [next-session handoff](HANDOFF.md).
 
-The current bottleneck is **answer completeness**: the latest Codex run scored 86.4% across 103
+The current bottleneck is **answer completeness**: the latest full Codex benchmark scored 86.4% across 103
 in-scope questions (76 full, 26 partial, one wrong/unanswered), with 15/15 out-of-scope refusals.
 Mechanical checks averaged 99.0%, but 22 of the 26 partial answers did not report a gap.
 These are automated development-set scores, not practitioner certification. Older measurements

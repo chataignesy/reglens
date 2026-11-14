@@ -1,0 +1,207 @@
+{
+  "basis": "saved development answers/current SQL corpus; no model calls or regrading",
+  "answer_code_hash": "7684d1db0e51",
+  "saved_score_guard_counts": {
+    "saved_score_2_guard_False": 71,
+    "saved_score_1_guard_True": 9,
+    "saved_score_1_guard_False": 17,
+    "saved_score_2_guard_True": 5,
+    "saved_score_0_guard_True": 1
+  },
+  "targets": [
+    {
+      "id": "dod-005",
+      "target_keys": [],
+      "gaps": [
+        "Review requested list coverage in EBA GL definition of default (GL/2016/07) para. 73, item (d): no indications of unlikeliness to pay as specified in Article 178(3) of Regulation (EU) No 575/2013 or any additional indications of unlikeliness to pay specified by the institution apply",
+        "Review requested list coverage in EBA GL definition of default (GL/2016/07) para. 73, item (e): the institution does not consider it otherwise unlikely that the obligor will pay its credit obligations in full according to the schedule after the restructuring arrangements without recourse to realising security. In this assessment institutions should examine in particular situations where a large lumpsum payment or significantly larger payments"
+      ],
+      "development_variation": "Which conditions permit reclassification after distressed restructuring?",
+      "variation_gaps": [
+        "Review requested list coverage in ECB guide to internal models, Credit risk, para. 173, item (a): Where distressed restructuring does not apply to a defaulted exposure, the probation period should last a minimum of three months from the moment that all default triggers cease to apply. According to the ECB's understanding, this means that if a new default trigger becomes applicable while the probation period is running, then the probation period",
+        "Review requested list coverage in EBA GL definition of default (GL/2016/07) para. 73, item (d): no indications of unlikeliness to pay as specified in Article 178(3) of Regulation (EU) No 575/2013 or any additional indications of unlikeliness to pay specified by the institution apply",
+        "Review requested list coverage in EBA GL definition of default (GL/2016/07) para. 73, item (e): the institution does not consider it otherwise unlikely that the obligor will pay its credit obligations in full according to the schedule after the restructuring arrangements without recourse to realising security. In this assessment institutions should examine in particular situations where a large lumpsum payment or significantly larger payments"
+      ],
+      "negative_probe_targets": {
+        "What is the publication date?": 0,
+        "Which document was published first?": 0,
+        "Does this apply to my bank?": 0
+      }
+    },
+    {
+      "id": "val-001",
+      "target_keys": [
+        "CRR Art. 185(c)"
+      ],
+      "gaps": [
+        "Read required scope/list evidence: CRR Art. 185(c)"
+      ],
+      "development_variation": "Which additional validation tools must IRB institutions use beyond back-testing?",
+      "variation_gaps": [
+        "Read required scope/list evidence: CRR Art. 185(c)"
+      ],
+      "negative_probe_targets": {
+        "What is the publication date?": 0,
+        "Which document was published first?": 0,
+        "Does this apply to my bank?": 0
+      }
+    },
+    {
+      "id": "lom-001",
+      "target_keys": [
+        "EBA GL loan origination (GL/2020/06) para. 25"
+      ],
+      "gaps": [
+        "Review requested list coverage in EBA GL loan origination (GL/2020/06) para. 25, item (b): set the credit risk appetite within the overall RAF, including credit-granting standards, qualitative statements, quantitative metrics and limits, and escalation thresholds, without business performance biases",
+        "Review requested list coverage in EBA GL loan origination (GL/2020/06) para. 25, item (d): ensure an effective oversight of credit risk quality, in particular at the point of credit granting, and provisioning",
+        "Review requested list coverage in EBA GL loan origination (GL/2020/06) para. 25, item (f): ensure that all staff involved in credit risk taking, and the managing, monitoring and controlling of credit risk, are adequately skilled, resourced and experienced"
+      ],
+      "development_variation": "What responsibilities does the management body have for credit granting?",
+      "variation_gaps": [
+        "Review requested list coverage in EBA GL loan origination (GL/2020/06) para. 25, item (b): set the credit risk appetite within the overall RAF, including credit-granting standards, qualitative statements, quantitative metrics and limits, and escalation thresholds, without business performance biases",
+        "Review requested list coverage in EBA GL loan origination (GL/2020/06) para. 25, item (d): ensure an effective oversight of credit risk quality, in particular at the point of credit granting, and provisioning",
+        "Review requested list coverage in EBA GL loan origination (GL/2020/06) para. 25, item (f): ensure that all staff involved in credit risk taking, and the managing, monitoring and controlling of credit risk, are adequately skilled, resourced and experienced"
+      ],
+      "negative_probe_targets": {
+        "What is the publication date?": 0,
+        "Which document was published first?": 0,
+        "Does this apply to my bank?": 0
+      }
+    },
+    {
+      "id": "mh-012",
+      "target_keys": [
+        "ECB guide to internal models, Credit risk, para. 258",
+        "ECB guide to internal models, Credit risk, para. 263",
+        "EBA GL PD/LGD estimation (GL/2017/16) para. 131",
+        "EBA GL PD/LGD estimation (GL/2017/16) para. 137",
+        "EBA GL PD/LGD estimation (GL/2017/16) para. 143",
+        "ECB guide to internal models, Credit risk, para. 261",
+        "EBA GL PD/LGD estimation (GL/2017/16) para. 132",
+        "EBA GL PD/LGD estimation (GL/2017/16) para. 140"
+      ],
+      "gaps": [
+        "Read required scope/list evidence: ECB guide to internal models, Credit risk, para. 258",
+        "Read required scope/list evidence: ECB guide to internal models, Credit risk, para. 263",
+        "Read required scope/list evidence: EBA GL PD/LGD estimation (GL/2017/16) para. 143",
+        "Read required scope/list evidence: EBA GL PD/LGD estimation (GL/2017/16) para. 132",
+        "Read required scope/list evidence: EBA GL PD/LGD estimation (GL/2017/16) para. 133",
+        "Read required scope/list evidence: EBA GL PD/LGD estimation (GL/2017/16) para. 141",
+        "Read required scope/list evidence: EBA GL PD/LGD estimation (GL/2017/16) para. 134",
+        "Read required scope/list evidence: EBA GL PD/LGD estimation (GL/2017/16) para. 142"
+      ],
+      "development_variation": "Which components enter economic loss for realised LGD?",
+      "variation_gaps": [
+        "Read required scope/list evidence: ECB guide to internal models, Credit risk, para. 255",
+        "Read required scope/list evidence: ECB guide to internal models, Credit risk, para. 263",
+        "Read required scope/list evidence: EBA GL PD/LGD estimation (GL/2017/16) para. 143",
+        "Read required scope/list evidence: ECB guide to internal models, Credit risk, para. 258",
+        "Read required scope/list evidence: EBA GL PD/LGD estimation (GL/2017/16) para. 132",
+        "Read required scope/list evidence: EBA GL PD/LGD estimation (GL/2017/16) para. 133",
+        "Read required scope/list evidence: EBA GL PD/LGD estimation (GL/2017/16) para. 141",
+        "Read required scope/list evidence: EBA GL PD/LGD estimation (GL/2017/16) para. 134"
+      ],
+      "negative_probe_targets": {
+        "What is the publication date?": 0,
+        "Which document was published first?": 0,
+        "Does this apply to my bank?": 0
+      }
+    },
+    {
+      "id": "app-004",
+      "target_keys": [
+        "EBA GL definition of default (GL/2016/07) para. 6",
+        "EBA GL definition of default (GL/2016/07) para. 8",
+        "EBA GL definition of default (GL/2016/07) para. 7"
+      ],
+      "gaps": [
+        "Read required scope/list evidence: EBA GL definition of default (GL/2016/07) para. 6",
+        "Read required scope/list evidence: EBA GL definition of default (GL/2016/07) para. 8",
+        "Read required scope/list evidence: EBA GL definition of default (GL/2016/07) para. 7"
+      ],
+      "development_variation": "Do the definition-of-default guidelines apply to smaller institutions?",
+      "variation_gaps": [
+        "Read required scope/list evidence: EBA GL definition of default (GL/2016/07) para. 6",
+        "Read required scope/list evidence: EBA GL definition of default (GL/2016/07) para. 8",
+        "Read required scope/list evidence: EBA GL definition of default (GL/2016/07) para. 7"
+      ],
+      "negative_probe_targets": {
+        "What is the publication date?": 0,
+        "Which document was published first?": 0,
+        "Does this apply to my bank?": 0
+      }
+    },
+    {
+      "id": "irb-007",
+      "target_keys": [
+        "CRR Art. 162(3)",
+        "CRR Art. 162(3)(a)",
+        "CRR Art. 162(3)(b)",
+        "CRR Art. 162(3)(c)",
+        "CRR Art. 162(3)(d)",
+        "CRR Art. 162(3)(e)"
+      ],
+      "gaps": [
+        "Read required scope/list evidence: CRR Art. 162(3)(a)",
+        "Read required scope/list evidence: CRR Art. 162(3)(b)",
+        "Read required scope/list evidence: CRR Art. 162(3)(c)",
+        "Read required scope/list evidence: CRR Art. 162(3)(d)",
+        "Read required scope/list evidence: CRR Art. 162(3)(e)"
+      ],
+      "development_variation": "Which short-term exposures qualify for a maturity floor of one day?",
+      "variation_gaps": [
+        "Read required scope/list evidence: CRR Art. 162(3)(a)",
+        "Read required scope/list evidence: CRR Art. 162(3)(b)",
+        "Read required scope/list evidence: CRR Art. 162(3)(c)",
+        "Read required scope/list evidence: CRR Art. 162(3)(d)",
+        "Read required scope/list evidence: CRR Art. 162(3)(e)"
+      ],
+      "negative_probe_targets": {
+        "What is the publication date?": 0,
+        "Which document was published first?": 0,
+        "Does this apply to my bank?": 0
+      }
+    }
+  ],
+  "full_credit_answers_flagged_for_review": [
+    {
+      "id": "lgd-007",
+      "gaps": [
+        "Read required scope/list evidence: EBA GL PD/LGD estimation (GL/2017/16) para. 136"
+      ]
+    },
+    {
+      "id": "crm-001",
+      "gaps": [
+        "Review requested list coverage in CRR Art. 197(5), item (b): the CIUs are limited to investing in instruments that are eligible for recognition under paragraphs 1 and 4"
+      ]
+    },
+    {
+      "id": "mh-013",
+      "gaps": [
+        "Read required scope/list evidence: CRR Art. 166(1)",
+        "Read required scope/list evidence: CRR Art. 166(3)"
+      ]
+    },
+    {
+      "id": "mh-020",
+      "gaps": [
+        "Resolve the required answer fact: Establish the exposure-value treatment of the drawn loan balance."
+      ]
+    },
+    {
+      "id": "cmp-006",
+      "gaps": [
+        "Resolve the required answer fact: Identify the treatment and prescribed retail risk weight of the SA remainder; the numerical retail weight remains unverified."
+      ]
+    }
+  ],
+  "adjacent_structural_check": {
+    "question": "Which conditions must life insurance policies satisfy for collateral?",
+    "gaps": [
+      "Review requested list coverage in CRR Art. 212(1), item (a): the borrower's claim against the third party institution is openly pledged or assigned to the lending institution and such pledge or assignment is legally effective and enforceable in all relevant jurisdictions and is unconditional and irrevocable",
+      "Review requested list coverage in CRR Art. 212(1), item (c): as a result of the notification, the third party institution is able to make payments solely to the lending institution or to other parties only with the lending institution's prior consent."
+    ]
+  },
+  "limits": "Lexical omissions and finite structural probes are conservative signals. A flag can request unnecessary review; no flag does not certify completeness."
+}

@@ -1,0 +1,10 @@
+{
+  "role": "development",
+  "snapshot": "20d15f898cdbb3884c604c0fd36d67f414b764833768b200baaa8122132eba7b",
+  "ids": ["dod-005", "pd-003", "mh-006", "cmp-001", "cmp-002", "app-001", "lgd-007", "val-001", "lom-001", "mh-012", "oos-006", "mh-014", "app-004", "irb-007"],
+  "strategies": ["llm", "single_first"],
+  "expected_tokens": 1500000,
+  "reserve_per_arm": 1500000,
+  "reserve_total": 3000000,
+  "method": "Two fresh arms on identical frozen questions and references; compare quality, omissions, contradictions, citations, fallback, all calls, tokens and active time. No default-policy promotion based only on route-type agreement."
+}

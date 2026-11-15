@@ -366,7 +366,9 @@ def _cmd_eval_answers(args: argparse.Namespace) -> None:
     if args.route:
         from reglens.eval.route import cached_routes
 
-        routes = cached_routes(items)
+        strategy = (cfg.answer or {}).get("routing", "llm")
+        routes = (cached_routes(items) if strategy == "llm"
+                  else cached_routes(items, strategy=strategy))
         if missing := [i.id for i in items if i.id not in routes]:
             print(f"No current route for {', '.join(missing)}: run `reglens eval-route` first.")
             return
@@ -428,7 +430,9 @@ def _cmd_eval_route(args: argparse.Namespace) -> None:
 
     cfg = load_config(args.config)
     items = _golden_items(args)
-    cached = cached_routes(items)
+    strategy = (cfg.answer or {}).get("routing", "llm")
+    cached = (cached_routes(items) if strategy == "llm"
+              else cached_routes(items, strategy=strategy))
     todo = [i for i in items if i.id not in cached]
     est = len(todo) * args.tokens_per_call
     print(
@@ -441,7 +445,8 @@ def _cmd_eval_route(args: argparse.Namespace) -> None:
 
     from reglens.llm.provider import get_provider
 
-    s = run(get_provider(cfg), items, log=lambda m: print(m, flush=True))
+    s = (run(get_provider(cfg), items, log=lambda m: print(m, flush=True)) if strategy == "llm"
+         else run(None, items, strategy=strategy, log=lambda m: print(m, flush=True)))
     print(
         f"\naccuracy {s['accuracy']}  agent recall {s['agent_recall']}  "
         f"agent precision {s['agent_precision']}  confusion {s['confusion']}  "

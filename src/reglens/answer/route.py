@@ -46,8 +46,14 @@ ROUTER_VERSION = hashlib.sha256(ROUTER_SYSTEM.encode()).hexdigest()[:8]
 ROUTES = ("single", "agent")
 
 
-def route_question(provider: LLMProvider, question: str) -> tuple[str, str, int]:
+def route_question(
+    provider: LLMProvider, question: str, *, strategy: str = "llm"
+) -> tuple[str, str, int]:
     """(route, reason, tokens). Falls back to 'single' if the reply is unusable."""
+    if strategy == "single_first":
+        return "single", "Single-first policy; bounded required-gap fallback remains enabled", 0
+    if strategy != "llm":
+        raise ValueError("Routing must be 'llm' or 'single_first'")
     c = provider.complete(
         f"Question:\n{question}",
         purpose="route",
@@ -94,7 +100,9 @@ def answer_routed(
     emit({"stage": "routing"})
     router_unknown = 0
     try:
-        route, reason, tokens = route_question(provider, question)
+        strategy = (config.answer or {}).get("routing", "llm")
+        route, reason, tokens = (route_question(provider, question) if strategy == "llm"
+                                 else route_question(provider, question, strategy=strategy))
     except LLMError as e:
         route, reason, tokens = "single", f"router failed: {e}", e.tokens or 0
         router_unknown = int(not e.usage_known)

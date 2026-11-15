@@ -310,6 +310,12 @@ class Toolbox:
             return (
                 f"Unknown citation key '{citation_key_}'. Use a key exactly as shown in brackets."
             )
+        from reglens.answer.amendments import parent_units
+
+        seen = {r.id for r in rows}
+        for _, group in parent_units(self.conn, [r.hit() for r in rows], self.filters):
+            rows += [r for r in group if r.id not in seen]
+            seen.update(r.id for r in group)
         return self._out(rows)
 
     def get_article(

@@ -32,16 +32,22 @@ def _cached(item: GoldenItem) -> dict | None:
     return rec if rec.get("question_sha") == question_hash(item.question) else None
 
 
-def cached_routes(items: list[GoldenItem]) -> dict[str, dict]:
+def cached_routes(items: list[GoldenItem], *, strategy: str = "llm") -> dict[str, dict]:
     """item id -> router record {route, reason, tokens}, for decisions on the current text."""
+    if strategy == "single_first":
+        return {i.id: {"route": "single", "reason": "Single-first policy; bounded fallback",
+                       "tokens": 0, "question_sha": question_hash(i.question)} for i in items}
+    if strategy != "llm":
+        raise ValueError("Routing must be 'llm' or 'single_first'")
     return {i.id: rec for i in items if (rec := _cached(i)) is not None}
 
 
-def run(provider: LLMProvider, items: list[GoldenItem], *, log=print) -> dict:
+def run(provider: LLMProvider, items: list[GoldenItem], *, log=print, strategy="llm") -> dict:
     ROUTE_DIR.mkdir(parents=True, exist_ok=True)
     rows, new_tokens = [], 0
+    available = cached_routes(items, strategy=strategy)
     for n, item in enumerate(items, 1):
-        rec = _cached(item)
+        rec = available.get(item.id)
         if rec is None:
             route, reason, tokens = route_question(provider, item.question)
             rec = {"route": route, "reason": reason, "tokens": tokens,
@@ -60,6 +66,8 @@ def run(provider: LLMProvider, items: list[GoldenItem], *, log=print) -> dict:
     agent_got = sum(r["route"] == "agent" for r in scored)
     summary = {
         "router_version": ROUTER_VERSION,
+        "strategy": strategy,
+        "metric_basis": "question-type route proxy; not answer quality or completeness",
         "items": len(scored),
         "accuracy": round(sum(r["route"] == r["expected"] for r in scored) / len(scored), 3)
         if scored

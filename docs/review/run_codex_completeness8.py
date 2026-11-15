@@ -11,6 +11,7 @@ import os
 import re
 import time
 from collections import Counter
+from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -31,13 +32,14 @@ from reglens.llm.provider import LLMError
 SNAPSHOT = "20d15f898cdbb3884c604c0fd36d67f414b764833768b200baaa8122132eba7b"
 
 
-def main(*, cohort_ids=None, label="codex-completeness8", allowance=3_000_000):
+def main(*, cohort_ids=None, label="codex-completeness8", allowance=3_000_000, strategy="llm"):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--live", action="store_true")
     parser.add_argument("--budget", type=int, default=allowance)
     parser.add_argument("--resume", type=Path)
     args = parser.parse_args()
     cfg = load_config(PROJECT_ROOT / "config.codex.yaml")
+    cfg = replace(cfg, answer={**(cfg.answer or {}), "routing": strategy})
     snapshot_path = PROJECT_ROOT / f"evals/frozen/{SNAPSHOT}.json"
     frozen, items = load(snapshot_path)
     if len(items) != 118 or any(i.status != "verified" for i in items):
@@ -51,6 +53,8 @@ def main(*, cohort_ids=None, label="codex-completeness8", allowance=3_000_000):
     if args.budget > allowance:
         raise ValueError("This focused evaluation exceeds its planning/approval allowance")
     identity = {
+        "routing_strategy": strategy,
+        "effective_answer_settings": cfg.answer,
         "snapshot_sha256": file_sha(snapshot_path),
         "config_sha256": file_sha(PROJECT_ROOT / "config.codex.yaml"),
         "source_hashes": {
@@ -68,7 +72,8 @@ def main(*, cohort_ids=None, label="codex-completeness8", allowance=3_000_000):
         "budget": args.budget,
         "model": cfg.model("dev"),
         "billing": cfg.billing,
-        "router": "fresh Codex decisions, after the normal free gate",
+        "router": ("fresh Codex decisions, after the normal free gate" if strategy == "llm"
+                   else "single-first; no router model call; normal gate and bounded fallback"),
         "answers": "isolated cache; no pilot reuse; normal bounded fallback",
         "grading": "all items, unchanged frozen references, Codex bulk-tier judge",
         "chunk_count": chunk_count,
@@ -151,6 +156,8 @@ def main(*, cohort_ids=None, label="codex-completeness8", allowance=3_000_000):
                                                "tokens": result.usage.total_tokens}
                 if not result.usage_known:
                     raise BudgetStop("Unknown response usage; stop")
+                if sum(r["total_tokens"] for r in receipts()) > args.budget:
+                    raise BudgetStop("Response exceeded the aggregate reserve; stop further calls")
                 return result
             except LLMError as exc:
                 call["error"] = str(exc)
@@ -180,7 +187,9 @@ def main(*, cohort_ids=None, label="codex-completeness8", allowance=3_000_000):
                 if gate_abstains(conn, cfg, item.question):
                     route, reason, tokens = "single", "Normal deterministic scope/retrieval gate", 0
                 else:
-                    route, reason, tokens = route_question(provider, item.question)
+                    route, reason, tokens = route_question(
+                        provider, item.question, strategy=strategy
+                    )
                 report["routes"][item.id] = {"route": route, "reason": reason, "tokens": tokens}
                 checkpoint()
                 print(f"Route [{n}/{len(items)}] {item.id}: {route} "

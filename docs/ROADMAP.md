@@ -4,7 +4,7 @@ Architecture update (11 November 2026): staged corpus publication, explicit lega
 shared inference and frozen evaluations are implemented. See [implementation steps](ARCHITECTURE-IMPLEMENTATION.md)
 and [operation and remaining limits](ARCHITECTURE-OPERATIONS.md).
 
-Project rules and budget policy: [../CLAUDE.md](../CLAUDE.md). Last updated: 2026-11-14.
+Project rules and budget policy: [../CLAUDE.md](../CLAUDE.md). Last updated: 2026-11-15.
 Next-session entry point: [HANDOFF.md](HANDOFF.md).
 
 ## Goal
@@ -47,13 +47,14 @@ The foundation milestone is implemented; the following product-quality work is s
 | 1 | Required scope/addressee retrieval and escalation | **Implemented and exercised live**; `app-004` improves from zero to full credit in one pass | Caller constraints and missing-user-input controls pass locally; evidence remains development-set only |
 | 2 | Coverage of conditions, components and exceptions | **Implemented bounded signals**, including source-linked conditions and context-only rewrites; discovery alone does not force research | Demonstrated cure/economic-loss issues resolved in [precision2](results/codex-coverage-precision2-2026-11-14.md); broader completeness remains unproven |
 | 3 | Targeted verification of 1–2 | **Complete**: 267 tests; focused8 seven full / one partial (582,354 tokens); subsequent precision2 two full / no gaps (109,121 tokens) | Precision2 answer/routing usage falls 40.2% for that pair; no claim of a new full or eight-case score on the latest revision |
-| 4 | Enclosing amendment introductions in citations | Queued; `cmp-001` retains `unsupported_number(160)` despite full semantic credit | Deliver and cite the context needed to support the amended article number |
-| 5 | Routing efficiency | Later; 24.5% of known full-run tokens went to routing | Compare cost and quality on a fixed cohort after coverage behaviour is reliable |
-| Parallel review track | Rubric adjudication and independent holdout | Practitioner review pending for `mh-006` / `mh-014`; no independent holdout yet | Preserve original references/scores; create explicit adjudications and separately authored holdout questions |
+| 4 | Enclosing amendment introductions in citations | **Implemented and exercised live**; both fresh `cmp-001` answers receive full credit and pass strict mechanical checks | Whole-unit/caller-filter controls retained; number checking unchanged |
+| 5 | Routing efficiency and broader verification | **Paired14 complete**: LLM 92.3%, single-first 88.5%; candidate routing/answer tokens 48.1% lower but governance grade lower | Default stays LLM; candidate opt-in. [Results and limits](results/handoff-routing14-2026-11-15.md); 272 tests pass |
+| Parallel review track | Rubric adjudication and independent holdout | **Explicitly pending per user**; practitioner/source packets and independent-author intake prepared | Actual independent people/decisions/questions still required; no fabricated sign-off or rewritten grades |
 
 Use [the handoff](HANDOFF.md) for saved artifacts, code entry points and verification constraints.
 The demonstrated cure-condition omission and economic-loss over-research are resolved in the
-two-case follow-up. Broader verification and the queued citation/routing/holdout work remain.
+two-case follow-up. Citation work and paired broader/routing verification are now complete;
+independent review/holdout remain pending per user, and general completeness remains unproven.
 A later full rerun should use a fresh run identity after focused checks
 justify it. Existing frozen references, historical answers and scores remain immutable.
 

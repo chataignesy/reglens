@@ -60,8 +60,9 @@ def main():
     assert tokens <= report["budget"]
     for rel, expected in report["identity"]["source_hashes"].items():
         assert file_sha(PROJECT_ROOT / "src/reglens" / rel) == expected
-    old_score = sum(i["baseline"]["grade"]["score"] for i in items) / (2 * len(items))
-    new_score = sum(i["grade"]["score"] for i in items) / (2 * len(items))
+    scored = [i for i in items if i["entry"]["type"] != "out_of_scope"]
+    old_score = sum(i["baseline"]["grade"]["score"] for i in scored) / (2 * len(scored))
+    new_score = sum(i["grade"]["score"] for i in scored) / (2 * len(scored))
     by_purpose = Counter()
     phase_seconds = Counter()
     for receipt in receipts:
@@ -100,7 +101,7 @@ def main():
         "Personal project; not affiliated with an employer or supervisor; "
         "not legal or regulatory advice.", "",
         f"Completed {len(items)} fresh routed answers against unchanged frozen references. "
-        f"Automated mean score: **{old_score:.2%} → {new_score:.2%}** on this selected "
+        f"Automated in-scope mean score: **{old_score:.2%} → {new_score:.2%}** on this selected "
         "development cohort. This is not a full benchmark or an independent holdout.", "",
         f"Usage: **{tokens:,} known tokens** of the {report['budget']:,}-token reserve; "
         f"{len(receipts)} calls; "
@@ -134,8 +135,8 @@ def main():
               "(a foreword-bound answer where additional applicability research is optional). "
               "Compare their attempts and tokens as well as scores; a retained full score "
               "does not establish that added work was necessary." if len(items) == 8 else
-              "This two-case check targets cure conditions and economic-loss research specificity. "
-              "It does not rerun the other cases or provide an independent holdout."), "",
+              "This fixed development cohort does not provide an independent holdout. "
+              "Out-of-scope cases are excluded from the headline mean."), "",
               "No product code was changed during this run. Historical answers, references "
               "and published scores remain unchanged. Fresh routes and isolated answer caches "
               "were used. Judge verdict caching follows the existing exact-content identity; "

@@ -37,6 +37,7 @@ SINGLE_FILES = [
     "answer/context_plan.py",
     "answer/required_evidence.py",
     "answer/conditions.py",
+    "answer/amendments.py",
     "agent/tools.py",
     "answer/pipeline.py",
     "answer/prompts.py",

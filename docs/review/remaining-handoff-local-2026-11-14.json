@@ -1,0 +1,34 @@
+{
+  "basis": "SQL/structural audit; no model calls or new answer-quality grades",
+  "snapshot_file_sha256": "47c5cfd9f9307fcbbff8c00f1a853e44acbda45cc4103c99ba10995bfc4ff65e",
+  "baseline_sha256": "39a71cb7cfa56f5425722bc7a2ee5008babc6053f3ca351a18a33fc1c785fe8c",
+  "single_first_routes": 118,
+  "policy_router_tokens": 0,
+  "historical_router_tokens": 1417530,
+  "amendment_context": {
+    "delivered": [
+      "Art. 1(86)(a)",
+      "Art. 1(86)"
+    ],
+    "before": {
+      "claims": 1,
+      "ok": 0,
+      "supported_rate": 0.0,
+      "problems": {
+        "unsupported_number": 1
+      }
+    },
+    "after": {
+      "claims": 1,
+      "ok": 1,
+      "supported_rate": 1.0,
+      "problems": {}
+    },
+    "guard": [
+      "Review required citation context: cite CRR3 amending act (Reg. 2024/1623) Art. 1(86) with the amendment child to support 160"
+    ]
+  },
+  "practitioner_packets_verified": 2,
+  "independent_practitioner_and_holdout": "pending external people; not fabricated",
+  "live_paired_evaluation": "awaiting 3M-token budget approval"
+}

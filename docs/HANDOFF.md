@@ -4,6 +4,17 @@ Personal project; not affiliated with any employer or supervisor. Not legal or r
 
 ## Start here
 
+Remaining-work update (15 November 2026): amendment introduction delivery/citation is fixed;
+both fresh `cmp-001` answers pass mechanical checks and receive full credit. The paired
+[14-question comparison](results/handoff-routing14-2026-11-15.md) is complete: LLM routing
+92.3% versus single-first 88.5% in-scope, with 48.1% fewer routing/answer tokens for the candidate
+but one lower governance grade. LLM routing remains the default; single-first is opt-in.
+272 tests pass. Known evaluation usage: 1,287,454 tokens plus one preserved quota-rejected
+request with unknown usage, explicitly resumed by the user. Read
+[verification and pending work](review/REMAINING-HANDOFF-VERIFICATION-2026-11-15.md).
+The user explicitly left practitioner review and independent holdout authorship pending;
+their review/intake packets are prepared. The inference service was stopped after completion.
+
 Latest follow-up (14 November 2026): source-linked conditions and research specificity are
 implemented and locally verified (**267 tests**, including disposable Postgres). The
 [two-question follow-up](results/codex-coverage-precision2-2026-11-14.md) gives full credit to both

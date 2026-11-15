@@ -50,9 +50,11 @@ def expand_context(conn, question, hits, filters=None, *, max_extra=4, max_chars
     box = Toolbox(conn, filters=filters)
     out, seen, left = list(hits), {h.id for h in hits}, max_chars
     groups = requested_units(conn, question, hits, filters)
+    from reglens.answer.amendments import parent_units
     from reglens.answer.conditions import condition_units
     from reglens.answer.required_evidence import evidence_units
 
+    groups += [g for _, g in parent_units(conn, hits, filters)]
     groups += condition_units(conn, question, hits, filters)
     groups += evidence_units(conn, question, hits, filters)
     peer_article = None

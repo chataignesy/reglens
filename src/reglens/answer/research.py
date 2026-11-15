@@ -226,10 +226,12 @@ def guard(
     """Independent, auditable conservative signals; this does not prove completeness."""
     if data.get("abstain"):
         return []
+    from reglens.answer.amendments import citation_gaps
     from reglens.answer.context_plan import known_definition_gaps, requested_gaps
     from reglens.answer.required_evidence import coverage_gaps
 
     gaps = known_definition_gaps(conn, data, filters)
+    gaps += citation_gaps(conn, data, hits, filters, delivered, evidence_hits)
     gaps += coverage_gaps(
         conn, question, data, hits, filters, delivered, evidence_hits
     )

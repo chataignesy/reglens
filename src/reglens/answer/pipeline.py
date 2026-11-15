@@ -253,7 +253,7 @@ def answer_question(
             next_prompt, purpose = prompt + retry_note(found), "answer_retry"
             continue
         gaps = guard(question, data, hits, conn=conn, filters=filters)
-        review_prefix = "Review requested list coverage"
+        review_prefix = ("Review requested list coverage", "Review required citation context")
         if (attempt == 0 and gaps
                 and all(g.startswith(review_prefix) for g in data.get("missing_requirements", []))):
             ans.trace.append({"tool": "answer_completion", "requirements": gaps,

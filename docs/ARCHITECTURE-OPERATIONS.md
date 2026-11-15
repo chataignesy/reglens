@@ -7,6 +7,14 @@ Current Q&A follow-up and session entry point: [HANDOFF.md](HANDOFF.md). The fou
 below is supplemented by the dated runtime updates; completed infrastructure is not a guarantee
 of complete legal answers.
 
+Remaining handoff update (15 November 2026): enclosing amendment introductions are included in
+bounded context/get_passage reads and required as citations for numbers not present in a child.
+Strict mechanical checks remain unchanged. `answer.routing: single_first` is available in a copy
+of configuration as an opt-in, with the same gates and bounded fallback; runtime, CLI and evaluation
+paths honor it without reusing LLM route-cache decisions. The LLM default was retained after
+[paired development verification](results/handoff-routing14-2026-11-15.md) showed lower candidate
+cost but one lower grade. Route-type agreement is only a diagnostic proxy, not answer quality.
+
 Scope/list coverage update (14 November 2026): bounded evidence planning now adds scope/addressee
 units and requested-list children/peers under the existing context budget. The shared guard checks
 whole-window delivery and conservative enumeration omissions, including API/Codex pre-final and

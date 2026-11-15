@@ -63,6 +63,13 @@ deferred rather than launched under the focused-run approval.
 
 ## External work deliberately pending
 
+Subsequent scope/closure update (15 November): the user removed the holdout from the active plan
+and completed an author practitioner review with Claude assistance in commit `d3d42f6`. Both
+original baseline answers were accepted. See the [closure and verified decision export](PRACTITIONER-REVIEW-CLOSURE-2026-11-15.md).
+This was not independent or blind validation and does not adjudicate the paired14 answers.
+Raw scores remain unchanged; future rubric revision is deferred. The following paragraph records
+the earlier pending state, which is superseded by this update.
+
 At the user's explicit request, independent practitioner review and separately authored holdout
 questions remain pending. The technical preparation is complete:
 

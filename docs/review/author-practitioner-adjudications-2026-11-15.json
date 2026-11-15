@@ -1,0 +1,46 @@
+{
+  "status": "completed_author_practitioner_review",
+  "review_type": "project-author practitioner review with Claude assistance; stage 1 not blind",
+  "independent_validation": false,
+  "scope": "Two exact original baseline answer artifacts; not later paired-run answers",
+  "source_review_commit": "d3d42f68b9df40ffa830217f00b55587f0123616",
+  "review_document_sha256": "a83ba42c5a47480ea9feeacf2e3e2f7a1c9a3db7a829b224f4ac93780d1ae0fd",
+  "baseline_report_sha256": "39a71cb7cfa56f5425722bc7a2ee5008babc6053f3ca351a18a33fc1c785fe8c",
+  "historical_scores_and_references_changed": false,
+  "new_rubric_version_applied": false,
+  "deferred_recommendations": [
+    "In a future rubric version, make analogous own-LGD/CCF analysis optional for mh-006",
+    "Optional source-edition metadata clarification for the historical ECB instructions"
+  ],
+  "holdout": "out of scope at the user's request",
+  "cases": [
+    {
+      "id": "mh-006",
+      "record_id": "f0084f855058a422327746cb2fba9386e0dbe005f4cfc2ecc462560c0634c121",
+      "record_file_sha256": "7bc7372d5662c5dcaf1619c50d6fb5856d7d380a77bf72179ada7db61069b285",
+      "original_automated_score": 1,
+      "adjudication": {
+        "artifact_sha256": "10cad714357e785535a518ae2b188734715c3ed54740e95ba3ff33234b3912c7",
+        "artifact": "C:\\Development\\RegLens\\data\\evals\\answers\\20261113-224005-859471-codex-full118\\agent-d190cefb30\\attempts\\mh-006-ad47980e-411ea0ee45334524ae5e0f4df33b6c4f.json",
+        "reviewer": "MistVista - project author; EU credit-risk practitioner. Author review, NOT independent: approved the Claude-prepared pre-review docs/review/AI-PRE-REVIEW-mh006-mh014-2026-11-15.md (stage 1 not blind).",
+        "decision": "accepted",
+        "reason": "Complete for the actual question. All CRR Art. 185(b) PD elements stated and cited (per-grade realised vs estimated default rates, deviation analysis, longest possible history, documentation, at least annual update); ECB Feb 2019 instructions Section 2.2 submission correct (templates with annual validation report, consolidated level unless the Decision says otherwise, observation period, references, naming) and labelled supervisory. The omitted analogous own-LGD/CCF analysis in 185(b) is not PD back-testing and is outside the question, so the automated partial grade is not justified. Future rubric version: mark that clause optional; raw score unchanged. Basis: CRR 02013R0575-20260626; ECB instructions Feb 2019 (PDF sha256 f0bef87b).",
+        "recorded_at": "2026-11-15T09:27:08.507151+00:00"
+      }
+    },
+    {
+      "id": "mh-014",
+      "record_id": "0d645f414ee5ef5f7d9e78f9db21c988f922c0f5a90a24e44e4e68ab205632f3",
+      "record_file_sha256": "50182207ba6a3d63f5fa93655610782b20d00910016a43da052a34f3b5fb70ca",
+      "original_automated_score": 2,
+      "adjudication": {
+        "artifact_sha256": "9f0d9c22c08645b4ac477ea26105d8bbbff0365889b36c0db13abc82bbb4fe98",
+        "artifact": "C:\\Development\\RegLens\\data\\evals\\answers\\20261113-224005-859471-codex-full118\\agent-d190cefb30\\attempts\\mh-014-e144e7d8-8f5f5625d8a24c57ba8e326e8f16d303.json",
+        "reviewer": "MistVista - project author; EU credit-risk practitioner. Author review, NOT independent: approved the Claude-prepared pre-review docs/review/AI-PRE-REVIEW-mh006-mh014-2026-11-15.md (stage 1 not blind).",
+        "decision": "accepted",
+        "reason": "Complete. Respects the supplied eligible-guarantee assumption; CRR Art. 159a: no PD/LGD input floors on the covered part, floors apply to the uncovered part: PD 0,05% (163(1)(b)), LGD 5% for retail secured by residential property (164(4) Table 1), fixed irrespective of collateral level (164(4a)(d)); higher national floors (164(6),(10)) supported. CCF floors and guarantee-recognition mechanics are out of scope for a PD/LGD question. Automated full credit justified. Basis: CRR 02013R0575-20260626.",
+        "recorded_at": "2026-11-15T09:27:08.782734+00:00"
+      }
+    }
+  ]
+}

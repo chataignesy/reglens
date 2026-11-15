@@ -5,7 +5,9 @@ Personal project; not affiliated with any employer or supervisor. Not legal or r
 Status, 15 November 2026: **author practitioner review recorded; both answers accepted**. This
 is not an independent review. See the
 [review record](AI-PRE-REVIEW-mh006-mh014-2026-11-15.md#recorded-decision-author-practitioner-review-15-november-2026).
-An independent practitioner review is still open if one is wanted.
+The [closure and verified decision export](PRACTITIONER-REVIEW-CLOSURE-2026-11-15.md) complete the
+requested review track. An independent review is optional future work. The structured packet
+below retains its original preparation status; the separate export records the actual decisions.
 
 Original status: **pending an independent practitioner**. This is an evidence pack and proposed scope
 analysis prepared by Codex, not a completed adjudication or practitioner certification. No raw

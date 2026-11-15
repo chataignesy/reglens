@@ -4,7 +4,9 @@ Remaining handoff update (15 November 2026): amendment introductions are deliver
 relaxing mechanical checks. A paired 14-case test measures LLM routing at 92.3% versus an opt-in
 single-first policy at 88.5%, with lower candidate token use but a governance regression on one
 trajectory. LLM stays default. See [verification](review/REMAINING-HANDOFF-VERIFICATION-2026-11-15.md).
-Independent practitioner review and holdout authorship remain pending at the user's request.
+The [author practitioner review](review/PRACTITIONER-REVIEW-CLOSURE-2026-11-15.md) is complete:
+both original baseline answers were accepted with Claude assistance. It was not independent or
+blind; raw scores remain unchanged. The holdout is out of scope at the user's request.
 
 Scope/list follow-up (14 November 2026): source-bound scope probes, structural list expansion
 and conservative omission signals are implemented and locally tested. See

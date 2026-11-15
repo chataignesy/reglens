@@ -30,7 +30,7 @@ so usage is tracked in **tokens**
 | 2 — Grounded Q&A | 30 Nov – 20 Dec 2026 | ✅ Done early — pipeline, verifier, LLM judge ([results](results/answers-phase2.md)) |
 | 3 — Agentic retrieval & MCP | 4 – 24 Jan 2027 | ✅ Done early — router, bounded agent, MCP server; routed correctness 0.89 on 104 in-scope questions ([results](results/golden-120.md)) |
 | 4 — Policy gap analysis | 25 Jan – 21 Feb 2027 | ✅ Done early — register, synthetic policy, 15/15 planted gaps (tuned; [results](results/gap-phase4.md)) |
-| 5 — Polish & launch | 22 Feb – 7 Mar 2027 | **In progress** — UI and architecture foundations implemented; full118, focused8 and precision2 evaluations complete; wider quality, cost and independent verification remain |
+| 5 — Polish & launch | 22 Feb – 7 Mar 2027 | **In progress** — UI and architecture foundations implemented; full118, focused8, precision2 and paired14 evaluations complete; author review complete; wider quality, cost and launch work remain |
 
 ## Current priority — Q&A completeness (14 November 2026)
 
@@ -38,9 +38,11 @@ The latest [full Codex benchmark](results/codex-frozen118-2026-11-14.md) measure
 across 103 in-scope questions: 76 full, 26 partial, one wrong/unanswered. All 15 out-of-scope
 requests were refused. Full-credit rate is 73.8%; the mean awards partial credit. Mechanical checks
 averaged 99.0%, but 22 of the 26 graded partial answers reported no gap. The set is reviewed
-development material, and the grades remain automated, without practitioner sign-off.
+development material, and the grades remain automated. The author practitioner review below
+accepts two exact baseline answers; it does not validate the wider set independently.
 
-The foundation milestone is implemented; the following product-quality work is still open:
+The foundation milestone is implemented; the following table tracks the completed handoff work
+and its remaining evidence limits:
 
 | Order | Work | Status / evidence | Acceptance direction |
 |---|---|---|---|
@@ -49,12 +51,14 @@ The foundation milestone is implemented; the following product-quality work is s
 | 3 | Targeted verification of 1–2 | **Complete**: 267 tests; focused8 seven full / one partial (582,354 tokens); subsequent precision2 two full / no gaps (109,121 tokens) | Precision2 answer/routing usage falls 40.2% for that pair; no claim of a new full or eight-case score on the latest revision |
 | 4 | Enclosing amendment introductions in citations | **Implemented and exercised live**; both fresh `cmp-001` answers receive full credit and pass strict mechanical checks | Whole-unit/caller-filter controls retained; number checking unchanged |
 | 5 | Routing efficiency and broader verification | **Paired14 complete**: LLM 92.3%, single-first 88.5%; candidate routing/answer tokens 48.1% lower but governance grade lower | Default stays LLM; candidate opt-in. [Results and limits](results/handoff-routing14-2026-11-15.md); 272 tests pass |
-| Review track | Practitioner adjudication | **Pending**; staged review guide, worksheet and source/artifact packets prepared | Actual practitioner findings required; preserve raw scores and version future rubric changes. Independent holdout removed from the active plan per user on 15 November |
+| Review track | Practitioner adjudication | **Complete as author practitioner review**, assisted by Claude; both original baseline answers accepted | Not independent; stage 1 not blind. Raw scores unchanged; future rubric revision deferred. [Closure and verified decisions](review/PRACTITIONER-REVIEW-CLOSURE-2026-11-15.md). Holdout out of scope per user |
 
 Use [the handoff](HANDOFF.md) for saved artifacts, code entry points and verification constraints.
 The demonstrated cure-condition omission and economic-loss over-research are resolved in the
 two-case follow-up. Citation work and paired broader/routing verification are now complete;
-practitioner review remains pending, the holdout is out of scope per user, and general completeness remains unproven.
+author practitioner review is complete, the holdout is out of scope per user, and general
+completeness remains unproven. No active task remains from this handoff; wider product-quality
+and launch work remains open. Independent review is an optional future source of evidence.
 A later full rerun should use a fresh run identity after focused checks
 justify it. Existing frozen references, historical answers and scores remain immutable.
 

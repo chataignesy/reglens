@@ -4,6 +4,14 @@ Personal project; not affiliated with any employer or supervisor. Not legal or r
 
 ## Start here
 
+Review closure (15 November 2026): **the requested handoff work is complete**. The project author,
+an EU credit-risk practitioner, approved the Claude-assisted review of the two original baseline
+answers in commit `d3d42f6`; both were accepted. This was not independent or blind validation.
+See the [closure and verified decisions](review/PRACTITIONER-REVIEW-CLOSURE-2026-11-15.md).
+Raw automated grades (1 for `mh-006`, 2 for `mh-014`), frozen references and published results
+remain unchanged. A future versioned rubric change remains deferred. Independent holdout work
+is out of scope; wider product-quality and launch work remains on the roadmap.
+
 Scope decision (15 November 2026): the user has removed the independent holdout from the active
 plan and is proceeding only with practitioner review. Use the
 [review guide](review/PRACTITIONER-REVIEW-GUIDE-2026-11-15.md) and
@@ -18,8 +26,8 @@ but one lower governance grade. LLM routing remains the default; single-first is
 272 tests pass. Known evaluation usage: 1,287,454 tokens plus one preserved quota-rejected
 request with unknown usage, explicitly resumed by the user. Read
 [verification and pending work](review/REMAINING-HANDOFF-VERIFICATION-2026-11-15.md).
-The user explicitly left practitioner review and independent holdout authorship pending;
-their review/intake packets are prepared. The inference service was stopped after completion.
+Review preparation was complete at that point; the closure above supersedes its pending status.
+The inference service was stopped after completion.
 
 Latest follow-up (14 November 2026): source-linked conditions and research specificity are
 implemented and locally verified (**267 tests**, including disposable Postgres). The

@@ -4,6 +4,12 @@ Personal project; not affiliated with any employer or supervisor. Not legal or r
 
 ## Start here
 
+Scope decision (15 November 2026): the user has removed the independent holdout from the active
+plan and is proceeding only with practitioner review. Use the
+[review guide](review/PRACTITIONER-REVIEW-GUIDE-2026-11-15.md) and
+[staged worksheet](review/PRACTITIONER-REVIEW-FORM-2026-11-15.md). The holdout intake is retained
+as an inactive historical preparation; no holdout questions or results exist.
+
 Remaining-work update (15 November 2026): amendment introduction delivery/citation is fixed;
 both fresh `cmp-001` answers pass mechanical checks and receive full credit. The paired
 [14-question comparison](results/handoff-routing14-2026-11-15.md) is complete: LLM routing

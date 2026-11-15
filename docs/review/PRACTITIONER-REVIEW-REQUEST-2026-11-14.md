@@ -9,6 +9,10 @@ answer, frozen reference, grade or benchmark report has been changed.
 The [structured packet](practitioner-packets-2026-11-14.json) contains each exact question,
 frozen reference, answer, raw grade, immutable answer-artifact hash and source fingerprints.
 
+Conduct the review using the [staged guide](PRACTITIONER-REVIEW-GUIDE-2026-11-15.md) and
+[worksheet](PRACTITIONER-REVIEW-FORM-2026-11-15.md). This request includes proposed interpretations;
+disclose it only after the reviewer has recorded their independent source/answer assessment.
+
 ## mh-006: PD question and the own-LGD/CCF clause
 
 The raw Codex grade is partial because the answer omits the analogous own-LGD/conversion-factor
@@ -48,5 +52,4 @@ The command creates a separate content-addressed adjudication. It does not overw
 or make the reviewer independent merely because a name was entered. Disclose how the reviewer
 was selected and whether they authored development references or product changes.
 
-Do not send this failure packet to the independent holdout author before their questions and
-references are sealed; that would compromise the intended separation.
+The independent holdout is out of scope at the user's request as of 15 November 2026.

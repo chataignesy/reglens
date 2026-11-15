@@ -49,12 +49,12 @@ The foundation milestone is implemented; the following product-quality work is s
 | 3 | Targeted verification of 1–2 | **Complete**: 267 tests; focused8 seven full / one partial (582,354 tokens); subsequent precision2 two full / no gaps (109,121 tokens) | Precision2 answer/routing usage falls 40.2% for that pair; no claim of a new full or eight-case score on the latest revision |
 | 4 | Enclosing amendment introductions in citations | **Implemented and exercised live**; both fresh `cmp-001` answers receive full credit and pass strict mechanical checks | Whole-unit/caller-filter controls retained; number checking unchanged |
 | 5 | Routing efficiency and broader verification | **Paired14 complete**: LLM 92.3%, single-first 88.5%; candidate routing/answer tokens 48.1% lower but governance grade lower | Default stays LLM; candidate opt-in. [Results and limits](results/handoff-routing14-2026-11-15.md); 272 tests pass |
-| Parallel review track | Rubric adjudication and independent holdout | **Explicitly pending per user**; practitioner/source packets and independent-author intake prepared | Actual independent people/decisions/questions still required; no fabricated sign-off or rewritten grades |
+| Review track | Practitioner adjudication | **Pending**; staged review guide, worksheet and source/artifact packets prepared | Actual practitioner findings required; preserve raw scores and version future rubric changes. Independent holdout removed from the active plan per user on 15 November |
 
 Use [the handoff](HANDOFF.md) for saved artifacts, code entry points and verification constraints.
 The demonstrated cure-condition omission and economic-loss over-research are resolved in the
 two-case follow-up. Citation work and paired broader/routing verification are now complete;
-independent review/holdout remain pending per user, and general completeness remains unproven.
+practitioner review remains pending, the holdout is out of scope per user, and general completeness remains unproven.
 A later full rerun should use a fresh run identity after focused checks
 justify it. Existing frozen references, historical answers and scores remain immutable.
 

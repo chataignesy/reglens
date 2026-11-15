@@ -2,7 +2,8 @@
 
 Personal project; not affiliated with an employer or supervisor. Not legal or regulatory advice.
 
-**Status: awaiting an independent author and reviewer. No holdout questions have been created.**
+**Status: out of scope at the user's request, 15 November 2026. No holdout questions have been created.**
+The preparation below is retained for historical reference and is not an active task.
 Codex has seen the development questions and fixes. Questions it authors in this chat would be
 additional development tests, even with new wording, and must not be labelled independent.
 

@@ -1,9 +1,24 @@
 # RegLens — demo video script (≈ 3 minutes)
 
-For a screen recording of the local Next.js web UI, posted natively on LinkedIn. Every question
-below scored *fully correct* in earlier golden-set evaluations; the answer code has changed since
-(completeness checks, Nov 2026), so confirm each one in the dry run. Answers are generated live,
-so the wording will differ from run to run; the facts should not.
+For a screen recording of the local Next.js web UI, posted natively on LinkedIn. Answers are
+generated live, so the wording will differ from run to run; the facts should not.
+
+**Type every question on camera.** None of the demo questions is among the clickable examples on
+the Ask page (`src/reglens/ui/content.py`), so the demo does not look staged; keep it that way.
+
+**Why these questions (picked 15 Nov 2026).** Each scored *fully correct* (2/2) in all three saved
+runs on the frozen 118-question set (Claude 13 Nov full run and rerun, Codex 14 Nov):
+
+| Scene | Question ID | Evidence |
+|---|---|---|
+| 2 | `lgd-001` | 2/2 in all 3 runs and in all 3 smoke-30 gradings; always routed to *Quick* |
+| 3 | `mh-002` | 2/2 in all 3 runs, always routed to the agent; correct in the 15 Nov dry run |
+| 4 | `oos-007` | declined in all 3 runs and in the 15 Nov dry run |
+
+The previous scene-2 question (*PD input floors for retail*, `pd-002`) scored only *partial* in two
+of the three runs, which matches the awkward extra paragraph seen in the dry run. Backups with the
+same record: `pd-001` (*What is the PD input floor for IRB corporate exposures under CRR3?*) for
+scene 2, `oos-009` (*When should a loan move to stage 2 under IFRS 9?*) for scene 4.
 
 ## Before recording
 
@@ -40,9 +55,11 @@ the CRR including CRR3, the RTS, EBA guidelines and Q&A, and the ECB guide to in
 Every answer has to show where it comes from."
 
 ### 2. A quick factual question (≈ 30 s)
-**Answering:** Quick. **Ask:** *What PD input floors apply to retail exposures under CRR3?*
-**Show:** the live steps (searched the corpus, drafting) → the answer (0,05 % and 0,1 % for
-QRRE revolvers) → click a citation badge to open its source (CRR Art. 163(1), labelled *law*)
+**Answering:** Quick. **Ask:** *What LGD input floors apply to retail exposures under CRR3?*
+**Show:** the live steps (searched the corpus, drafting) → the answer (unsecured: QRRE 50 %, other
+retail 30 %; secured by residential property 5 %; other retail secured by financial collateral
+0 %, receivables 10 %, immovable property 10 %, other physical collateral 15 %) → click a
+citation badge to open its source (CRR Art. 164(4), Table 1, labelled *law*)
 → the "Answered … from" line (source versions) → "Mechanical citation checks: all claims passed" (say what it does not check).
 **Say:** "Each claim cites the exact article, is labelled law, supervisory expectation or
 interpretation, and the as-of line says which consolidated version the answer is based on.
@@ -113,12 +130,13 @@ All four services as above; web UI on a non-3000 port. 57,260 tokens in total (l
 
 | Scene | Result | Time · tokens | Watch for |
 |---|---|---|---|
-| 2 Quick | ✅ 0,05 % / 0,1 % QRRE revolvers; Art. 163(1) *law*; 4/4 checks passed | 18 s · 11k | Also added an Art. 159a guarantee exception with a hedging sentence; re-ask if it reads awkwardly |
+| 2 Quick (old question, `pd-002`) | ✅ 0,05 % / 0,1 % QRRE revolvers; Art. 163(1) *law*; 4/4 checks passed | 18 s · 11k | Also added an Art. 159a guarantee exception with a hedging sentence; question since replaced by `lgd-001` |
+| 2 Quick (`lgd-001`, re-run same day) | ✅ every Table 1 floor matches the reference; Art. 164(4), 164(4a), 161(6) *law*; 9/9 checks passed | ~20 s · 12k | Longer answer (application rules, Art. 159a guarantee carve-out, Art. 164(6)–(7) higher floors); all correct, so scroll slowly or zoom on the floor list in editing |
 | 3 Auto | ✅ routed to agent; default yes (both components > threshold, 95 ≥ 90 days); return after ≥ 3 months, ECB reset; assumptions stated; 5/5 checks | 28 s · 29k | EBA GL para. 71(a)–(e) citations showed as raw `[…]` text, not badges; fixed afterwards (multi-digit bracket keys, `agent/run.py`), not yet re-run live |
 | 4 Out of scope | ✅ declined; mentions Art. 92 also lists the leverage ratio | 16 s · ~17k | — |
 
-Status lines under each answer ("Semantic evidence assessment: not performed", "Research checks
-still unresolved: …") are new since the merge; be ready to explain them or crop them out.
+The "Semantic evidence assessment" and "Research checks still unresolved" status lines that
+appeared under each answer have since been removed from the web UI (15 Nov 2026).
 
 ## After recording
 

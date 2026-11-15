@@ -31,6 +31,13 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["--prefix", "web", "run", "dev"],
       "port": 3000
+    },
+    {
+      "name": "reglens-web-demo",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "web", "run", "dev", "--", "-p", "4000"],
+      "port": 4000,
+      "autoPort": false
     }
   ]
 }

@@ -2,7 +2,12 @@
 
 Personal project; not affiliated with any employer or supervisor. Not legal or regulatory advice.
 
-Status: **pending an independent practitioner**. This is an evidence pack and proposed scope
+Status, 15 November 2026: **author practitioner review recorded; both answers accepted**. This
+is not an independent review. See the
+[review record](AI-PRE-REVIEW-mh006-mh014-2026-11-15.md#recorded-decision-author-practitioner-review-15-november-2026).
+An independent practitioner review is still open if one is wanted.
+
+Original status: **pending an independent practitioner**. This is an evidence pack and proposed scope
 analysis prepared by Codex, not a completed adjudication or practitioner certification. No raw
 answer, frozen reference, grade or benchmark report has been changed.
 

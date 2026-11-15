@@ -21,7 +21,8 @@ npm run dev            # http://localhost:3000
 ```
 
 The browser calls the API directly at `NEXT_PUBLIC_REGLENS_API` (default
-`http://localhost:8000`; CORS allows `localhost:3000`). Streamed agent answers can take a minute
+`http://localhost:8000`; CORS allows any `localhost` / `127.0.0.1` port, so `npm run dev -- -p 3200`
+works when 3000 is taken or reserved). Streamed agent answers can take a minute
 or more, longer than a dev-server proxy should be trusted to hold open.
 
 **API keys:** with "Your API key", the key is kept in the page's memory only (gone on reload),

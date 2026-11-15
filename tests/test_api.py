@@ -34,6 +34,23 @@ def events(body: str) -> list[tuple[str, dict]]:
     return out
 
 
+@pytest.mark.parametrize(
+    "origin, allowed",
+    [
+        ("http://localhost:3000", True),
+        ("http://localhost:3150", True),  # Windows can reserve port 3000 (excluded port range)
+        ("http://127.0.0.1:4000", True),
+        ("http://evil.example", False),
+        ("http://localhost.evil.example:3000", False),
+    ],
+)
+def test_cors_allows_local_web_ui_on_any_port(client, origin, allowed):
+    r = client.options(
+        "/api/meta", headers={"Origin": origin, "Access-Control-Request-Method": "GET"}
+    )
+    assert (r.headers.get("access-control-allow-origin") == origin) is allowed
+
+
 def test_meta_lists_examples_and_access(client):
     m = client.get("/api/meta").json()
     assert m["examples"] and "not legal" in m["disclaimer"].lower()

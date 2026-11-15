@@ -101,3 +101,9 @@ gitignored), `evals/golden/*.jsonl`, `docs/`.
 | 2026-10-31 | Synthetic Model Validation Policy: short (~6–8 pages), ~15 planted gaps; matching per obligation |
 | 2026-11-04 | No public deployment: demo is a recorded video; Q&A is the main demo, gap analysis secondary |
 | 2026-11-04 | Next.js UI (`web/`, Tailwind + shadcn/ui) over a FastAPI backend (`reglens.api`) with streamed progress; Streamlit kept as fallback |
+| 2026-11-11 | Corpus indexed as immutable generations (staged, validated, atomically published, rollback); readers pin one generation |
+| 2026-11-11 | Evals grade against frozen reference snapshots (`evals/frozen/`); golden revisions are versioned, never edits to completed runs |
+| 2026-11-11 | Optional shared local inference service (one GPU owner) for embeddings/reranker; direct local mode still supported |
+| 2026-11-13 | Codex CLI (ChatGPT subscription) as opt-in benchmark backend via `config.codex.yaml`; Claude stays default, no OpenAI API key |
+| 2026-11-15 | Routing strategy `single_first` is opt-in; LLM routing stays default (quality equivalence not established) |
+| 2026-11-15 | Saved eval answers/grades kept in `docs/results` as audit evidence; merge commits (not squash) so cited SHAs stay valid |

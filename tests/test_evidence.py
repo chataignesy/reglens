@@ -83,6 +83,7 @@ def test_definition_includes_its_qualification(monkeypatch):
         return [qual] if "point IS NULL" in where else [definition]
 
     monkeypatch.setattr(tools, "_rows", rows)
+    monkeypatch.setattr(tools, "resolve_key", lambda conn, key: [qual])
     out = Toolbox(None).get_definition("large corporate")
     assert "‘large corporate’ means" in out and "audited" in out
 

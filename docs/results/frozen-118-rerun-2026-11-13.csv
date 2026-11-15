@@ -1,0 +1,119 @@
+﻿id,type,route,attempts,score_0_to_2,has_answer_text,unverified,citation_recall,mechanical_pass_rate,missing_info,research_needed,errors,judge_consistency_flags,artifact
+dod-001,factual,agent,single -> agent,2,True,False,1.0,1.0,True,True,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/dod-001-87216673.json
+dod-002,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/dod-002-663b8e4b.json
+dod-003,factual,single,single,1,True,False,0.5,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/dod-003-a1ffcd42.json
+dod-004,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/dod-004-a4ff6d8f.json
+dod-005,factual,single,single,1,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/dod-005-5740330a.json
+dod-006,factual,single,single,2,True,False,0.5,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/dod-006-608353b5.json
+dod-007,factual,single,single,1,True,False,0.5,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/dod-007-83463a97.json
+pd-001,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/pd-001-3cca5061.json
+pd-002,factual,single,single,1,True,False,0.5,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/pd-002-0de4dc75.json
+pd-003,factual,single,single,1,True,False,0.5,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/pd-003-ee93d9e1.json
+lgd-001,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/lgd-001-e894e505.json
+moc-001,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/moc-001-29075ed9.json
+scope-001,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/scope-001-6773082b.json
+sa-001,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/sa-001-fe04f237.json
+floor-001,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/floor-001-c236660b.json
+mh-001,multi_hop,agent,agent,2,True,False,1.0,1.0,False,False,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/mh-001-af397236.json
+mh-002,multi_hop,agent,agent,2,True,False,1.0,1.0,False,False,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/mh-002-5ebbf51d.json
+mh-003,multi_hop,single,single,1,True,False,0.25,0.9,False,False,,score 1 but contradictions listed,data/evals/answers/single-e3fe620624-quota-resume-20261113/mh-003-3948141c.json
+mh-004,multi_hop,agent,agent,2,True,False,1.0,1.0,True,True,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/mh-004-e5532d80.json
+mh-005,multi_hop,agent,agent,1,True,False,0.5,1.0,False,False,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/mh-005-16050e81.json
+mh-006,multi_hop,single,agent -> single,2,True,False,1.0,1.0,True,True,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/mh-006-ad47980e.json
+mh-007,multi_hop,agent,agent,2,True,False,1.0,1.0,True,True,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/mh-007-05e60b5c.json
+cmp-001,comparison,agent,single -> agent,1,True,False,0.5,1.0,True,False,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/cmp-001-8e1c8e05.json
+cmp-002,comparison,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/cmp-002-f8ccb70a.json
+app-001,applicability,single,single,1,True,False,0.6666666666666666,1.0,True,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/app-001-b76a0155.json
+oos-001,out_of_scope,single,single,2,True,False,,,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/oos-001-f9fa860d.json
+oos-002,out_of_scope,single,single,2,True,False,,,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/oos-002-d0a5c2a7.json
+oos-003,out_of_scope,single,single,2,False,False,,,False,,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/oos-003-de9f480f.json
+oos-004,out_of_scope,single,single,2,True,False,,,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/oos-004-3a6b573c.json
+oos-005,out_of_scope,single,single,2,True,False,,,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/oos-005-4c7b4c94.json
+sa-002,factual,agent,single -> agent,2,True,False,1.0,0.875,True,True,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/sa-002-edcb1e33.json
+sa-003,factual,agent,single -> agent,2,True,False,1.0,0.857,True,True,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/sa-003-5a97a1fb.json
+sa-004,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/sa-004-680c7757.json
+sa-005,factual,agent,single -> agent,2,True,False,1.0,1.0,False,False,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/sa-005-82f0ddbb.json
+sa-006,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/sa-006-df1a4a47.json
+sa-007,factual,agent,single -> agent,2,True,False,1.0,1.0,False,False,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/sa-007-411a8a63.json
+sa-008,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/sa-008-c2f7139b.json
+sa-009,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/sa-009-26f545ae.json
+irb-001,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/irb-001-6164bbe6.json
+irb-002,factual,single,single,1,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/irb-002-1a3e1381.json
+irb-003,factual,single,single,1,True,False,0.5,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/irb-003-e3ddedb8.json
+irb-004,factual,agent,single -> agent,2,True,False,1.0,1.0,True,True,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/irb-004-3930537e.json
+irb-005,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/irb-005-9b0470da.json
+irb-006,factual,agent,single -> agent,2,True,False,1.0,1.0,True,True,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/irb-006-fadf7867.json
+rs-001,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/rs-001-e59e7f08.json
+rs-002,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/rs-002-be450d87.json
+rs-003,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/rs-003-9e3566fe.json
+rs-004,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/rs-004-33d2cb80.json
+rs-005,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/rs-005-d61c867e.json
+pd-005,factual,agent,agent,2,True,False,1.0,1.0,False,False,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/pd-005-f9b41e2a.json
+lgd-002,factual,agent,single -> agent,2,True,False,1.0,1.0,False,False,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/lgd-002-fdc1e093.json
+lgd-003,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/lgd-003-5ddb6a1f.json
+lgd-004,factual,agent,single -> agent,2,True,False,1.0,1.0,True,True,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/lgd-004-e4abc4fc.json
+lgd-005,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/lgd-005-193dcc68.json
+lgd-006,factual,single,single,1,True,False,1.0,1.0,False,False,,score 1 but contradictions listed,data/evals/answers/single-e3fe620624-quota-resume-20261113/lgd-006-7299d499.json
+lgd-007,factual,single,single,2,True,False,1.0,0.857,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/lgd-007-ea79146a.json
+lgd-008,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/lgd-008-11d86e9e.json
+lgd-009,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/lgd-009-a2b4627d.json
+dt-001,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/dt-001-019e5239.json
+dt-002,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/dt-002-68f0f40b.json
+val-001,factual,agent,single -> agent,2,True,False,1.0,1.0,True,True,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/val-001-7b33b1eb.json
+val-002,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/val-002-dbfd6d66.json
+val-003,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/val-003-510f59e8.json
+lom-001,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/lom-001-120f1259.json
+dod-008,factual,single,single,1,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/dod-008-0678f901.json
+dod-009,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/dod-009-a83e71b8.json
+dod-010,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/dod-010-ca231d46.json
+floor-002,factual,agent,single -> agent,2,True,False,1.0,1.0,False,False,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/floor-002-26bf38c2.json
+crm-001,factual,agent,single -> agent,2,True,False,1.0,1.0,True,True,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/crm-001-f1b4a85e.json
+mh-008,multi_hop,single,agent -> single,1,True,False,0.5,1.0,True,True,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/mh-008-54b80a7a.json
+mh-009,multi_hop,agent,single -> agent,1,True,False,0.6666666666666666,1.0,True,True,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/mh-009-d1734f88.json
+mh-010,multi_hop,single,agent -> single,2,True,False,1.0,1.0,True,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/mh-010-7f793bd1.json
+mh-011,multi_hop,agent,single -> agent,2,True,False,1.0,1.0,True,True,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/mh-011-e569012a.json
+mh-012,multi_hop,agent,single -> agent,2,True,False,1.0,1.0,False,False,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/mh-012-409fbc3c.json
+oos-006,out_of_scope,single,single,0,True,False,,1.0,True,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/oos-006-a478929b.json
+oos-007,out_of_scope,single,single,2,True,False,,,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/oos-007-e08faef4.json
+oos-008,out_of_scope,single,single,2,True,False,,,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/oos-008-f8ff2f77.json
+oos-009,out_of_scope,single,single,2,True,False,,,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/oos-009-dc615d82.json
+oos-010,out_of_scope,single,single,2,True,False,,,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/oos-010-53e07510.json
+mh-013,multi_hop,agent,agent,0,False,False,0.0,,False,,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/mh-013-c9e434b5.json
+mh-014,multi_hop,agent,agent,0,True,False,0.6666666666666666,1.0,True,True,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/mh-014-e144e7d8.json
+mh-015,multi_hop,agent,single -> agent,2,True,False,1.0,1.0,False,False,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/mh-015-e6077925.json
+mh-016,multi_hop,agent,agent,1,True,False,1.0,1.0,False,False,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/mh-016-06e61a6f.json
+mh-017,multi_hop,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/mh-017-7debb2ec.json
+mh-018,multi_hop,agent,single -> agent,2,True,False,1.0,1.0,False,False,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/mh-018-900eca6a.json
+mh-020,multi_hop,agent,agent,2,True,False,1.0,1.0,True,True,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/mh-020-b5f7a16c.json
+mh-021,multi_hop,single,agent -> single,2,True,False,0.3333333333333333,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/mh-021-583dad87.json
+mh-022,multi_hop,single,single,1,True,False,0.3333333333333333,0.8,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/mh-022-7fcae49b.json
+mh-023,multi_hop,agent,agent,1,True,False,0.25,1.0,True,True,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/mh-023-dc6d2885.json
+mh-024,multi_hop,agent,agent,2,True,False,1.0,1.0,False,False,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/mh-024-f24932c6.json
+cmp-003,comparison,agent,agent,2,True,False,1.0,1.0,True,True,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/cmp-003-90145fb5.json
+cmp-004,comparison,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/cmp-004-665e283a.json
+cmp-005,comparison,agent,single -> agent,2,True,False,1.0,1.0,False,False,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/cmp-005-5b88b926.json
+cmp-006,comparison,agent,agent,1,True,False,0.6666666666666666,1.0,True,True,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/cmp-006-7cb0ce95.json
+app-002,applicability,agent,agent,1,True,False,1.0,1.0,True,True,,score 1 but contradictions listed; rationale says the score should be 2,data/evals/answers/agent-489add8a11-quota-resume-20261113/app-002-6e81e2fb.json
+app-003,applicability,agent,agent,2,True,False,1.0,1.0,False,False,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/app-003-28020106.json
+app-004,applicability,agent,single -> agent,2,True,False,1.0,1.0,False,False,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/app-004-9148843f.json
+app-005,applicability,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/app-005-57ae5ebc.json
+dt-003,factual,single,single,2,True,False,0.5,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/dt-003-f2e63839.json
+dt-004,factual,single,single,2,True,False,1.0,0.8,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/dt-004-9ad883e4.json
+moc-002,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/moc-002-7ecd0098.json
+moc-003,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/moc-003-ae5e5ca4.json
+dod-011,factual,single,single,2,True,False,0.5,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/dod-011-4195a521.json
+dod-012,factual,agent,single -> agent,2,True,False,1.0,1.0,False,False,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/dod-012-910ccd0c.json
+dod-013,factual,single,single,1,True,False,0.5,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/dod-013-f9bf0eb2.json
+dod-014,factual,agent,agent,2,True,False,1.0,1.0,True,True,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/dod-014-e3a15d98.json
+ccf-002,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/ccf-002-37d80340.json
+irb-007,factual,agent,single -> agent,2,True,False,1.0,1.0,True,True,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/irb-007-e116ed7b.json
+val-004,factual,agent,single -> agent,2,True,False,1.0,1.0,False,False,,,data/evals/answers/agent-489add8a11-quota-resume-20261113/val-004-1a25e549.json
+val-005,factual,single,single,1,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/val-005-2af68479.json
+crm-002,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/crm-002-6fe72ae8.json
+crm-003,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/crm-003-4b1319d0.json
+oos-011,out_of_scope,single,single,2,True,False,,,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/oos-011-8264e54e.json
+oos-012,out_of_scope,single,single,2,True,False,,,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/oos-012-8863397f.json
+oos-013,out_of_scope,single,single,2,True,False,,,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/oos-013-aa69db9c.json
+oos-015,out_of_scope,single,single,2,True,False,,,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/oos-015-80beda7c.json
+oos-016,out_of_scope,single,single,2,True,False,,,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/oos-016-5a6f9d39.json
+lgd-010,factual,single,single,2,True,False,1.0,1.0,False,False,,,data/evals/answers/single-e3fe620624-quota-resume-20261113/lgd-010-add1edee.json

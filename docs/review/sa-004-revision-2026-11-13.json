@@ -1,0 +1,53 @@
+{
+  "before": {
+    "id": "sa-004",
+    "question": "What is the maximum total amount owed for an exposure to qualify for the retail exposure class under the standardised approach?",
+    "type": "factual",
+    "expected_answer": "EUR 1 million owed by the obligor or group of connected clients to the institution, its parents and subsidiaries, including defaulted exposures but excluding exposures secured by residential property up to the property value; the exposure must also be to a natural person or SME, part of a significant number of similar exposures, and managed as retail.",
+    "expected_citations": [
+      {
+        "source": "crr3-consolidated",
+        "ref": "Art. 123(1)"
+      }
+    ],
+    "applies_to": "all",
+    "topic": "standardised-approach",
+    "difficulty": "medium",
+    "author": "claude-draft",
+    "status": "verified",
+    "notes": "Checked in source text 2026-10-27.",
+    "tags": []
+  },
+  "after": {
+    "id": "sa-004",
+    "question": "What total-amount threshold applies under CRR Article 123(1) for standardised-approach retail exposures, and is it an absolute limit on retail classification for natural persons?",
+    "type": "factual",
+    "expected_answer": "Article 123(1)(b) sets a general EUR 1 million limit owed by the obligor or group of connected clients to the institution, its parents and subsidiaries, including defaulted exposures but excluding exposures secured by residential property up to the property value. The other Article 123(1) criteria also apply: natural person or SME, a significant number of similar exposures, and consistent internal retail management. This is not an absolute limit on all natural-person retail classification: under Article 123(4), where a paragraph-1 criterion is not met for an exposure to one or more natural persons, it is still considered a retail exposure and assigned a 100% risk weight.",
+    "expected_citations": [
+      {
+        "source": "crr3-consolidated",
+        "ref": "Art. 123(1)"
+      },
+      {
+        "source": "crr3-consolidated",
+        "ref": "Art. 123(4)"
+      }
+    ],
+    "applies_to": "all",
+    "topic": "standardised-approach",
+    "difficulty": "medium",
+    "author": "claude-draft",
+    "status": "verified",
+    "notes": "Checked in source text 2026-10-27. Runtime review revision 2026-11-13: distinguish general eligibility from the natural-person exception; source checked, not practitioner sign-off.",
+    "tags": [
+      "source-reviewed-2026-11-13"
+    ],
+    "grading_notes": "Require the EUR 1 million general condition, its aggregation and exclusions, and the natural-person Article 123(4) exception with 100% risk weight. Do not penalize the exception as contradicting Article 123(1). The 75% general and 45% transactor weights are optional context."
+  },
+  "reason": "Runtime answer correctly cited Article 123(4), but incomplete reference scope caused a false contradiction.",
+  "official_source": "https://eur-lex.europa.eu/eli/reg/2024/1623/oj",
+  "provision": "Article 1 point (53), replacement Article 123(4)",
+  "supersedes_development_snapshot": "24da390da84fc23a115c266f0ddb6d422af0819fb5844aa0e9e53e1c06856a9f",
+  "review_basis": "Codex source consistency review, not practitioner adjudication",
+  "new_development_snapshot": "20d15f898cdbb3884c604c0fd36d67f414b764833768b200baaa8122132eba7b"
+}

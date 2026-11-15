@@ -1,0 +1,754 @@
+{
+  "basis": "Replay of stored final context IDs; SQL dependency expansion only, not fresh retrieval or generation",
+  "items": 103,
+  "total_seconds": 0.6566689998144284,
+  "median_seconds": 0.0034138000337406993,
+  "p95_seconds": 0.01745330000994727,
+  "max_seconds": 0.09120489994529635,
+  "mh014": {
+    "id": "mh-014",
+    "seconds": 0.00823340000351891,
+    "extra_passages": 3,
+    "refs": [
+      "Art. 159a",
+      "Art. 236a(2)",
+      "Art. 236a(4)"
+    ]
+  },
+  "get_article_reverse_hint": true,
+  "per_item": [
+    {
+      "id": "dod-001",
+      "seconds": 0.01455979997990653,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "dod-002",
+      "seconds": 3.860000288113952e-05,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "dod-003",
+      "seconds": 0.00957410002592951,
+      "extra_passages": 2,
+      "refs": [
+        "Art. 3",
+        "recital 3"
+      ]
+    },
+    {
+      "id": "dod-004",
+      "seconds": 5.139998393133283e-05,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "dod-005",
+      "seconds": 4.469999112188816e-05,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "dod-006",
+      "seconds": 4.539999645203352e-05,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "dod-007",
+      "seconds": 3.759999526664615e-05,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "pd-001",
+      "seconds": 0.010761899990029633,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "pd-002",
+      "seconds": 0.010216799972113222,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "pd-003",
+      "seconds": 0.006837100023403764,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "lgd-001",
+      "seconds": 0.010555399989243597,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "moc-001",
+      "seconds": 4.039995837956667e-05,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "scope-001",
+      "seconds": 0.022287299972958863,
+      "extra_passages": 4,
+      "refs": [
+        "Art. 123(5)",
+        "Art. 124(4)",
+        "Art. 125(2)",
+        "Art. 125(3)"
+      ]
+    },
+    {
+      "id": "sa-001",
+      "seconds": 0.025986800028476864,
+      "extra_passages": 4,
+      "refs": [
+        "Art. 125(3)",
+        "Art. 126(2)",
+        "Art. 126(3)",
+        "Art. 92(5)"
+      ]
+    },
+    {
+      "id": "floor-001",
+      "seconds": 0.01745330000994727,
+      "extra_passages": 2,
+      "refs": [
+        "Art. 92(5)",
+        "Art. 92(4)"
+      ]
+    },
+    {
+      "id": "mh-001",
+      "seconds": 0.008353799988981336,
+      "extra_passages": 1,
+      "refs": [
+        "Art. 166(8)"
+      ]
+    },
+    {
+      "id": "mh-002",
+      "seconds": 0.007627899991348386,
+      "extra_passages": 2,
+      "refs": [
+        "Art. 3",
+        "recital 3"
+      ]
+    },
+    {
+      "id": "mh-003",
+      "seconds": 3.4999975468963385e-05,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "mh-004",
+      "seconds": 0.004010199976619333,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "mh-005",
+      "seconds": 0.00879039999563247,
+      "extra_passages": 4,
+      "refs": [
+        "Art. 159a",
+        "Art. 230(2)",
+        "Art. 230(4)",
+        "Art. 230(5)"
+      ]
+    },
+    {
+      "id": "mh-006",
+      "seconds": 0.0031423000036738813,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "mh-007",
+      "seconds": 0.008176600036676973,
+      "extra_passages": 1,
+      "refs": [
+        "Art. 159a"
+      ]
+    },
+    {
+      "id": "cmp-001",
+      "seconds": 0.013846500020008534,
+      "extra_passages": 4,
+      "refs": [
+        "Art. 147(3a)",
+        "Art. 147(5)",
+        "Art. 147(5a)",
+        "Art. 159a"
+      ]
+    },
+    {
+      "id": "cmp-002",
+      "seconds": 3.3999967854470015e-05,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "app-001",
+      "seconds": 2.629996743053198e-05,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "sa-002",
+      "seconds": 0.006453400012105703,
+      "extra_passages": 1,
+      "refs": [
+        "Art. 136(3)"
+      ]
+    },
+    {
+      "id": "sa-003",
+      "seconds": 0.0037503999774344265,
+      "extra_passages": 3,
+      "refs": [
+        "Art. 136(1)",
+        "Art. 136(2)",
+        "Art. 136(3)"
+      ]
+    },
+    {
+      "id": "sa-004",
+      "seconds": 0.013329199980944395,
+      "extra_passages": 2,
+      "refs": [
+        "Art. 123(5)",
+        "Art. 147(3a)"
+      ]
+    },
+    {
+      "id": "sa-005",
+      "seconds": 0.018046399985905737,
+      "extra_passages": 4,
+      "refs": [
+        "Art. 124(4)",
+        "Art. 125(2)",
+        "Art. 126(2)",
+        "Art. 126(3)"
+      ]
+    },
+    {
+      "id": "sa-006",
+      "seconds": 0.013502400019206107,
+      "extra_passages": 4,
+      "refs": [
+        "Art. 124(4)",
+        "Art. 125(2)",
+        "Art. 126(2)",
+        "Art. 133(4)"
+      ]
+    },
+    {
+      "id": "sa-007",
+      "seconds": 0.00486420001834631,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "sa-008",
+      "seconds": 0.004580500011797994,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "sa-009",
+      "seconds": 0.02815220004413277,
+      "extra_passages": 4,
+      "refs": [
+        "Art. 124(4)",
+        "Art. 125(2)",
+        "Art. 126(2)",
+        "Art. 132(7)"
+      ]
+    },
+    {
+      "id": "irb-001",
+      "seconds": 0.0024022000143304467,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "irb-002",
+      "seconds": 0.011967099970206618,
+      "extra_passages": 4,
+      "refs": [
+        "Art. 107(1)",
+        "Art. 150(1)",
+        "Art. 150(2a)",
+        "Art. 6(1)"
+      ]
+    },
+    {
+      "id": "irb-003",
+      "seconds": 0.002784999960567802,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "irb-004",
+      "seconds": 0.008881399990059435,
+      "extra_passages": 1,
+      "refs": [
+        "Art. 159a"
+      ]
+    },
+    {
+      "id": "irb-005",
+      "seconds": 0.003416699997615069,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "irb-006",
+      "seconds": 0.0053548000287264585,
+      "extra_passages": 2,
+      "refs": [
+        "Art. 162(3)(c)",
+        "Art. 162(3)(d)"
+      ]
+    },
+    {
+      "id": "rs-001",
+      "seconds": 0.00284470000769943,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "rs-002",
+      "seconds": 0.0034138000337406993,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "rs-003",
+      "seconds": 0.005504499946255237,
+      "extra_passages": 1,
+      "refs": [
+        "Art. 170(2)"
+      ]
+    },
+    {
+      "id": "rs-004",
+      "seconds": 3.419996937736869e-05,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "rs-005",
+      "seconds": 0.002342499967198819,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "pd-005",
+      "seconds": 0.002980799996294081,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "lgd-002",
+      "seconds": 0.010669899987988174,
+      "extra_passages": 3,
+      "refs": [
+        "Art. 159a",
+        "Art. 223(3)",
+        "Art. 220(4)"
+      ]
+    },
+    {
+      "id": "lgd-003",
+      "seconds": 0.008398599980864674,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "lgd-004",
+      "seconds": 0.0043114000000059605,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "lgd-005",
+      "seconds": 0.0009701999952085316,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "lgd-006",
+      "seconds": 3.320001997053623e-05,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "lgd-007",
+      "seconds": 2.6300025638192892e-05,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "lgd-008",
+      "seconds": 2.4900014977902174e-05,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "lgd-009",
+      "seconds": 3.63999861292541e-05,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "dt-001",
+      "seconds": 0.0011709000100381672,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "dt-002",
+      "seconds": 0.005753500037826598,
+      "extra_passages": 1,
+      "refs": [
+        "recital 3"
+      ]
+    },
+    {
+      "id": "val-001",
+      "seconds": 0.0016648000455461442,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "val-002",
+      "seconds": 0.0014426999841816723,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "val-003",
+      "seconds": 0.001540200028102845,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "lom-001",
+      "seconds": 2.8399983420968056e-05,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "dod-008",
+      "seconds": 3.2100011594593525e-05,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "dod-009",
+      "seconds": 3.070000093430281e-05,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "dod-010",
+      "seconds": 4.959997022524476e-05,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "floor-002",
+      "seconds": 0.0144204999669455,
+      "extra_passages": 3,
+      "refs": [
+        "Art. 132a(3)",
+        "Art. 152(3)",
+        "Art. 208(5)"
+      ]
+    },
+    {
+      "id": "crm-001",
+      "seconds": 0.007161299989093095,
+      "extra_passages": 2,
+      "refs": [
+        "Art. 116(4)",
+        "Art. 116(1)"
+      ]
+    },
+    {
+      "id": "mh-008",
+      "seconds": 0.016142499982379377,
+      "extra_passages": 4,
+      "refs": [
+        "Art. 92(5)",
+        "Art. 115(3)",
+        "Art. 115(5)",
+        "Art. 147(3a)"
+      ]
+    },
+    {
+      "id": "mh-009",
+      "seconds": 0.006238299945835024,
+      "extra_passages": 1,
+      "refs": [
+        "Art. 159a"
+      ]
+    },
+    {
+      "id": "mh-010",
+      "seconds": 3.0199997127056122e-05,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "mh-011",
+      "seconds": 0.005786499998066574,
+      "extra_passages": 1,
+      "refs": [
+        "recital 3"
+      ]
+    },
+    {
+      "id": "mh-012",
+      "seconds": 0.09120489994529635,
+      "extra_passages": 4,
+      "refs": [
+        "Art. 123(5)",
+        "Art. 124(4)",
+        "Art. 125(2)",
+        "Art. 125(3)"
+      ]
+    },
+    {
+      "id": "mh-013",
+      "seconds": 2.8900045435875654e-05,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "mh-014",
+      "seconds": 0.00823340000351891,
+      "extra_passages": 3,
+      "refs": [
+        "Art. 159a",
+        "Art. 236a(2)",
+        "Art. 236a(4)"
+      ]
+    },
+    {
+      "id": "mh-015",
+      "seconds": 0.002903799992054701,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "mh-016",
+      "seconds": 0.003414900042116642,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "mh-017",
+      "seconds": 0.0025221999967470765,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "mh-018",
+      "seconds": 0.003009699983522296,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "mh-020",
+      "seconds": 0.06605399999534711,
+      "extra_passages": 4,
+      "refs": [
+        "Art. 123(5)",
+        "Art. 124(4)",
+        "Art. 125(2)",
+        "Art. 125(3)"
+      ]
+    },
+    {
+      "id": "mh-021",
+      "seconds": 0.0013487000251188874,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "mh-022",
+      "seconds": 2.5499961338937283e-05,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "mh-023",
+      "seconds": 0.004290300013963133,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "mh-024",
+      "seconds": 0.004086499975528568,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "cmp-003",
+      "seconds": 0.004177600028924644,
+      "extra_passages": 2,
+      "refs": [
+        "Art. 162(4)",
+        "Art. 162(5)"
+      ]
+    },
+    {
+      "id": "cmp-004",
+      "seconds": 0.004837899992708117,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "cmp-005",
+      "seconds": 0.0037828999920748174,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "cmp-006",
+      "seconds": 0.01334780000615865,
+      "extra_passages": 3,
+      "refs": [
+        "Art. 125(3)",
+        "Art. 465(5)",
+        "Art. 124(9)"
+      ]
+    },
+    {
+      "id": "app-002",
+      "seconds": 2.8500042390078306e-05,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "app-003",
+      "seconds": 0.002337200043257326,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "app-004",
+      "seconds": 0.003754100005608052,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "app-005",
+      "seconds": 3.370002377778292e-05,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "dt-003",
+      "seconds": 3.9700011257082224e-05,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "dt-004",
+      "seconds": 2.7099973522126675e-05,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "moc-002",
+      "seconds": 2.629996743053198e-05,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "moc-003",
+      "seconds": 0.001140400010626763,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "dod-011",
+      "seconds": 0.0005324999801814556,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "dod-012",
+      "seconds": 0.0035881000221706927,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "dod-013",
+      "seconds": 3.809999907389283e-05,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "dod-014",
+      "seconds": 7.360003655776381e-05,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "ccf-002",
+      "seconds": 0.008536099980119616,
+      "extra_passages": 2,
+      "refs": [
+        "Art. 159a",
+        "Art. 147(2)"
+      ]
+    },
+    {
+      "id": "irb-007",
+      "seconds": 0.0018490999937057495,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "val-004",
+      "seconds": 2.529995981603861e-05,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "val-005",
+      "seconds": 3.7999998312443495e-05,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "crm-002",
+      "seconds": 0.001485800021328032,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "crm-003",
+      "seconds": 0.0029633999802172184,
+      "extra_passages": 0,
+      "refs": []
+    },
+    {
+      "id": "lgd-010",
+      "seconds": 0.0037799000274389982,
+      "extra_passages": 0,
+      "refs": []
+    }
+  ]
+}

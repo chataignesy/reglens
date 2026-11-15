@@ -1,0 +1,16 @@
+{
+  "status": "template_not_an_independence_attestation",
+  "author": null,
+  "author_role": null,
+  "independent_reference_reviewer": null,
+  "source_versions": [],
+  "authoring_started_utc": null,
+  "sealed_utc": null,
+  "question_jsonl_sha256": null,
+  "product_revision_before_reveal": null,
+  "author_exposure_to_development_questions": null,
+  "author_exposure_to_failure_reports_or_fixes": null,
+  "semantic_overlap_review": null,
+  "conflicts_or_limitations": [],
+  "approved_reveal_and_run_protocol": null
+}

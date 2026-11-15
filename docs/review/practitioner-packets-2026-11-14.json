@@ -1,0 +1,119 @@
+{
+  "status": "awaiting_independent_practitioner",
+  "reviewer": null,
+  "prepared_by": "Codex; automated preparation, not practitioner adjudication",
+  "baseline_sha256": "39a71cb7cfa56f5425722bc7a2ee5008babc6053f3ca351a18a33fc1c785fe8c",
+  "cases": [
+    {
+      "id": "mh-006",
+      "question": "For an IRB institution covered by the ECB reporting Decision referred to in the February 2019 validation-reporting instructions, what PD back-testing does CRR Article 185(b) require, and how are the results submitted under Section 2.2 of those instructions?",
+      "frozen_reference": "Regularly compare realised default rates with estimated PDs for each grade and analyse deviations outside the expected range. Use historical data covering as long a period as possible, document methods/data, and update the analysis and documentation at least annually; analogous comparisons apply to own LGD/CCF estimates. Under Section 2.2 of the February 2019 instructions, institutions covered by the Decision submit validation-exercise results to the ECB using its templates when submitting their annual internal-validation report.",
+      "grading_notes": "The reporting obligation is limited to institutions covered by the referenced Decision. AUC is not established by Section 2.2 and is not a required scoring fact. The instruction version is explicitly historical.",
+      "answer": "**PD back-testing:** Article 185(b) requires regular comparison of realised default rates with estimated PDs for each grade, with specific analysis of deviations outside that grade’s expected range. Comparisons must use historical data covering as long a period as possible. Methods and data must be documented, and the analysis and documentation updated at least annually. [C1]\n\n**Submission:** Under Section 2.2, results should be sent to the ECB using the supplied templates when the institution sends its annual internal-model validation report. The Decision determines the reporting level; unless it explicitly states otherwise, templates are completed at consolidated level. Institutions are invited to comment on results in free-text fields and are asked to reference the relevant internal-validation-report sections for each area of investigation. [C2]\n\nThe tools use the institution’s relevant one-year observation period. If internal validation uses a different period, use a one-year period ending on the same date. Generally, keep the annual end date constant across reporting years; increased validation frequency should be accommodated to preserve that consistent end date. [C2]\n\nFor PD results, the filename follows `[LEICode]_PD_[ModelID]_[ReferenceDate]_[VersionNumber]`: the submitting institution’s LEI at the highest consolidation level for which the model is used; the model identifier agreed with the ECB; the observation-period end date in DDMMYYYY format; and the submission sequence number for that reference date. [C2]",
+      "raw_grade": {
+        "id": "mh-006",
+        "type": "multi_hop",
+        "route": "agent",
+        "score": 1,
+        "missing": [
+          "Institutions using own LGD and conversion-factor estimates must perform analogous comparisons for those estimates."
+        ],
+        "contradictions": [],
+        "rationale": "The answer correctly explains PD back-testing and submission under Section 2.2 for the institution in scope, but omits the required analogous analysis for own LGD and conversion-factor estimates.",
+        "flags": [],
+        "method": "llm",
+        "model": "gpt-6.1-sol",
+        "tokens": 13312
+      },
+      "artifact": "C:\\Development\\RegLens\\data\\evals\\answers\\20261113-224005-859471-codex-full118\\agent-d190cefb30\\attempts\\mh-006-ad47980e-411ea0ee45334524ae5e0f4df33b6c4f.json",
+      "artifact_sha256": "10cad714357e785535a518ae2b188734715c3ed54740e95ba3ff33234b3912c7",
+      "sources": [
+        {
+          "chunk_id": "crr3-consolidated:article:185::(b)",
+          "citation": "CRR Art. 185(b)",
+          "body_sha256": "6aa3486d4336c107dd34ad0fbcda1def579430436d85227d50324082e70b7618",
+          "source_sha256": "2d041b5b32d4020fa1decb3bb64e835d6fcb747c5274a61f785b195a9dc9e6ad",
+          "version": "02013R0575-20260626"
+        },
+        {
+          "chunk_id": "ecb-validation-reporting:section:b0:Section 2.2:",
+          "citation": "ECB validation reporting instructions Section 2.2",
+          "body_sha256": "6b65916e658e5f4285a715cb7e7ace656d6a42b8d7020c2599ecfc26ed51b733",
+          "source_sha256": "f0bef87b1c636b8dc493e0d8e8b0690a5660a0663086ea6f676ccae2a7685d01",
+          "version": "2026-10-27"
+        }
+      ],
+      "issue": "Whether the analogous own-LGD/CCF analysis clause is mandatory for this question specifically asking for PD back-testing and historical submission.",
+      "proposed_for_review": "Treat the own-LGD/CCF clause as optional context unless the practitioner finds it indispensable to the actual question. Legal truth and answer-scope necessity are distinct.",
+      "alternatives": [
+        "Keep it mandatory and explain why it is necessary to the PD question",
+        "Make it optional in a separately versioned future rubric"
+      ],
+      "practitioner_decision": null,
+      "practitioner_reason": null,
+      "decision_options": [
+        "accepted",
+        "rejected",
+        "needs_evidence"
+      ]
+    },
+    {
+      "id": "mh-014",
+      "question": "Part of an IRB retail mortgage is covered by an eligible central government guarantee. Do the PD and LGD input floors apply?",
+      "frozen_reference": "Not to the covered part: PD, LGD and CCF input floors do not apply to the part of an exposure covered by an eligible guarantee from a central government, central bank or the ECB (Art. 159a). The uncovered part stays subject to the floors: PD 0,05% for retail exposures that are not QRRE revolvers (Art. 163(1)(b)) and the retail LGD input floor for exposures secured by residential property, 5% (Art. 164(4)).",
+      "grading_notes": "",
+      "answer": "**Guaranteed part:** neither the PD nor the LGD input floor applies, assuming the central government guarantee is eligible. Article 159a applies throughout Chapter 3, including retail exposures. [C1]\n\n**Uncovered part:** both floors apply: the PD input floor is 0,05 %, and the residential mortgage LGD input floor is 5 %, irrespective of the level of residential property collateral. Higher LGD floors set by the relevant authorities may apply. [C1] [C2] [C3] [C4] [C5]",
+      "raw_grade": {
+        "id": "mh-014",
+        "type": "multi_hop",
+        "route": "agent",
+        "score": 2,
+        "missing": [],
+        "contradictions": [],
+        "rationale": "The answer correctly exempts the eligible government-guaranteed portion from PD and LGD floors and applies the 0.05% PD and 5% residential mortgage LGD floors to the uncovered portion, with supported qualifications.",
+        "flags": [],
+        "method": "llm",
+        "model": "gpt-6.1-sol",
+        "tokens": 14141
+      },
+      "artifact": "C:\\Development\\RegLens\\data\\evals\\answers\\20261113-224005-859471-codex-full118\\agent-d190cefb30\\attempts\\mh-014-e144e7d8-8f5f5625d8a24c57ba8e326e8f16d303.json",
+      "artifact_sha256": "9f0d9c22c08645b4ac477ea26105d8bbbff0365889b36c0db13abc82bbb4fe98",
+      "sources": [
+        {
+          "chunk_id": "crr3-consolidated:article:159a::",
+          "citation": "CRR Art. 159a",
+          "body_sha256": "9dd8b76acc5993d849c76cfa5317830685ab33c5176fd8bb5e22654d335868ac",
+          "source_sha256": "2d041b5b32d4020fa1decb3bb64e835d6fcb747c5274a61f785b195a9dc9e6ad",
+          "version": "02013R0575-20260626"
+        },
+        {
+          "chunk_id": "crr3-consolidated:article:163:1:",
+          "citation": "CRR Art. 163(1)",
+          "body_sha256": "86cc9a8d6ebc26c95dc2280f39d5872ed7a6406a4c2bcefee17500a899b953f5",
+          "source_sha256": "2d041b5b32d4020fa1decb3bb64e835d6fcb747c5274a61f785b195a9dc9e6ad",
+          "version": "02013R0575-20260626"
+        },
+        {
+          "chunk_id": "crr3-consolidated:article:164:4:",
+          "citation": "CRR Art. 164(4)",
+          "body_sha256": "e85a5ad8aa81a7e9f25aa9dee661fc888e440bf65a0bb61e6820e8a246e2c718",
+          "source_sha256": "2d041b5b32d4020fa1decb3bb64e835d6fcb747c5274a61f785b195a9dc9e6ad",
+          "version": "02013R0575-20260626"
+        }
+      ],
+      "issue": "Whether the supplied eligible-guarantee assumption, covered/uncovered split and PD/LGD scope are sufficient; whether CCF discussion is unasked.",
+      "proposed_for_review": "The completed Codex baseline already gives full credit. Retain that raw verdict; check whether future rubrics should label CCF background optional for this PD/LGD question.",
+      "alternatives": [
+        "Accept the answer within its supplied eligibility assumption",
+        "Identify a specific unsupported qualification with source evidence"
+      ],
+      "practitioner_decision": null,
+      "practitioner_reason": null,
+      "decision_options": [
+        "accepted",
+        "rejected",
+        "needs_evidence"
+      ]
+    }
+  ]
+}

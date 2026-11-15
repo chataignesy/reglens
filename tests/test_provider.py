@@ -75,8 +75,9 @@ def test_one_ledger_entry_per_model_used(cfg):
         "claude-sonnet-5-5": {"inputTokens": 1000, "outputTokens": 100},
         "claude-haiku-5-5": {"inputTokens": 50, "outputTokens": 5},
     }
-    ClaudeCLIProvider(cfg, runner=fake_runner(json.dumps(sample))).complete("q", purpose="p")
+    result = ClaudeCLIProvider(cfg, runner=fake_runner(json.dumps(sample))).complete("q", purpose="p")
     assert {e["model"] for e in Ledger(cfg).entries()} == {"claude-sonnet-5-5", "claude-haiku-5-5"}
+    assert result.usage.total_tokens == sum(e["total_tokens"] for e in Ledger(cfg).entries()) == 1155
 
 
 def test_failed_call_still_logs_its_usage(cfg):
@@ -97,6 +98,33 @@ def test_failed_call_without_usage_is_unknown_not_zero(cfg):
     assert err.value.tokens is None
     [entry] = Ledger(cfg).entries()
     assert entry["usage_known"] is False and entry["outcome"] == "error_during_execution"
+
+
+def test_quota_error_with_success_subtype_is_not_logged_as_success(cfg):
+    bad = {"is_error": True, "subtype": "success",
+           "result": "You've hit your session limit · resets 7:30pm",
+           "usage": {"input_tokens": 0, "output_tokens": 0}}
+    with pytest.raises(LLMError) as err:
+        ClaudeCLIProvider(cfg, runner=fake_runner(json.dumps(bad))).complete("q", purpose="p")
+    assert err.value.retryable and err.value.tokens == 0
+    assert Ledger(cfg).entries()[0]["outcome"] == "provider_error"
+
+
+@pytest.mark.parametrize("message", [
+    "You've hit your 5-hour limit · resets 7:30pm (Europe/Berlin)",
+    "You've hit your weekly limit",
+    "You've hit your seven-day limit",
+    "You've hit your session limit",
+])
+def test_subscription_limit_variants_remain_retryable(message, tmp_path):
+    from reglens.eval.answer_cache import cached, save
+
+    error = LLMError(message, tokens=0)
+    assert error.retryable
+    # Legacy records have no explicit flag: their service errors must also not be reused.
+    index = tmp_path / "q.json"
+    path = save(index, {"answer": "", "errors": [message]})
+    assert path.exists() and cached(index) is None
 
 
 def test_non_json_output_raises(cfg):

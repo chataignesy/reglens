@@ -12,12 +12,13 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from dataclasses import asdict, dataclass
 
 from reglens.answer.pipeline import _parse_json
 from reglens.config import PROJECT_ROOT
 from reglens.gap.policy import Clause
-from reglens.gap.register import Obligation, quote_in
+from reglens.gap.register import Obligation, id_lookup, quote_in
 from reglens.llm.provider import LLMProvider
 
 STATUSES = ("covered", "partial", "missing", "contradicted", "not_applicable", "other_document")
@@ -82,10 +83,43 @@ class Verdict:
     # counted, for review), "none_required" (missing / not applicable / other document),
     # "invalid" (unusable model output: the status is "unassessed")
     evidence: str = "verified"
+    policy_complete: bool = True
 
 
 def system_prompt(clauses: list[Clause]) -> str:
     return MATCH_SYSTEM + "\n".join(c.render() for c in clauses)
+
+
+def select_clauses(
+    batch: list[Obligation], clauses: list[Clause], max_chars: int = 60_000
+) -> tuple[list[Clause], bool]:
+    """Whole short policies; bounded section/lexical candidates for long policies.
+    The full clauses remain citable. Absence cannot be inferred from candidate-only coverage.
+    Oversized clauses are excluded rather than silently truncated."""
+    if sum(len(c.render()) + 1 for c in clauses) <= max_chars:
+        return clauses, True
+    terms = set(re.findall(r"[a-z]{4,}", " ".join(o.obligation for o in batch).lower()))
+    ranked = sorted(
+        enumerate(clauses),
+        key=lambda pair: (
+            -len(
+                terms
+                & set(re.findall(r"[a-z]{4,}", (pair[1].section + " " + pair[1].text).lower()))
+            ),
+            pair[0],
+        ),
+    )
+    chosen, used = set(), 0
+    # Include the policy's opening scope and adjacent clauses of each strong candidate.
+    order = [0] + [i for index, _ in ranked for i in (index, index - 1, index + 1)]
+    for index in order:
+        if index in chosen or not 0 <= index < len(clauses):
+            continue
+        size = len(clauses[index].render()) + 1
+        if used + size <= max_chars:
+            chosen.add(index)
+            used += size
+    return [clauses[i] for i in sorted(chosen)], False
 
 
 def batches(obligations: list[Obligation], size: int = BATCH_SIZE) -> list[list[Obligation]]:
@@ -103,8 +137,11 @@ def batch_prompt(batch: list[Obligation]) -> str:
     )
 
 
-def batch_id(batch: list[Obligation], policy: str) -> str:
-    raw = policy + "|" + ",".join(o.id + o.obligation for o in batch)
+def batch_id(batch: list[Obligation], policy: str, model: str = "") -> str:
+    raw = json.dumps(
+        [policy, model, "medium", batch_prompt(batch), [o.source_sha256 for o in batch]],
+        ensure_ascii=False,
+    )
     return hashlib.sha256(raw.encode()).hexdigest()[:12]
 
 
@@ -126,9 +163,15 @@ def validate(oid: str, raw: dict, by_clause: dict[str, Clause]) -> Verdict:
     rationale = str(raw.get("rationale", ""))
 
     def invalid(why: str) -> Verdict:
-        return Verdict(oid, "unassessed", cited, quote, False,
-                       f"invalid output: {why}" + (f" ({rationale})" if rationale else ""),
-                       "invalid")
+        return Verdict(
+            oid,
+            "unassessed",
+            cited,
+            quote,
+            False,
+            f"invalid output: {why}" + (f" ({rationale})" if rationale else ""),
+            "invalid",
+        )
 
     if status not in STATUSES:
         return invalid(f"status {status!r}")
@@ -138,8 +181,10 @@ def validate(oid: str, raw: dict, by_clause: dict[str, Clause]) -> Verdict:
         return Verdict(oid, status, cited, quote, True, rationale, "none_required")
     if not cited:
         unknown = sorted(set(named) - set(cited))
-        return invalid(f"'{status}' without an existing policy clause"
-                       + (f" (unknown: {', '.join(unknown)})" if unknown else ""))
+        return invalid(
+            f"'{status}' without an existing policy clause"
+            + (f" (unknown: {', '.join(unknown)})" if unknown else "")
+        )
     if not quote:
         return invalid(f"'{status}' without a quote from the policy")
     if any(quote_in(quote, by_clause[c].text) for c in cited):
@@ -178,8 +223,17 @@ def rescore(rows: list[dict], clauses: list[Clause]) -> list[Verdict]:
     out = []
     for r in rows:
         if r["status"] == "unassessed" and r.get("evidence") != "invalid":
-            out.append(Verdict(r["obligation_id"], "unassessed", [], "", False,
-                               r.get("rationale", ""), "invalid"))
+            out.append(
+                Verdict(
+                    r["obligation_id"],
+                    "unassessed",
+                    [],
+                    "",
+                    False,
+                    r.get("rationale", ""),
+                    "invalid",
+                )
+            )
             continue
         out.append(validate(r["obligation_id"], r, by_clause))
     return out
@@ -193,13 +247,30 @@ def match(
     limit: int | None = None,
     log=print,
 ) -> tuple[list[Verdict], int]:
-    system = system_prompt(clauses)
     out_dir = MATCH_DIR / MATCH_VERSION
     out_dir.mkdir(parents=True, exist_ok=True)
     todo = batches(obligations)[:limit]
     verdicts, new_tokens = [], 0
     for n, batch in enumerate(todo, 1):
-        path = out_dir / f"{batch_id(batch, system)}.json"
+        selected, complete = select_clauses(batch, clauses)
+        if not selected:
+            verdicts += [
+                Verdict(
+                    o.id,
+                    "unassessed",
+                    [],
+                    "",
+                    False,
+                    "No policy clauses fit the evidence budget",
+                    "partial_policy",
+                    False,
+                )
+                for o in batch
+            ]
+            continue
+        system = system_prompt(selected)
+        model = provider.config.model(MATCH_TIER) if hasattr(provider, "config") else ""
+        path = out_dir / f"{batch_id(batch, system, model)}.json"
         if path.exists():
             reply = json.loads(path.read_text(encoding="utf-8"))["reply"]
         else:
@@ -213,26 +284,45 @@ def match(
             used = c.usage.total_tokens
             log(f"  [{n}/{len(todo)}] {batch[0].topic} ({len(batch)}): {used:,} tokens")
         try:
-            verdicts += parse_verdicts(batch, reply, clauses)
+            parsed = parse_verdicts(batch, reply, selected)
+            if not complete:
+                # Candidate retrieval cannot prove absence from an unseen part of a policy.
+                for v in parsed:
+                    v.policy_complete = False
+                    if v.status in ("missing", "not_applicable", "other_document"):
+                        v.status, v.evidence = "unassessed", "partial_policy"
+                        v.quote_ok = False
+                        v.rationale = (
+                            "Partial policy searched; absence/applicability needs review. "
+                            + v.rationale
+                        )
+            verdicts += parsed
         except (ValueError, TypeError, AttributeError) as e:  # JSONDecodeError is a ValueError
             log(f"  [{n}] unparseable reply: {e}")
-            verdicts += [Verdict(o.id, "unassessed", [], "", False, f"unparseable reply: {e}",
-                                 "invalid") for o in batch]
+            verdicts += [
+                Verdict(o.id, "unassessed", [], "", False, f"unparseable reply: {e}", "invalid")
+                for o in batch
+            ]
     return verdicts, new_tokens
 
 
 def to_rows(verdicts: list[Verdict], obligations: list[Obligation]) -> list[dict]:
     """Coverage matrix rows: obligation + verdict + an empty reviewer column."""
-    by_id = {o.id: o for o in obligations}
+    by_id = id_lookup(obligations)
     rows = []
     for v in verdicts:
         o = by_id[v.obligation_id]
         rows.append(
             {
-                "obligation_id": o.id, "source": o.key, "level": o.legal_level, "topic": o.topic,
-                "actor": o.actor, "obligation": o.obligation,
+                "obligation_id": o.id,
+                "source": o.key,
+                "level": o.legal_level,
+                "topic": o.topic,
+                "actor": o.actor,
+                "obligation": o.obligation,
                 **{k: val for k, val in asdict(v).items() if k != "obligation_id"},
-                "reviewer_status": "", "reviewer_comment": "",
+                "reviewer_status": "",
+                "reviewer_comment": "",
             }
         )
     return rows

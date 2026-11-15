@@ -41,6 +41,13 @@ class Chunk:
     part: int = 0  # >0 when a long unit was split into windows
     cite: str = ""  # citation key, unique per logical unit (see ingest/cite.py)
     source_sha256: str = ""  # digest of the raw source file the text was parsed from
+    published_on: str | None = None
+    effective_from: str | None = None
+    effective_until: str | None = None
+    application_from: str | None = None
+    application_until: str | None = None
+    temporal_verified: bool = False
+    applicability: dict[str, list[str]] = field(default_factory=dict)
 
 
 def _title_case(s: str) -> str:
@@ -146,6 +153,9 @@ def build_chunks(
                     amended_by=u.amended_by,
                     part=i + 1 if len(bodies) > 1 else 0,
                     source_sha256=source_sha256,
+                    **{k: getattr(source, k) for k in ("published_on", "effective_from",
+                       "effective_until", "application_from", "application_until",
+                       "temporal_verified", "applicability")},
                 )
             )
     from reglens.ingest.cite import assign_cites

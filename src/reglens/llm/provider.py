@@ -27,9 +27,30 @@ DEFAULT_SYSTEM = "You are a precise assistant for EU credit risk regulation."
 class LLMError(RuntimeError):
     """A failed call. `tokens` is what the failed call reported spending (None: unknown)."""
 
-    def __init__(self, message: str, *, tokens: int | None = None):
+    def __init__(
+        self, message: str, *, tokens: int | None = None, usage_known: bool | None = None,
+        retryable: bool | None = None,
+    ):
         super().__init__(message)
         self.tokens = tokens
+        self.usage_known = tokens is not None if usage_known is None else usage_known
+        self.retryable = transient_error(message) if retryable is None else retryable
+
+
+def transient_error(message: str) -> bool:
+    """Conservative compatibility classification for older cached provider errors.
+
+    Cost caps, schema failures and missing evidence are real attempts, not service outages.
+    New API failures carry explicit classification rather than relying on this text.
+    """
+    import re
+
+    return bool(re.search(
+        r"timed?\s*out|timeout|rate.?limit|"
+        r"(?:usage|session|5[- ]hour|five[- ]hour|weekly|7[- ]day|seven[- ]day) limit|"
+        r"hit your limit|out of extra usage|overloaded|could not reach|"
+        r"connection (?:error|reset)|returned non-JSON|API error \(5\d\d\)", message, re.I,
+    ))
 
 
 @dataclass(frozen=True)
@@ -38,6 +59,8 @@ class Completion:
     model: str
     usage: Usage
     stop_reason: str | None = None
+    usage_known: bool = True
+    reported_cost_usd: float | None = None
 
 
 class LLMProvider(Protocol):
@@ -62,6 +85,24 @@ def _usage_from_model_usage(raw: dict) -> Usage:
     )
 
 
+def _all_usage(out: dict) -> Usage:
+    """The top-level CLI usage can omit helpers; modelUsage is the authoritative breakdown."""
+    parts = [_usage_from_model_usage(v) for v in (out.get("modelUsage") or {}).values()]
+    if not parts:
+        return Usage.from_response(out.get("usage") or {})
+    return Usage(
+        *(
+            sum(getattr(p, key) for p in parts)
+            for key in (
+                "input_tokens",
+                "output_tokens",
+                "cache_read_input_tokens",
+                "cache_creation_input_tokens",
+            )
+        )
+    )
+
+
 class ClaudeCLIProvider:
     def __init__(
         self,
@@ -83,8 +124,13 @@ class ClaudeCLIProvider:
         """Same settings, but the subprocess is killed when `token` is cancelled."""
         from reglens.cancel import cancellable_runner
 
-        clone = ClaudeCLIProvider(self.config, self.ledger, executable=self.executable,
-                                  timeout_s=self.timeout_s, runner=cancellable_runner(token))
+        clone = ClaudeCLIProvider(
+            self.config,
+            self.ledger,
+            executable=self.executable,
+            timeout_s=self.timeout_s,
+            runner=cancellable_runner(token),
+        )
         clone.cancel = token
         return clone
 
@@ -139,12 +185,14 @@ class ClaudeCLIProvider:
             )
         except Cancelled:
             # killed mid-call: it may have spent tokens, but reported none (unknown, not zero)
-            self.ledger.record(model, Usage(0, 0), purpose=purpose, outcome="cancelled",
-                               usage_known=False)
+            self.ledger.record(
+                model, Usage(0, 0), purpose=purpose, outcome="cancelled", usage_known=False
+            )
             raise
         except subprocess.TimeoutExpired as e:
-            self.ledger.record(model, Usage(0, 0), purpose=purpose, outcome="timeout",
-                               usage_known=False)
+            self.ledger.record(
+                model, Usage(0, 0), purpose=purpose, outcome="timeout", usage_known=False
+            )
             raise LLMError(f"claude -p timed out after {self.timeout_s}s") from e
         finally:
             os.unlink(system_file)
@@ -152,14 +200,17 @@ class ClaudeCLIProvider:
         try:
             out = json.loads(proc.stdout)
         except json.JSONDecodeError as e:
-            self.ledger.record(model, Usage(0, 0), purpose=purpose, outcome="no_result",
-                               usage_known=False)
+            self.ledger.record(
+                model, Usage(0, 0), purpose=purpose, outcome="no_result", usage_known=False
+            )
             raise LLMError(
                 f"claude -p returned non-JSON (exit {proc.returncode}): {proc.stderr[-500:]}"
             ) from e
         if out.get("is_error") or out.get("subtype") != "success":
             # a failed call (e.g. the --max-budget-usd cap) still spent tokens: log them
             outcome = str(out.get("subtype") or "error")
+            if outcome == "success":  # CLI can report is_error=true with subtype=success
+                outcome = "provider_error"
             tokens = self._log(out, model, purpose, outcome=outcome)
             raise LLMError(f"claude -p failed: {outcome}: {out.get('result')}", tokens=tokens)
 
@@ -167,8 +218,10 @@ class ClaudeCLIProvider:
         return Completion(
             text=out.get("result", ""),
             model=model,
-            usage=Usage.from_response(out.get("usage") or {}),
+            usage=_all_usage(out),
             stop_reason=out.get("stop_reason"),
+            usage_known=bool(out.get("modelUsage") or out.get("usage")),
+            reported_cost_usd=out.get("total_cost_usd"),
         )
 
     def _log(self, out: dict, model: str, purpose: str, *, outcome: str = "ok") -> int | None:
@@ -300,18 +353,29 @@ class AnthropicAPIProvider:
                 )
             else:
                 response = self.client.messages.create(**kwargs)
-        except anthropic.AuthenticationError as e:
-            raise LLMError("Anthropic API rejected the API key.") from e
-        except anthropic.PermissionDeniedError as e:
-            raise LLMError("The API key has no access to this model.") from e
-        except anthropic.RateLimitError as e:
-            raise LLMError("Rate limited by the Anthropic API; try again shortly.") from e
-        except anthropic.BadRequestError as e:
-            raise LLMError(f"Request rejected: {e.message}") from e
-        except anthropic.APIStatusError as e:
-            raise LLMError(f"Anthropic API error ({e.status_code}).") from e
-        except anthropic.APIConnectionError as e:
-            raise LLMError("Could not reach the Anthropic API.") from e
+        except anthropic.APIError as e:
+            self.ledger.record(
+                model, Usage(0, 0), purpose=purpose, outcome=type(e).__name__, usage_known=False
+            )
+            if isinstance(e, anthropic.AuthenticationError):
+                message = "Anthropic API rejected the API key."
+            elif isinstance(e, anthropic.PermissionDeniedError):
+                message = "The API key has no access to this model."
+            elif isinstance(e, anthropic.RateLimitError):
+                message = "Rate limited by the Anthropic API; try again shortly."
+            elif isinstance(e, anthropic.BadRequestError):
+                message = f"Request rejected: {e.message}"
+            elif isinstance(e, anthropic.APIStatusError):
+                message = f"Anthropic API error ({e.status_code})."
+            else:
+                message = "Could not reach the Anthropic API."
+            retryable = isinstance(e, (
+                anthropic.RateLimitError, anthropic.APIConnectionError,
+                anthropic.AuthenticationError, anthropic.PermissionDeniedError,
+            )) or (
+                isinstance(e, anthropic.APIStatusError) and e.status_code >= 500
+            )
+            raise LLMError(message, retryable=retryable) from e
 
         usage = Usage.from_response(response.usage)
         served = getattr(response, "model", model) or model
@@ -320,13 +384,21 @@ class AnthropicAPIProvider:
         if response.stop_reason == "refusal":
             details = getattr(response, "stop_details", None)
             category = getattr(details, "category", None) if details else None
-            raise LLMError(f"The model declined the request (category: {category}).")
+            raise LLMError(
+                f"The model declined the request (category: {category}).", tokens=usage.total_tokens
+            )
         return response, usage, served
 
 
 def get_provider(
     config: Config, ledger: Ledger | None = None, *, api_key: str | None = None
 ) -> LLMProvider:
+    if config.provider == "codex":
+        if config.billing != "subscription" or api_key:
+            raise ValueError("Codex uses ChatGPT subscription authentication, not an API key")
+        from reglens.llm.codex import CodexCLIProvider
+
+        return CodexCLIProvider(config, ledger)
     if config.billing == "subscription":
         return ClaudeCLIProvider(config, ledger)
     return AnthropicAPIProvider(config, api_key, ledger)

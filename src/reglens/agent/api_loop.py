@@ -15,104 +15,11 @@ from __future__ import annotations
 
 import re
 
+from reglens.agent.contracts import TOOL_SCHEMAS
+from reglens.agent.contracts import invoke as _run_tool
 from reglens.agent.tools import Toolbox, partial_reads, trace_entry
-from reglens.cancel import Cancelled
-from reglens.llm.provider import AnthropicAPIProvider
-
-_STR = {"type": "string"}
-
-TOOL_SCHEMAS: list[dict] = [
-    {
-        "name": "search",
-        "description": (
-            "Hybrid search (keywords + embeddings + reranker) over EU credit risk regulation. "
-            "Returns passage snippets, each starting with its citation key in brackets. `source` "
-            "optionally restricts to one source by short name (e.g. 'CRR', 'EBA Q&A', 'ECB guide "
-            "to internal models')."
-        ),
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "query": _STR,
-                "k": {"type": "integer", "description": "passages to return (max 8)"},
-                "source": _STR,
-            },
-            "required": ["query"],
-        },
-    },
-    {
-        "name": "get_article",
-        "description": (
-            "Full text of an article, or one paragraph, of a regulation (e.g. source 'CRR', "
-            "article '151', paragraph '8'; or source 'RTS materiality threshold (Reg. 2018/171)', "
-            "article '1'). Long articles come in pages; the reply gives the offset for the next."
-        ),
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "source": _STR,
-                "article": _STR,
-                "paragraph": _STR,
-                "offset": {"type": "integer"},
-            },
-            "required": ["source", "article"],
-        },
-    },
-    {
-        "name": "get_passage",
-        "description": (
-            "Full text of one passage by its citation key, exactly as shown in brackets. Use it "
-            "when a search snippet is marked truncated."
-        ),
-        "input_schema": {
-            "type": "object",
-            "properties": {"citation_key": _STR},
-            "required": ["citation_key"],
-        },
-    },
-    {
-        "name": "follow_reference",
-        "description": (
-            "List the articles, paragraphs and definitions a passage refers to, by its citation "
-            "key (e.g. 'CRR Art. 151(8)'), plus how many EBA Q&As exist on that article."
-        ),
-        "input_schema": {
-            "type": "object",
-            "properties": {"citation_key": _STR},
-            "required": ["citation_key"],
-        },
-    },
-    {
-        "name": "get_definition",
-        "description": "A CRR definition (Art. 4(1) or Art. 142(1)), e.g. 'large corporate'.",
-        "input_schema": {
-            "type": "object",
-            "properties": {"term": _STR},
-            "required": ["term"],
-        },
-    },
-    {
-        "name": "get_qa",
-        "description": (
-            "Final EBA Single Rulebook Q&As on a CRR article, most relevant to `query` first."
-        ),
-        "input_schema": {
-            "type": "object",
-            "properties": {"article": _STR, "query": _STR, "k": {"type": "integer"}},
-            "required": ["article"],
-        },
-    },
-]
-
-# Toolbox method arguments in call order, with defaults for optional ones.
-_ARGS: dict[str, list[tuple[str, object]]] = {
-    "search": [("query", ""), ("k", 6), ("source", None)],
-    "get_article": [("source", ""), ("article", ""), ("paragraph", None), ("offset", 0)],
-    "get_passage": [("citation_key", "")],
-    "follow_reference": [("citation_key", "")],
-    "get_definition": [("term", "")],
-    "get_qa": [("article", ""), ("query", None), ("k", 4)],
-}
+from reglens.llm.codex import CodexCLIProvider
+from reglens.llm.provider import AnthropicAPIProvider, LLMError
 
 STOP_NOTE = (
     "Limit reached: no more tool calls. Answer now with the passages you already have, in the "
@@ -126,18 +33,6 @@ def _check_cancel(provider) -> None:
     token = getattr(provider, "cancel", None)
     if token is not None:
         token.check()
-
-
-def _run_tool(box: Toolbox, name: str, args: dict) -> tuple[str, list]:
-    if name not in _ARGS:
-        return f"Unknown tool '{name}'.", []
-    values = [args.get(a, default) for a, default in _ARGS[name]]
-    try:
-        return getattr(box, name)(*values), values
-    except Cancelled:
-        raise  # never a tool error the model could read
-    except Exception as e:  # bad arguments from the model -> tell it, don't crash the loop
-        return f"Tool error: {e}", values
 
 
 def _with_cache(messages: list[dict]) -> list[dict]:
@@ -154,7 +49,9 @@ def _with_cache(messages: list[dict]) -> list[dict]:
     return out
 
 
-def _completeness_note(text: str, trace: list[dict], conn=None) -> str | None:
+def _completeness_note(
+    text: str, trace: list[dict], conn=None, question: str = "", filters=None
+) -> str | None:
     """Why a first final answer is not complete yet (review R1): it cites passages read only
     as truncated snippets, or it reports missing information itself. None when complete."""
     from reglens.answer.schema import parse_reply
@@ -162,21 +59,42 @@ def _completeness_note(text: str, trace: list[dict], conn=None) -> str | None:
     data, problems = parse_reply(text)
     if problems or not data or data.get("abstain"):
         return None
+    from reglens.agent.tools import _rows, delivered_chars
+    from reglens.answer.research import guard
+
+    got = delivered_chars(trace)
+    read_hits = []
+    if conn is not None and got:
+        read_hits = [r.hit() for r in _rows(conn, "id = ANY(%s)", [list(got)], limit=80)]
+    guard(
+        question, data, read_hits, conn=conn, filters=filters, delivered=got,
+        citation_keys={k for t in trace for k in t.get("keys", [])},
+    )
     cited = {str(k) for c in data.get("claims") or [] for k in c.get("citations") or []}
     cited |= set(re.findall(r"\[([^\[\]]+?)\]", str(data.get("answer") or "")))
     cut = sorted(cited & partial_reads(trace, conn))
     if cut:
-        return ("Your answer relies on passages you only saw in part (truncated, or not all "
-                "of their parts): " + "; ".join(cut) + ". Read them in full with get_passage.")
+        return (
+            "Your answer relies on passages you only saw in part (truncated, or not all "
+            "of their parts): " + "; ".join(cut) + ". Read them in full with get_passage."
+        )
+    from reglens.answer.research import completion_note, needs_research
+
+    if not needs_research(data):
+        return None
+    if note := completion_note(data):
+        return note
     if data.get("missing_info"):
-        return ("Your answer says information is missing. If a tool can find it (the RTS or "
-                "article a passage refers to, a truncated passage), look for it.")
+        return (
+            "Your answer says information is missing. If a tool can find it (the RTS or "
+            "article a passage refers to, a truncated passage), look for it."
+        )
     return None
 
 
 def run_api_agent(
     conn,
-    provider: AnthropicAPIProvider,
+    provider: AnthropicAPIProvider | CodexCLIProvider,
     question: str,
     *,
     system: str,
@@ -187,6 +105,7 @@ def run_api_agent(
     max_tokens: int,
     progress=None,
     applies_to: str | None = None,
+    filters=None,
 ) -> tuple[str, list[dict], int, str, list[str]]:
     """Run the loop. Returns (final text, tool trace, total tokens, model, errors).
 
@@ -199,7 +118,7 @@ def run_api_agent(
     - once `max_tokens` is spent, no request is sent at all.
     The only overshoot possible is the final answer request itself exceeding its reserve.
     """
-    box = Toolbox(conn, max_calls=max_calls, applies_to=applies_to)
+    box = Toolbox(conn, max_calls=max_calls, applies_to=applies_to, filters=filters)
     messages: list[dict] = [{"role": "user", "content": question}]
     trace: list[dict] = []
     tokens, model, errors = 0, "", []
@@ -211,27 +130,37 @@ def run_api_agent(
         if tokens >= max_tokens:
             errors.append(f"token budget ({max_tokens:,}) spent before the final answer")
             return "", trace, tokens, model, errors
-        if not stop and (
-            tokens + int(last * 1.3) > max_tokens - reserve or turn + 1 >= max_turns
-        ):
+        if not stop and (tokens + int(last * 1.3) > max_tokens - reserve or turn + 1 >= max_turns):
             stop = True  # no room for another tool round: this turn answers
             if turn:
                 messages[-1]["content"].append({"type": "text", "text": STOP_NOTE})
-        response, usage, model = provider.create(
-            _with_cache(messages),
-            purpose="agent",
-            system=system,
-            tier=tier,
-            effort=effort,
-            tools=TOOL_SCHEMAS,
-            tool_choice={"type": "none"} if stop else None,
-        )
+        try:
+            response, usage, model = provider.create(
+                _with_cache(messages),
+                purpose="agent",
+                system=system,
+                tier=tier,
+                effort=effort,
+                tools=TOOL_SCHEMAS,
+                tool_choice={"type": "none"} if stop else None,
+            )
+        except LLMError as e:
+            raise LLMError(
+                str(e),
+                tokens=tokens + (e.tokens or 0),
+                usage_known=e.usage_known,
+                retryable=e.retryable,
+            ) from e
         tokens += usage.total_tokens
         last = usage.total_tokens
         _check_cancel(provider)  # cancelled while the request was in flight: do nothing more
         if response.stop_reason != "tool_use":
             text = "".join(b.text for b in response.content if getattr(b, "type", "") == "text")
-            note = None if (stop or nudged) else _completeness_note(text, trace, box.conn)
+            note = (
+                None
+                if (stop or nudged)
+                else _completeness_note(text, trace, box.conn, question, box.filters)
+            )
             room = box.calls < max_calls and turn + 2 < max_turns
             if note and room and tokens + int(last * 1.3) <= max_tokens - reserve:
                 nudged = True  # R1: one more round to read what the answer relies on
@@ -239,9 +168,21 @@ def run_api_agent(
                     progress({"stage": "completing", "reason": note})
                 messages.append({"role": "assistant", "content": response.content})
                 left = max_calls - box.calls
-                messages.append({"role": "user", "content": [{"type": "text", "text": (
-                    f"{note} You have {left} tool call(s) left: read it now, then give the "
-                    "final JSON answer again.")}]})
+                messages.append(
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": (
+                                    f"{note} You have {left} tool call(s) left: read it now, "
+                                    "then give the "
+                                    "final JSON answer again."
+                                ),
+                            }
+                        ],
+                    }
+                )
                 continue
             return text, trace, tokens, model, errors
         if stop:  # tools were forbidden on this turn

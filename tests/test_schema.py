@@ -69,9 +69,11 @@ def test_twice_invalid_is_unverified_not_an_answer(monkeypatch):
 def test_agent_invalid_reply_is_unverified(monkeypatch):
     monkeypatch.setattr(agent_run, "search", lambda *a, **k: [HIT])
     monkeypatch.setattr(agent_run, "_read_trace", lambda path: [{"tool": "search", "keys": ["k"]}])
-    fake = Replies('{"answer": "x", "claims": [{"text": "t", "citations": [], "kind": "law"}]}')
+    invalid = '{"answer": "x", "claims": [{"text": "t", "citations": [], "kind": "law"}]}'
+    fake = Replies(invalid, invalid)  # one format-only repair also fails the contract
     ans = agent_run.answer_agentic(None, fake, load_config(), "q", today=date(2026, 11, 8))
     assert ans.unverified and ans.answer == "" and "cites nothing" in ans.errors[-1]
+    assert fake.purposes == ["agent", "agent_format_repair"] and ans.usage_tokens == 300
 
 
 def test_valid_answer_payload_is_not_unverified():

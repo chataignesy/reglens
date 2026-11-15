@@ -29,6 +29,37 @@ def test_route_question_parses_and_falls_back():
     assert fake.calls[0]["tier"] == "bulk" and fake.calls[0]["purpose"] == "route"
 
 
+def test_single_first_policy_skips_router_call_and_keeps_required_gap_fallback(monkeypatch):
+    cfg = replace(load_config(), answer={**(load_config().answer or {}), "routing": "single_first"})
+    monkeypatch.setattr(route, "gate_abstains", lambda *a, **k: False)
+    used = []
+    def single(*a, **kw):
+        used.append("single")
+        return Answer("q", False, "", "partial", [], [], "", missing_info=True,
+                      research_needed=True, missing_requirements=["Read the required rule"])
+    def agent(*a, **kw):
+        used.append(kw["research_requirements"])
+        return Answer("q", False, "", "complete", [], [], "", usage_tokens=50)
+    monkeypatch.setattr(route, "answer_question", single)
+    monkeypatch.setattr(agent_run, "answer_agentic", agent)
+    fake = FakeRouter([])
+    ans = route.answer_routed(None, fake, cfg, "q")
+    assert not fake.calls and used == ["single", ["Read the required rule"]]
+    assert ans.trace[0]["router_tokens"] == 0 and ans.answer == "complete"
+
+
+def test_single_first_evaluation_never_reuses_llm_routes_or_calls_provider(monkeypatch, tmp_path):
+    monkeypatch.setattr(eval_route, "ROUTE_DIR", tmp_path / "routes")
+    item = GoldenItem("one", "Compare two approaches?", "comparison", "a", [],
+                      "all", "t", "easy", "me", "verified")
+    (tmp_path / "routes").mkdir()
+    (tmp_path / "routes/one.json").write_text(json.dumps(
+        {"route": "agent", "tokens": 99, "question_sha": eval_route.question_hash(item.question)}))
+    routes = eval_route.cached_routes([item], strategy="single_first")
+    assert routes[item.id]["route"] == "single" and routes[item.id]["tokens"] == 0
+    assert json.loads((tmp_path / "routes/one.json").read_text())["route"] == "agent"
+
+
 def test_answer_routed_dispatches(monkeypatch):
     top = Hit("c1", "crr3-consolidated", "Art. 151(8)", "", "", "L1", None, 0.9)
     monkeypatch.setattr(route, "search", lambda *a, **k: [top])

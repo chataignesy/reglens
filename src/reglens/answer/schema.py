@@ -27,7 +27,35 @@ def problems(data: object) -> list[str]:
             out.append(f"'{key}' is not a string")
     if "missing_info" in data and not isinstance(data["missing_info"], bool):
         out.append("'missing_info' is not true/false")
+    if "research_needed" in data:
+        if not isinstance(data["research_needed"], bool):
+            out.append("'research_needed' is not true/false")
+        elif data["research_needed"] and not data.get("missing_info"):
+            out.append("research_needed requires missing_info")
+    if "missing_requirements" in data:
+        requirements = data["missing_requirements"]
+        if not isinstance(requirements, list) or not all(
+            isinstance(r, str) and r.strip() for r in requirements
+        ):
+            out.append("'missing_requirements' must be a list of nonempty strings")
+        elif bool(requirements) != bool(data.get("missing_info")):
+            out.append("missing_requirements must agree with missing_info")
     claims = data.get("claims") or []
+    if "answer_requirements" in data:
+        requirements = data["answer_requirements"]
+        if not isinstance(requirements, list) or len(requirements) > 12:
+            out.append("answer_requirements must be a list of at most 12 requested facts")
+        else:
+            for n, r in enumerate(requirements, 1):
+                if not isinstance(r, dict) or not (
+                    isinstance(r.get("requirement"), str) and r["requirement"].strip()
+                    and r.get("status") in ("supported", "unresolved")
+                    and isinstance(r.get("retrievable"), bool)
+                    and isinstance(r.get("citations"), list)
+                    and all(isinstance(c, str) and c.strip() for c in r["citations"])
+                    and (r["status"] != "supported" or bool(r["citations"]))
+                ):
+                    out.append(f"invalid answer requirement {n}")
     if not isinstance(claims, list):
         return [*out, "'claims' is not a list"]
     if abstain:

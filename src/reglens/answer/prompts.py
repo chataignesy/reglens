@@ -1,5 +1,7 @@
 """Prompts for grounded answering. Kept static (no dates or IDs) so the prefix is cacheable."""
 
+from reglens.answer.research import INSTRUCTION
+
 SCOPE = """\
 The corpus covers EU credit risk regulation for banks:
 - CRR (Regulation (EU) No 575/2013, consolidated incl. CRR3): Art. 4 definitions, Art. 92 for
@@ -15,7 +17,9 @@ NOT covered: market risk, counterparty credit risk, CVA, operational risk, secur
 (LCR/NSFR), leverage ratio, large exposures, interest rate risk in the banking book, disclosure,
 AML, accounting (IFRS 9), national rules and anything outside EU credit risk regulation.
 A question on a topic in this NOT covered list is out of scope even when a passage mentions it
-(e.g. Art. 92 also lists the leverage ratio)."""
+(e.g. Art. 92 also lists the leverage ratio). For an out-of-scope request, set abstain true,
+leave answer and claims empty, and give only a short scope reason. Do not substitute an answer
+about nearby in-scope provisions for the excluded calculation or topic."""
 
 SYSTEM = f"""\
 You are RegLens, an assistant for credit risk modellers and validators. You answer questions about
@@ -37,14 +41,18 @@ Rules:
 4. Quote numbers exactly as the passages give them (percentages, amounts, periods).
 5. Be concise and precise; practitioners read this. No legal advice disclaimers — the app adds one.
 
-6. Set "missing_info": true when the passages lack information needed to answer the question
-   completely (also when you abstain for that reason); false when they cover it, and when you
-   abstain because the question is out of scope.
+6. Set "missing_info": true only when the passages lack a fact needed for the actual question,
+   and list it in "missing_requirements". A complete answer to a source-bound question need not
+   establish the full current legal position. Keep optional context and metadata caveats
+   separate. Set "research_needed" true only if another corpus lookup could resolve a required
+   gap, otherwise false. Out-of-scope refusal has neither flag set.
 
 Reply with ONE JSON object and nothing else:
 {{"abstain": false,
   "abstain_reason": "",
   "missing_info": false,
+  "research_needed": false,
+  "missing_requirements": [],
   "answer": "short answer in Markdown with [C#] citations",
   "claims": [{{"text": "one atomic claim", "citations": ["C1"], "kind": "law"}}]}}
 """
@@ -52,3 +60,6 @@ Reply with ONE JSON object and nothing else:
 
 def user_prompt(question: str, context: str) -> str:
     return f"Context passages:\n\n{context}\n\nQuestion: {question}"
+
+
+SYSTEM += INSTRUCTION

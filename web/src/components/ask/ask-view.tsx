@@ -78,6 +78,8 @@ export function AskView() {
   const [apiKey, setApiKey] = useState(""); // memory only: never stored, gone on reload
   const [mode, setMode] = useState<Mode>("auto");
   const [applies, setApplies] = useState<"any" | "SI" | "LSI">("any");
+  const [legalDate, setLegalDate] = useState("");
+  const [approach, setApproach] = useState("");
   const [question, setQuestion] = useState("");
   const [asked, setAsked] = useState("");
   const [events, setEvents] = useState<ProgressEvent[]>([]);
@@ -111,7 +113,7 @@ export function AskView() {
     setAsked(question.trim());
     try {
       const r = await ask(
-        { question: question.trim(), mode, access, applies_to: applies !== "any" ? applies : null },
+        { question: question.trim(), mode, access, applies_to: applies !== "any" ? applies : null, as_of: legalDate || null, conditions: approach ? { approach: [approach] } : {} },
         access === "api" ? apiKey.trim() : null,
         (e) => setEvents((prev) => [...prev, e]),
         abort.current.signal,
@@ -180,7 +182,9 @@ export function AskView() {
           <Label>Answering</Label>
           <Segmented label="Answering" value={mode} onChange={setMode} options={MODES} disabled={running} />
           <p className="text-xs text-muted-foreground">{MODES.find((m) => m.value === mode)?.hint}</p>
-          <div className="flex items-center gap-2 pt-1">
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+              <label className="text-xs">Legal application date <input aria-label="Legal application date" type="date" value={legalDate} disabled={running} onChange={(e) => setLegalDate(e.target.value)} className="rounded border p-1" /></label>
+              <label className="text-xs">Approach <select aria-label="Approach" value={approach} disabled={running} onChange={(e) => setApproach(e.target.value)} className="rounded border p-1"><option value="">Any</option><option value="SA">SA</option><option value="IRB">IRB</option></select></label>
               <Label className="text-xs">Institution type</Label>
               <Segmented
                 label="Institution type"

@@ -19,16 +19,38 @@ _PKG = Path(reglens.__file__).parent
 # Files whose content shapes an answer (retrieval included: it chooses the passages).
 RETRIEVAL_FILES = [
     "retrieve/search.py",
+    "retrieve/intent.py",
     "retrieve/glossary.py",
     "retrieve/glossary.yaml",
     "index/embed.py",
+    "inference_client.py",
+    "inference.py",
+    "context.py",
+    "index/generations.py",
 ]
-SINGLE_FILES = ["answer/pipeline.py", "answer/prompts.py", "answer/schema.py", *RETRIEVAL_FILES]
+SINGLE_FILES = [
+    "llm/codex.py",
+    "llm/provider.py",
+    "llm/ledger.py",
+    "answer/route.py",
+    "answer/research.py",
+    "answer/context_plan.py",
+    "answer/required_evidence.py",
+    "answer/conditions.py",
+    "answer/amendments.py",
+    "agent/tools.py",
+    "answer/pipeline.py",
+    "answer/prompts.py",
+    "answer/schema.py",
+    "answer/scope.py",
+    *RETRIEVAL_FILES,
+]
 AGENT_FILES = [
     *SINGLE_FILES,
     "agent/run.py",
     "agent/tools.py",
     "agent/api_loop.py",
+    "agent/contracts.py",
     "agent/mcp_server.py",
     "ingest/cite.py",
 ]
@@ -51,9 +73,29 @@ def code_hash(files: list[str]) -> str:
 # Every chunk column that can change retrieval inclusion (applies_to, filters), source
 # classification (legal_level, kind), dates (version), citation keys or text (second review S4).
 _CHUNK_FIELDS = (
-    "id", "source_id", "text_hash", "cite", "applies_to", "legal_level", "version", "kind",
-    "ref", "title", "article", "paragraph", "point", "part", "source_sha256",
+    "id",
+    "source_id",
+    "text_hash",
+    "cite",
+    "applies_to",
+    "legal_level",
+    "version",
+    "kind",
+    "ref",
+    "title",
+    "article",
+    "paragraph",
+    "point",
+    "part",
+    "source_sha256",
     "array_to_string(amended_by, '|')",
+    "published_on",
+    "effective_from",
+    "effective_until",
+    "application_from",
+    "application_until",
+    "temporal_verified",
+    "applicability",
 )
 
 
@@ -75,7 +117,9 @@ def corpus_fingerprint(conn) -> str:
     """Chunks (text hashes, citation keys and all answer-relevant metadata), graph edges and
     the source registry. Computed fresh on every call (~0.1 s): no memo can go stale after a
     metadata-only refresh."""
-    return _corpus(conn)
+    from reglens.index.generations import current, metadata
+
+    return sha(_corpus(conn) + current(conn) + json.dumps(metadata(conn), sort_keys=True))
 
 
 def namespace(kind: str, conn, model: str, settings: dict, suffix: str = "") -> str:

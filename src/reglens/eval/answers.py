@@ -7,9 +7,11 @@ Metrics per run:
 - mechanical check pass rate: share of claims passing the deterministic citation checks
 - tokens: every call, including the router and failed attempts
 
-Caching (F4): answers live in data/evals/answers/<namespace>/<item id>-<question hash>.json,
-where the namespace fingerprints the code, model, settings and corpus generation (see
-eval/fingerprint.py), so a changed question, prompt, model or corpus is answered again.
+Caching (F4): immutable attempts live in data/evals/answers/<namespace>/attempts/. Sidecar
+<item id>-<question hash>.index.json files select reusable attempts. Legacy standalone answer
+files stay readable and untouched. Provider interruptions are never reused; genuine model
+and evidence failures are retained to avoid selecting improved answers by repeated sampling.
+The namespace fingerprints code, model, settings and corpus generation (eval/fingerprint.py).
 
 Run manifests (D7): every run writes data/evals/runs/<run id>.json listing, per item, the exact
 answer artifact (path + SHA-256), the route plan and every attempt. `reglens judge --run <id>`
@@ -25,9 +27,10 @@ import os
 from datetime import datetime
 
 from reglens.answer.pipeline import Answer, answer_question
-from reglens.answer.route import ROUTER_VERSION, dispatch, gate_abstains
+from reglens.answer.route import ROUTER_VERSION, _failed, dispatch, gate_abstains
 from reglens.answer.verify import check_answer
 from reglens.config import PROJECT_ROOT, Config
+from reglens.eval.answer_cache import cached, save
 from reglens.eval.citations import credit
 from reglens.eval.fingerprint import namespace, question_hash
 from reglens.eval.golden import GoldenItem
@@ -41,6 +44,7 @@ RUNS_DIR = PROJECT_ROOT / "data" / "evals" / "runs"
 def answer_version(config: Config, conn, agent: bool = False) -> str:
     """Cache namespace of one answering mode (see eval/fingerprint.py)."""
     opts = dict(config.answer or {})
+    opts |= {"provider": config.provider, "billing": config.billing}
     if agent:
         opts |= dict(config.agent or {})
     model = config.model(opts.get("tier", "dev"))
@@ -53,18 +57,50 @@ def artifact_name(item: GoldenItem) -> str:
     return f"{item.id}-{question_hash(item.question)}.json"
 
 
+def required_calls(items, directories, *, routes=None, agent=False) -> list[tuple[str, str]]:
+    """Known new calls, including fallbacks already implied by cached incomplete/failed output."""
+    from reglens.answer.research import needs_research
+
+    calls = []
+    for item in items:
+        mode = routes[item.id]["route"] if routes is not None else ("agent" if agent else "single")
+        path = directories[mode] / artifact_name(item)
+        found = cached(path)
+        if found is None:
+            calls.append((item.id, mode))
+            continue
+        if routes is None:
+            continue
+        record, _ = found
+        other = None
+        if mode == "single" and (_failed(record) or needs_research(record)):
+            other = "agent"
+        elif mode == "agent" and _failed(record):
+            other = "single"
+        if other and cached(directories[other] / artifact_name(item)) is None:
+            calls.append((item.id, other))
+    return calls
+
+
 def file_sha(path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _cited(record: dict) -> list[tuple[str, str | None, str]]:
-    """(source, part, normalised ref) of every passage the answer cites."""
+def _cited(record: dict) -> list[tuple]:
+    """(source, part, normalised ref, section hierarchy) for cited passages."""
     cited = {c for cl in record["claims"] for c in cl["citations"]}
     out = []
     for i, h in enumerate(record["context"], 1):
         if f"C{i}" in cited:
             refs = normalize_refs(h["ref"])
-            out.append((h["source_id"], h.get("title"), refs[0] if refs else h["ref"]))
+            out.append(
+                (
+                    h["source_id"],
+                    h.get("title"),
+                    refs[0] if refs else h["ref"],
+                    h.get("hierarchy") or [],
+                )
+            )
     return out
 
 
@@ -84,10 +120,23 @@ def run(
     agent: bool = False,
     routes: dict[str, dict] | None = None,
     label: str = "",
+    dataset: dict | None = None,
 ) -> dict:
     """`routes` (item id -> cached router record) makes this a routed run; otherwise every item
     is answered single-pass, or by the agent with `agent=True`. Writes a run manifest."""
+    import re
+    from dataclasses import asdict
+
     from reglens.agent.run import answer_agentic
+    from reglens.eval.artifacts import digest
+    from reglens.eval.snapshots import items_from_payload, payload
+
+    if label and not re.fullmatch(r"[A-Za-z0-9_-]+", label):
+        raise ValueError("Run label must contain only letters, numbers, underscores or dashes")
+    frozen = dataset if dataset is not None else payload(items)
+    by_id = {i.id: asdict(i) for i in items_from_payload(frozen)}
+    if any(by_id.get(i.id) != asdict(i) for i in items):
+        raise ValueError("Selected items differ from frozen references")
 
     modes = {
         "single": (ANSWER_DIR / answer_version(config, conn, False), answer_question),
@@ -95,23 +144,49 @@ def run(
     }
     kind = "routed" if routes is not None else ("agent" if agent else "single")
     rows, entries, new_tokens = [], [], 0
+    new_unknown_calls = 0
     for n, item in enumerate(items, 1):
+        used_artifacts = {}
+        current_answers = {}
 
-        def answer(mode: str, item: GoldenItem = item, n: int = n) -> dict:
-            nonlocal new_tokens
+        def answer(
+            mode: str, item: GoldenItem = item, n: int = n, requirements=None,
+            used_artifacts=used_artifacts, current_answers=current_answers,
+        ) -> dict:
+            nonlocal new_tokens, new_unknown_calls
             out_dir, answer_fn = modes[mode]
             out_dir.mkdir(parents=True, exist_ok=True)
             path = out_dir / artifact_name(item)
-            if path.exists():
-                return json.loads(path.read_text(encoding="utf-8"))
+            if mode in current_answers:
+                return current_answers[mode]
+            if found := cached(path):
+                record, used_artifacts[mode] = found
+                current_answers[mode] = record
+                return record
             try:
-                ans: Answer = answer_fn(conn, provider, config, item.question)
+                extra = {"research_requirements": requirements} if requirements else {}
+                ans: Answer = answer_fn(conn, provider, config, item.question, **extra)
             except LLMError as e:  # one failed item must not stop the run: record it
-                ans = Answer(item.question, False, "", "", [], [], "", errors=[str(e)])
+                ans = Answer(
+                    item.question,
+                    False,
+                    "",
+                    "",
+                    [],
+                    [],
+                    "",
+                    errors=[str(e)],
+                    usage_tokens=e.tokens or 0,
+                    usage_unknown_calls=int(not e.usage_known),
+                    unverified=True,
+                    retryable_error=e.retryable,
+                )
             check = check_answer(ans)  # annotates claims first, so the record stores them
             record = ans.to_dict() | {"check": check, "id": item.id, "mode": mode}
-            path.write_text(json.dumps(record, indent=2, ensure_ascii=False), encoding="utf-8")
+            used_artifacts[mode] = save(path, record)
+            current_answers[mode] = record
             new_tokens += ans.usage_tokens
+            new_unknown_calls += ans.usage_unknown_calls
             log(f"  [{n}/{len(items)}] {item.id} ({mode}): {ans.usage_tokens:,} tokens")
             return record
 
@@ -123,27 +198,47 @@ def run(
                 int(r.get("tokens", 0)),
                 single=lambda: answer("single"),
                 agent=lambda: answer("agent"),
+                complete=lambda first: answer(
+                    "agent", requirements=first.get("missing_requirements", [])
+                ),
             )
         else:  # plain run, or the retrieval gate abstains (no router call, as in the app)
             mode = "agent" if (agent and routes is None) else "single"
             record = answer(mode)
-            outcome = {"planned": mode, "route": mode, "reason": "", "attempts": [mode],
-                       "router_tokens": 0, "tokens": int(record.get("usage_tokens") or 0)}
-        path = modes[outcome["route"]][0] / artifact_name(item)
+            outcome = {
+                "planned": mode,
+                "route": mode,
+                "reason": "",
+                "attempts": [mode],
+                "router_tokens": 0,
+                "tokens": int(record.get("usage_tokens") or 0),
+            }
+        path = used_artifacts[outcome["route"]]
         entries.append(
             {"id": item.id, "type": item.type, "question_sha": question_hash(item.question)}
             | outcome
-            | {"artifact": str(path.relative_to(PROJECT_ROOT)).replace("\\", "/"),
-               "artifact_sha256": file_sha(path), "errors": record.get("errors", []),
-               "unverified": bool(record.get("unverified"))}
+            | {
+                "artifact": str(path.relative_to(PROJECT_ROOT)).replace("\\", "/"),
+                "artifact_sha256": file_sha(path),
+                "errors": record.get("errors", []),
+                "unverified": bool(record.get("unverified")),
+                "attempt_artifacts": [
+                    {"mode": m,
+                     "artifact": str(p.relative_to(PROJECT_ROOT)).replace("\\", "/"),
+                     "artifact_sha256": file_sha(p)}
+                    for m, p in used_artifacts.items()
+                ],
+            }
         )
         oos = item.type == "out_of_scope"
+        usable = not record["abstained"] and not _failed(record)
         # R3: three separate signals: scope (did it answer what it should?), claim support
         # (the mechanical checks) and completeness (does the answer report gaps?)
         if oos:
             scope = "declined" if record["abstained"] else "answered_out_of_scope"
         else:
-            scope = "declined_in_scope" if record["abstained"] else "answered"
+            scope = ("declined_in_scope" if record["abstained"] else
+                     "answered" if usable else "failed_in_scope")
         incomplete = not record["abstained"] and (
             bool(record.get("missing_info")) or bool(record.get("partial_cids"))
         )
@@ -156,7 +251,8 @@ def run(
                 "scope": scope,
                 "reports_incomplete": incomplete,
                 "abstained": record["abstained"],
-                "abstain_correct": record["abstained"] == oos,
+                "abstain_correct": bool(record["abstained"]) if oos else usable,
+                "usable_answer": usable,
                 "citation_recall": None if oos else citation_recall(item, record),
                 "check_pass_rate": record["check"]["supported_rate"],
                 "tokens": outcome["tokens"],
@@ -170,7 +266,7 @@ def run(
 
     ins = [r for r in rows if r["type"] != "out_of_scope"]
     oos = [r for r in rows if r["type"] == "out_of_scope"]
-    run_id = f"{datetime.now():%Y%m%d-%H%M%S}-{kind}" + (f"-{label}" if label else "")
+    run_id = f"{datetime.now():%Y%m%d-%H%M%S-%f}-{kind}" + (f"-{label}" if label else "")
     summary = {
         "run_id": run_id,
         "kind": kind,
@@ -179,7 +275,7 @@ def run(
         "abstain_on_out_of_scope": round(sum(r["abstained"] for r in oos) / len(oos), 3)
         if oos
         else None,
-        "answered_in_scope": round(sum(not r["abstained"] for r in ins) / len(ins), 3)
+        "answered_in_scope": round(sum(r["usable_answer"] for r in ins) / len(ins), 3)
         if ins
         else None,
         "scope_compliance": round(sum(r["abstain_correct"] for r in rows) / len(rows), 3)
@@ -192,6 +288,8 @@ def run(
         "avg_tokens": round(sum(r["tokens"] for r in rows) / max(len(rows), 1)),
         "total_tokens": sum(r["tokens"] for r in rows),
         "new_tokens_this_run": new_tokens,
+        "new_usage_unknown_calls": new_unknown_calls,
+        "usage_basis": "all reported models; known tokens are a lower bound if usage is unknown",
         "errors": [r["id"] for r in rows if r["errors"]],
         "per_item": rows,
     }
@@ -201,12 +299,14 @@ def run(
         "created": datetime.now().isoformat(timespec="seconds"),
         "namespaces": {m: d.name for m, (d, _) in modes.items()},
         "router_version": ROUTER_VERSION if routes is not None else None,
+        "dataset": {"sha256": digest(frozen), "snapshot": frozen},
         "items": entries,
         "summary": {k: v for k, v in summary.items() if k != "per_item"},
     }
     RUNS_DIR.mkdir(parents=True, exist_ok=True)
     path = RUNS_DIR / f"{run_id}.json"
-    path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
+    with path.open("x", encoding="utf-8") as f:
+        json.dump(manifest, f, indent=2, ensure_ascii=False)
     summary["file"] = str(path.relative_to(PROJECT_ROOT))
     return summary
 
@@ -214,7 +314,10 @@ def run(
 def load_run(run_id: str = "latest") -> dict:
     """A run manifest by id, or the most recent one."""
     if run_id == "latest":
-        runs = sorted(RUNS_DIR.glob("*.json"), key=lambda p: p.stat().st_mtime)
+        runs = sorted(
+            (p for p in RUNS_DIR.glob("*.json") if ".judge-" not in p.name),
+            key=lambda p: p.stat().st_mtime,
+        )
         if not runs:
             raise FileNotFoundError("no eval runs yet: run `reglens eval-answers` first")
         return json.loads(runs[-1].read_text(encoding="utf-8"))

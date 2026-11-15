@@ -1,0 +1,106 @@
+{
+  "date": "2026-11-11",
+  "tests": {
+    "passed": 170,
+    "database_scenarios": 5,
+    "ruff": "passed",
+    "typescript": "passed",
+    "eslint": "passed"
+  },
+  "llm_calls": 0,
+  "inference": {
+    "service": {
+      "ready": true,
+      "identity": {
+        "embedding": "BAAI/bge-m3",
+        "embedding_revision": "5617a9f61b028005a4858fdac845db406aefb181",
+        "reranker": "BAAI/bge-reranker-v2-m3",
+        "reranker_revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+        "dimension": 1024,
+        "normalised": true,
+        "embedding_max_length": 2048
+      },
+      "concurrency": 1,
+      "admission": 4
+    },
+    "first_embedding_seconds": 3.755,
+    "two_concurrent_processes": [
+      {
+        "seconds": 0.676,
+        "dimension": 1024,
+        "scores": [
+          0.11899801343679428,
+          3.619466951931827e-05
+        ],
+        "torch_imported_in_client": false
+      },
+      {
+        "seconds": 0.648,
+        "dimension": 1024,
+        "scores": [
+          0.11899801343679428,
+          3.619466951931827e-05
+        ],
+        "torch_imported_in_client": false
+      }
+    ],
+    "scope": "local GPU smoke; not a load benchmark"
+  },
+  "api_readiness": {
+    "ready": true,
+    "models": "ready",
+    "database": true,
+    "error": null,
+    "busy": 0
+  },
+  "retrieval": [
+    {
+      "mode": "bm25",
+      "k": 10,
+      "items": 103,
+      "skipped_not_evaluable": [
+        "cmp-002"
+      ],
+      "recall@5": 0.465,
+      "recall@10": 0.594,
+      "hit@5": 0.563,
+      "hit@10": 0.709,
+      "mrr@10": 0.402,
+      "seconds": 4.133
+    },
+    {
+      "mode": "rerank",
+      "k": 10,
+      "items": 103,
+      "skipped_not_evaluable": [
+        "cmp-002"
+      ],
+      "recall@5": 0.745,
+      "recall@10": 0.805,
+      "hit@5": 0.883,
+      "hit@10": 0.913,
+      "mrr@10": 0.72,
+      "seconds": 64.401
+    }
+  ],
+  "baseline_retrieval": {
+    "mode": "rerank",
+    "k": 10,
+    "items": 103,
+    "skipped_not_evaluable": [
+      "cmp-002"
+    ],
+    "recall@5": 0.745,
+    "recall@10": 0.805,
+    "hit@5": 0.883,
+    "hit@10": 0.913,
+    "mrr@10": 0.72,
+    "seconds": 60.042,
+    "comparison": {
+      "base_commit": "a913d74",
+      "same_corpus_and_models": true,
+      "all_top_ten_lists_equal": true
+    }
+  },
+  "scope": "Local architecture verification; no fresh answer-correctness or production-load benchmark"
+}

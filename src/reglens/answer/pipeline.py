@@ -14,7 +14,7 @@ from datetime import date
 
 from reglens.answer.prompts import SYSTEM, user_prompt
 from reglens.config import Config
-from reglens.llm.provider import LLMProvider
+from reglens.llm.provider import LLMError, LLMProvider
 from reglens.retrieve.search import Filters, Hit, search
 
 LEVEL_LABEL = {
@@ -48,12 +48,22 @@ class Answer:
     errors: list[str] = field(default_factory=list)
     trace: list[dict] = field(default_factory=list)  # agent tool calls (empty for single-pass)
     missing_info: bool = False  # the passages lacked information needed for a complete answer
+    research_needed: bool | None = None  # None: legacy output; False: no useful further lookup
+    missing_requirements: list[str] = field(default_factory=list)
     # The model's reply broke the answer contract (answer/schema.py) even after a retry: no
     # answer is shown; `raw_output` keeps the reply for diagnosis, clearly labelled unverified.
     unverified: bool = False
     raw_output: str = ""
     # agent answers: context passages (C#) cited after reading only a truncated snippet
     partial_cids: list[str] = field(default_factory=list)
+    coverage: dict = field(default_factory=dict)
+    corpus_generation: str = "legacy"
+    source_registry: dict | None = None
+    research: dict = field(default_factory=dict)
+    semantic_review: dict = field(default_factory=lambda: {"status": "not_run"})
+    usage_unknown_calls: int = 0
+    retryable_error: bool = False  # provider interruption; safe to retry on a later eval run
+    answer_requirements: list[dict] = field(default_factory=list)
 
     def cited_hits(self) -> list[Hit]:
         ids = {c for cl in self.claims for c in cl.citations}
@@ -61,12 +71,19 @@ class Answer:
         return [h for i, h in enumerate(self.context, 1) if f"C{i}" in ids]
 
     def to_dict(self) -> dict:
+        import hashlib
+
         d = asdict(self)
-        d["context"] = [
-            {"id": h.id, "ref": h.ref, "source_id": h.source_id, "title": h.title,
-             "score": h.score}
+        d["evidence"] = [
+            {
+                "id": h.id,
+                "generation": self.corpus_generation,
+                "sha256": hashlib.sha256(h.text.encode()).hexdigest(),
+                "text": h.text,
+            }
             for h in self.context
         ]
+        d["context"] = [{k: v for k, v in asdict(h).items() if k != "text"} for h in self.context]
         return d
 
 
@@ -82,7 +99,13 @@ def format_context(hits: list[Hit]) -> str:
     blocks = []
     for i, h in enumerate(hits, 1):
         level = LEVEL_LABEL.get(h.legal_level, h.legal_level)
-        blocks.append(f"[C{i}] ({level}) {h.text}")
+        from reglens.context import METADATA
+
+        dates = {k: getattr(h, k) for k in METADATA if getattr(h, k)}
+        blocks.append(
+            f"[C{i}] ({level}; context metadata: {dates}; "
+            f"temporal verified: {h.temporal_verified}) {h.text}"
+        )
     return "\n\n".join(blocks)
 
 
@@ -160,9 +183,19 @@ def answer_question(
     opts = config.answer or {}
     today = today or date.today()
     emit = progress or _no_progress
+    from reglens.answer.scope import refusal_reason
+
+    if reason := refusal_reason(question):
+        return Answer(question, True, reason, "", [], [], as_of_statement([], today))
     hits = search(conn, question, mode="rerank", k=int(opts.get("k", 8)), filters=filters)
+    from reglens.answer.context_plan import expand_context
+
+    hits = expand_context(conn, question, hits, filters)
     emit({"stage": "retrieved", "passages": len(hits), "refs": [h.ref for h in hits[:3]]})
     as_of = as_of_statement(hits, today)
+
+    from reglens.context import coverage
+    from reglens.index.generations import current
 
     best = hits[0].score if hits else 0.0
     if best < float(opts.get("abstain_below", 0.05)):
@@ -174,36 +207,84 @@ def answer_question(
             [],
             hits,
             as_of,
+            coverage=coverage(hits, filters),
+            corpus_generation=current(conn),
         )
 
     from reglens.answer.schema import parse_reply, retry_note
 
     emit({"stage": "drafting"})
-    prompt = user_prompt(question, format_context(hits))
+    from reglens.context import coverage, instruction
+    from reglens.index.generations import current
+
+    prompt = user_prompt(question + instruction(filters), format_context(hits))
     ans = Answer(question, False, "", "", [], hits, as_of)
+    ans.coverage = coverage(hits, filters)
+    from reglens.sources import load_sources
+
+    ans.source_registry = {s.id: asdict(s) for s in load_sources(conn=conn)}
+    ans.corpus_generation = current(conn)
     found: list[str] = []
-    for attempt in range(2):  # one retry when the reply breaks the answer contract
-        completion = provider.complete(
-            prompt if attempt == 0 else prompt + retry_note(found),
-            purpose="answer" if attempt == 0 else "answer_retry",
-            system=SYSTEM,
-            tier=opts.get("tier", "dev"),
-            effort=opts.get("effort"),
-        )
+    next_prompt, purpose = prompt, "answer"
+    from reglens.answer.research import guard
+
+    for attempt in range(2):  # one shared second draft for contract repair or delivered omissions
+        try:
+            completion = provider.complete(
+                next_prompt,
+                purpose=purpose,
+                system=SYSTEM,
+                tier=opts.get("tier", "dev"),
+                effort=opts.get("effort"),
+            )
+        except LLMError as exc:
+            ans.usage_tokens += exc.tokens or 0
+            ans.usage_unknown_calls += int(not exc.usage_known)
+            ans.unverified = True
+            ans.errors.append(str(exc))
+            ans.retryable_error = exc.retryable
+            return ans
         ans.model = completion.model
         ans.usage_tokens += completion.usage.total_tokens
+        ans.usage_unknown_calls += int(not completion.usage_known)
         data, found = parse_reply(completion.text)
-        if not found:
-            break
-        emit({"stage": "invalid_reply", "problems": found, "retry": attempt == 0})
+        if found:
+            emit({"stage": "invalid_reply", "problems": found, "retry": attempt == 0})
+            next_prompt, purpose = prompt + retry_note(found), "answer_retry"
+            continue
+        gaps = guard(question, data, hits, conn=conn, filters=filters)
+        review_prefix = ("Review requested list coverage", "Review required citation context")
+        if (attempt == 0 and gaps
+                and all(g.startswith(review_prefix) for g in data.get("missing_requirements", []))):
+            ans.trace.append({"tool": "answer_completion", "requirements": gaps,
+                              "basis": "required facts already delivered; no new retrieval"})
+            emit({"stage": "completing", "reason": "Required facts are already in the context"})
+            next_prompt = (
+                prompt + "\n\nPrevious draft:\n" + completion.text
+                + "\n\nRevise the answer using ONLY the context already supplied. "
+                "Cover these required source items explicitly in the answer, with citations: "
+                + "; ".join(gaps)
+                + ". Do not research or introduce optional background. Return the final JSON."
+            )
+            purpose = "answer_completion"
+            continue
+        break
     if found:
         ans.unverified, ans.raw_output = True, completion.text
         ans.errors.append("invalid model output after one retry: " + "; ".join(found))
         return ans
+    if gaps:
+        ans.trace.append({"tool": "research_guard", "gaps": gaps})
     ans.abstained = bool(data.get("abstain"))
     ans.abstain_reason = str(data.get("abstain_reason") or "")
     ans.missing_info = bool(data.get("missing_info"))
+    ans.research_needed = data.get("research_needed")
+    ans.missing_requirements = data.get("missing_requirements", [])
+    ans.answer_requirements = data.get("answer_requirements", [])
     ans.answer = str(data.get("answer") or "")
+    from reglens.answer.research import report
+
+    ans.research = report(data, {f"C{i}" for i in range(1, len(hits) + 1)})
     ans.claims = [
         Claim(
             str(c.get("text", "")), [str(x) for x in c.get("citations", [])], str(c.get("kind", ""))
@@ -216,15 +297,16 @@ def answer_question(
 def render(ans: Answer) -> str:
     """Markdown for the CLI / UI: answer, sources with legal level, as-of line, disclaimer."""
     if ans.unverified:
-        body = (
-            "**No verified answer.** The model's reply did not follow the answer format, even "
-            "after one retry, so its claims could not be checked. " + "; ".join(ans.errors)
+        body = "**No verified answer.** Output or evidence checks did not pass. " + "; ".join(
+            ans.errors
         )
     elif ans.abstained:
         body = f"**Not answered from the RegLens corpus.** {ans.abstain_reason}".strip()
     else:
         body = ans.answer
     lines = [body, "", f"_{ans.as_of}._", ""]
+    if "unknown" in (ans.coverage.get("temporal"), ans.coverage.get("applicability")):
+        lines += ["Requested date/applicability is not verified for every source.", ""]
     cited = ans.cited_hits()
     if cited:
         lines.append("**Sources**")
@@ -237,6 +319,9 @@ def render(ans: Answer) -> str:
     if problems:
         lines += ["", "**Mechanical citation checks** (citation, numbers, legal level)"]
         lines += [f"- ⚠ {c.check}: {c.text}" for c in problems]
+    if ans.usage_unknown_calls:
+        lines += ["", f"Known usage: at least {ans.usage_tokens:,} tokens; "
+                  f"{ans.usage_unknown_calls} call(s) reported no complete usage."]
     lines += [
         "",
         "_Personal open-source project; not legal or regulatory advice. Check the official texts._",

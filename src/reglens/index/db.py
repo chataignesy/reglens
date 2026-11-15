@@ -43,6 +43,13 @@ CREATE TABLE IF NOT EXISTS chunks (
 );
 ALTER TABLE chunks ADD COLUMN IF NOT EXISTS cite text NOT NULL DEFAULT '';
 ALTER TABLE chunks ADD COLUMN IF NOT EXISTS source_sha256 text NOT NULL DEFAULT '';
+ALTER TABLE chunks ADD COLUMN IF NOT EXISTS published_on date;
+ALTER TABLE chunks ADD COLUMN IF NOT EXISTS effective_from date;
+ALTER TABLE chunks ADD COLUMN IF NOT EXISTS effective_until date;
+ALTER TABLE chunks ADD COLUMN IF NOT EXISTS application_from date;
+ALTER TABLE chunks ADD COLUMN IF NOT EXISTS application_until date;
+ALTER TABLE chunks ADD COLUMN IF NOT EXISTS temporal_verified boolean NOT NULL DEFAULT false;
+ALTER TABLE chunks ADD COLUMN IF NOT EXISTS applicability jsonb NOT NULL DEFAULT '{{}}';
 CREATE INDEX IF NOT EXISTS chunks_cite ON chunks (cite);
 CREATE INDEX IF NOT EXISTS chunks_tsv ON chunks USING gin (tsv);
 CREATE INDEX IF NOT EXISTS chunks_source ON chunks (source_id, article);
@@ -79,6 +86,8 @@ _COLS = [
     "part",
     "cite",
     "source_sha256",
+    "published_on", "effective_from", "effective_until", "application_from", "application_until",
+    "temporal_verified", "applicability",
 ]
 
 
@@ -86,8 +95,9 @@ def text_hash(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
 
 
-def connect(url: str | None = None) -> psycopg.Connection:
-    conn = psycopg.connect(url or os.environ.get("REGLENS_DATABASE_URL") or DEFAULT_URL)
+def connect(url: str | None = None, *, generation: str | None = None) -> psycopg.Connection:
+    conn = psycopg.connect(url or os.environ.get("REGLENS_DATABASE_URL") or DEFAULT_URL,
+                          connect_timeout=5)
     conn.execute("CREATE EXTENSION IF NOT EXISTS vector")
     register_vector(conn)
     # HNSW is approximate: at the default ef_search (40) it missed real top-10 hits (e.g. CRR
@@ -96,6 +106,23 @@ def connect(url: str | None = None) -> psycopg.Connection:
     # (source, applies_to) from returning too few rows. Needs pgvector >= 0.8.
     conn.execute(f"SET hnsw.ef_search = {HNSW_EF_SEARCH}")
     conn.execute("SET hnsw.iterative_scan = relaxed_order")
+    from reglens.index.generations import pin
+
+    try:
+        pin(conn, generation or os.environ.get("REGLENS_CORPUS_GENERATION"))
+        table = conn.execute("SELECT to_regclass('chunks')").fetchone()[0]
+        if table and not conn.execute(
+            "SELECT EXISTS(SELECT 1 FROM pg_attribute WHERE attrelid=%s::regclass "
+            "AND attname='applicability')", (table,)
+        ).fetchone()[0]:
+            # Additive compatibility migration. Release the DDL lock before answering.
+            for statement in SCHEMA.split(";"):
+                if statement.strip().startswith("ALTER TABLE chunks"):
+                    conn.execute(statement)
+            conn.commit()
+    except Exception:
+        conn.close()
+        raise
     return conn
 
 
@@ -112,6 +139,9 @@ def existing_hashes(conn: psycopg.Connection) -> dict[str, tuple[str, bool]]:
 
 def upsert_chunks(conn: psycopg.Connection, chunks: Iterable[Chunk]) -> int:
     """Insert or update chunks; a changed text clears its embedding. Returns rows written."""
+    from reglens.index.generations import writable
+
+    writable(conn)
     n = 0
     sql = (
         f"INSERT INTO chunks ({', '.join(_COLS)}, text_hash) "
@@ -124,6 +154,9 @@ def upsert_chunks(conn: psycopg.Connection, chunks: Iterable[Chunk]) -> int:
     with conn.cursor() as cur:
         for c in chunks:
             row = asdict(c)
+            from psycopg.types.json import Jsonb
+
+            row["applicability"] = Jsonb(row["applicability"])
             cur.execute(sql, [row[k] for k in _COLS] + [text_hash(c.text)])
             n += 1
     conn.commit()
@@ -131,6 +164,9 @@ def upsert_chunks(conn: psycopg.Connection, chunks: Iterable[Chunk]) -> int:
 
 
 def delete_missing(conn: psycopg.Connection, source_id: str, keep_ids: set[str]) -> int:
+    from reglens.index.generations import writable
+
+    writable(conn)
     rows = conn.execute("SELECT id FROM chunks WHERE source_id = %s", (source_id,)).fetchall()
     stale = [r[0] for r in rows if r[0] not in keep_ids]
     if stale:
@@ -140,6 +176,9 @@ def delete_missing(conn: psycopg.Connection, source_id: str, keep_ids: set[str])
 
 
 def set_embeddings(conn: psycopg.Connection, items: list[tuple[str, list[float]]]) -> None:
+    from reglens.index.generations import writable
+
+    writable(conn)
     with conn.cursor() as cur:
         cur.executemany(
             "UPDATE chunks SET embedding = %s WHERE id = %s", [(v, i) for i, v in items]
@@ -148,6 +187,9 @@ def set_embeddings(conn: psycopg.Connection, items: list[tuple[str, list[float]]
 
 
 def replace_edges(conn: psycopg.Connection, edges: list[Edge]) -> None:
+    from reglens.index.generations import writable
+
+    writable(conn)
     with conn.cursor() as cur:
         cur.execute("DELETE FROM edges")
         cur.executemany(

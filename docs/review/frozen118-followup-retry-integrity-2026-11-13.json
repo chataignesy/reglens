@@ -1,0 +1,68 @@
+{
+  "tested_commit": "60303d5",
+  "billing": "subscription",
+  "run_id": "20261113-181055-968917-routed-followup-3",
+  "manifest_sha256": "73af5e8e578d443d1c437a1ff50ffb26ec8b2729062f2c68f0357a2353724a2d",
+  "provider_result": "Fresh subscription requests refused; reset reported as 19:30 Europe/Berlin",
+  "ledger_receipts": [
+    {
+      "ts": "2026-11-13T17:10:49+00:00",
+      "phase": 4,
+      "purpose": "agent",
+      "model": "claude-sonnet-5-5",
+      "billing": "subscription",
+      "batch": false,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0,
+      "total_tokens": 0,
+      "cost_eur": 0.0,
+      "reported_cost_usd": 0,
+      "outcome": "provider_error"
+    },
+    {
+      "ts": "2026-11-13T17:10:55+00:00",
+      "phase": 4,
+      "purpose": "agent",
+      "model": "claude-sonnet-5-5",
+      "billing": "subscription",
+      "batch": false,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0,
+      "total_tokens": 0,
+      "cost_eur": 0.0,
+      "reported_cost_usd": 0,
+      "outcome": "provider_error"
+    }
+  ],
+  "checks": [
+    {
+      "id": "mh-013",
+      "artifact": "data/evals/answers/agent-289c2cf896/attempts/mh-013-c9e434b5-b55c21744d0a481fba7c59aab438cfef.json",
+      "sha256": "1207cafb4d5441d0ebdc2849908e74754f9c95279737b0d117eb0fc43a785ceb",
+      "attempts": [
+        "agent"
+      ],
+      "retryable_failure_not_cached": true,
+      "errors": [
+        "claude -p failed: provider_error: You've hit your session limit · resets 7:30pm (Europe/Berlin)"
+      ]
+    },
+    {
+      "id": "mh-014",
+      "artifact": "data/evals/answers/agent-289c2cf896/attempts/mh-014-e144e7d8-e6e4ee97eb4445178ea3b80522351800.json",
+      "sha256": "288db0e7e1c7b3a2a29f5bd07bde482923f55a03795a87655e46fb837eedbd01",
+      "attempts": [
+        "agent"
+      ],
+      "retryable_failure_not_cached": true,
+      "errors": [
+        "claude -p failed: provider_error: You've hit your session limit · resets 7:30pm (Europe/Berlin)"
+      ]
+    }
+  ],
+  "semantic_retest_complete": false
+}

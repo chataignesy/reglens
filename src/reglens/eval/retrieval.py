@@ -23,6 +23,10 @@ RESULTS_DIR = PROJECT_ROOT / "data" / "evals"
 def normalize_refs(ref: str) -> list[str]:
     """'Art. 164(4), Table 1' -> ['art.164(4)']; 'paras. 36-37' -> ['para.36', 'para.37']."""
     full = ref.lower()
+    # A numbered list in a PDF can restart in every section. Preserve the section in
+    # Want, while normalizing its paragraph/range here for comparison with chunk refs.
+    if re.match(r"^section\s+\d+(?:\.\d+)*,\s*paras?\.", full.strip()):
+        full = full.split(",", 1)[1].strip()
     ref = full.split(",")[0].strip()
     m = re.match(r"paras?\.\s*(\d+)\s*-\s*(\d+)$", ref)
     if m:
@@ -57,7 +61,8 @@ class ItemResult:
         """Mean over expected citations of the best group's share of members within `at`."""
         per = [
             max(sum(1 for r in g if r and r <= at) / len(g) for g in gs)
-            for gs in self.groups.values() if gs
+            for gs in self.groups.values()
+            if gs
         ]
         return sum(per) / len(per) if per else 0.0
 
@@ -94,7 +99,12 @@ def evaluate(
             continue
         hits = search(conn, item.question, mode=mode, k=k, filters=filters, **search_kwargs)
         got = [
-            (h.source_id, h.title, normalize_refs(h.ref)[0] if normalize_refs(h.ref) else h.ref)
+            (
+                h.source_id,
+                h.title,
+                normalize_refs(h.ref)[0] if normalize_refs(h.ref) else h.ref,
+                h.hierarchy,
+            )
             for h in hits
         ]
 
@@ -105,7 +115,7 @@ def evaluate(
             item.id,
             item.type,
             [f"{w.source}:{w.ref}" for _, gs in wanted for w in gs[0]],
-            top=[f"{s}:{r}" for s, _, r in got],
+            top=[f"{s}:{r}" for s, _, r, _ in got],
         )
         for c, gs in wanted:
             res.groups[f"{c.source}:{c.ref}"] = [[rank(w) for w in g] for g in gs]

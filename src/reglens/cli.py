@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 from datetime import date, datetime
+from pathlib import Path
 
 from reglens.config import PROJECT_ROOT, load_config
 from reglens.llm.ledger import Ledger, Usage
@@ -175,6 +176,11 @@ def _cmd_parse(args: argparse.Namespace) -> None:
             chars_per_token=cfg.chars_per_token,
             source_sha256=digest,
         )
+        from pathlib import Path
+
+        from reglens.ingest.metadata import annotate
+
+        annotate(chunks, Path(args.metadata) if args.metadata else None)
         write_chunks(s.id, chunks)
         toks = [len(c.text) / cfg.chars_per_token for c in chunks]
         print(f"{s.id:<26}{len(units):>7}{len(chunks):>8}{int(sum(toks)):>10,}{int(max(toks)):>7}")
@@ -183,34 +189,62 @@ def _cmd_parse(args: argparse.Namespace) -> None:
 
 
 def _cmd_index(args: argparse.Namespace) -> None:
-    from reglens.index import db
+    from reglens.index import db, generations
+    from reglens.index.embed import model_identity
     from reglens.ingest.chunks import load_chunks
-    from reglens.ingest.xrefs import build_edges, write_edges
+    from reglens.ingest.xrefs import build_edges
 
-    chunks = load_chunks()
     conn = db.connect()
-    db.init_schema(conn)
-    n = db.upsert_chunks(conn, chunks)
-    for sid in {c.source_id for c in chunks}:
-        db.delete_missing(conn, sid, {c.id for c in chunks if c.source_id == sid})
-    edges = build_edges(chunks)
-    write_edges(edges)
-    db.replace_edges(conn, edges)
-    print(f"{n} chunks upserted, {len(edges)} edges")
+    if args.resume:
+        gid = args.resume
+        identity = generations.resume(conn, gid)["models"]
+        print(f"Resuming private generation {gid}; using its stored text and model identity")
+    else:
+        chunks = load_chunks()
+        identity = model_identity()
+        gid = generations.begin(conn, identity)
+        n = db.upsert_chunks(conn, chunks)
+        edges = build_edges(chunks)
+        db.replace_edges(conn, edges)
+        reused = generations.reuse_vectors(conn)
+        print(f"Generation {gid}: {n} chunks, {len(edges)} edges, {reused} vectors reused")
     if args.no_embed:
+        print("Staged only; not published. Active readers are unchanged.")
+        conn.close()
         return
 
     from reglens.index.embed import embed
 
-    have = db.existing_hashes(conn)
-    todo = [c for c in chunks if not have.get(c.id, ("", False))[1]]
+    todo = conn.execute("SELECT id,text FROM chunks WHERE embedding IS NULL ORDER BY id").fetchall()
     print(f"embedding {len(todo)} chunks (local BGE-M3, no token cost)")
     batch = 256
     for i in range(0, len(todo), batch):
         part = todo[i : i + batch]
-        vectors = embed([c.text for c in part])
-        db.set_embeddings(conn, list(zip([c.id for c in part], vectors, strict=True)))
+        vectors = embed([text for _, text in part], identity=identity)
+        db.set_embeddings(conn, list(zip([id for id, _ in part], vectors, strict=True)))
         print(f"  {min(i + batch, len(todo))}/{len(todo)}", flush=True)
+    print("Published:", generations.publish(conn, gid))
+    conn.close()
+
+
+def _cmd_corpus(args: argparse.Namespace) -> None:
+    from reglens.index import db, generations
+
+    with db.connect() as conn:
+        generations.install(conn)
+        if args.publish:
+            print(generations.publish(conn, args.publish, expected_head=generations.active(conn)))
+        elif args.rollback:
+            row = conn.execute(
+                "SELECT state FROM public.corpus_generations WHERE id=%s", (args.rollback,)
+            ).fetchone()
+            if not row or row[0] != "ready":
+                raise SystemExit("Rollback target must be a previously published snapshot")
+            print(generations.publish(conn, args.rollback, expected_head=generations.active(conn)))
+        else:
+            import json
+
+            print(json.dumps(generations.list_generations(conn), indent=2))
 
 
 def _cmd_search(args: argparse.Namespace) -> None:
@@ -260,16 +294,31 @@ def _cmd_ask(args: argparse.Namespace) -> None:
     from reglens.llm.provider import get_provider
 
     cfg = load_config(args.config)
+    from reglens.retrieve.search import Filters
+
+    filters = Filters(
+        as_of=args.as_of,
+        conditions={"approach": args.approach} if args.approach else None,
+        require_known_validity=args.known_validity,
+    )
     if args.route:
         from reglens.answer.route import answer_routed
 
-        ans = answer_routed(db.connect(), get_provider(cfg), cfg, args.question)
+        ans = answer_routed(db.connect(), get_provider(cfg), cfg, args.question, filters=filters)
     elif args.agent:
         from reglens.agent.run import answer_agentic
 
-        ans = answer_agentic(db.connect(), get_provider(cfg), cfg, args.question)
+        ans = answer_agentic(db.connect(), get_provider(cfg), cfg, args.question, filters=filters)
     else:
-        ans = answer_question(db.connect(), get_provider(cfg), cfg, args.question)
+        ans = answer_question(db.connect(), get_provider(cfg), cfg, args.question, filters=filters)
+    if args.semantic_review:
+        from reglens.answer.review import estimate_tokens, review
+
+        print(
+            f"Semantic review estimate: ~{estimate_tokens(ans):,} additional tokens",
+            file=__import__("sys").stderr,
+        )
+        ans.semantic_review = review(ans, get_provider(cfg))
     summary = check_answer(ans)
     if args.json:
         print(json.dumps(ans.to_dict() | {"check": summary}, indent=2, ensure_ascii=False))
@@ -283,7 +332,13 @@ def _golden_items(args: argparse.Namespace) -> list:
     from reglens.eval.golden import GOLDEN_DIR, load_golden
 
     paths = [GOLDEN_DIR / f"{args.set}.jsonl"] if args.set != "all" else None
-    items = [i for i in load_golden(paths) if i.status == "verified"]
+    if getattr(args, "snapshot", None):
+        from reglens.eval.snapshots import load
+
+        _, loaded = load(args.snapshot)
+    else:
+        loaded = load_golden(paths)
+    items = [i for i in loaded if i.status == "verified"]
     if getattr(args, "type", None):
         items = [i for i in items if i.type == args.type]
     if getattr(args, "id", None):
@@ -301,7 +356,7 @@ def _set_repeat(args: argparse.Namespace) -> None:
 
 def _cmd_eval_answers(args: argparse.Namespace) -> None:
     _set_repeat(args)
-    from reglens.eval.answers import ANSWER_DIR, answer_version, artifact_name, run
+    from reglens.eval.answers import ANSWER_DIR, answer_version, required_calls, run
     from reglens.index import db
 
     cfg = load_config(args.config)
@@ -311,22 +366,22 @@ def _cmd_eval_answers(args: argparse.Namespace) -> None:
     if args.route:
         from reglens.eval.route import cached_routes
 
-        routes = cached_routes(items)
+        strategy = (cfg.answer or {}).get("routing", "llm")
+        routes = (cached_routes(items) if strategy == "llm"
+                  else cached_routes(items, strategy=strategy))
         if missing := [i.id for i in items if i.id not in routes]:
             print(f"No current route for {', '.join(missing)}: run `reglens eval-route` first.")
             return
 
-    def mode(item) -> bool:
-        return routes[item.id]["route"] == "agent" if routes is not None else args.agent
-
-    dirs = {m: ANSWER_DIR / answer_version(cfg, conn, bool(m)) for m in (0, 1)}
-    todo = [i for i in items if not (dirs[mode(i)] / artifact_name(i)).exists()]
-    per_call = args.tokens_per_call
+    dirs = {m: ANSWER_DIR / answer_version(cfg, conn, m == "agent") for m in ("single", "agent")}
+    todo = required_calls(items, dirs, routes=routes, agent=args.agent)
+    per_call = args.agent_tokens_per_call if args.agent and routes is None else args.tokens_per_call
     est = len(todo) * per_call
     if routes is not None:
-        n_agent = sum(mode(i) for i in todo)
+        n_agent = sum(mode == "agent" for _, mode in todo)
         est = n_agent * args.agent_tokens_per_call + (len(todo) - n_agent) * per_call
         print(f"routed: {n_agent} new agent calls, {len(todo) - n_agent} new single-pass calls")
+        print("Estimate includes known cached fallbacks; new gaps/format repairs can add calls.")
     model = cfg.model((cfg.answer or {}).get("tier", "dev"))
     print(
         f"{len(items)} items ({len(items) - len(todo)} cached), {len(todo)} new LLM calls on "
@@ -338,6 +393,7 @@ def _cmd_eval_answers(args: argparse.Namespace) -> None:
         print("Dry run. Re-run with --yes to call the model.")
         return
 
+    from reglens.eval.snapshots import load as load_snapshot
     from reglens.llm.provider import get_provider
 
     s = run(
@@ -349,6 +405,7 @@ def _cmd_eval_answers(args: argparse.Namespace) -> None:
         agent=args.agent,
         routes=routes,
         label=args.set,
+        dataset=(load_snapshot(args.snapshot)[0] if args.snapshot else None),
     )
     print(
         f"\nrun {s['run_id']}\n"
@@ -373,7 +430,9 @@ def _cmd_eval_route(args: argparse.Namespace) -> None:
 
     cfg = load_config(args.config)
     items = _golden_items(args)
-    cached = cached_routes(items)
+    strategy = (cfg.answer or {}).get("routing", "llm")
+    cached = (cached_routes(items) if strategy == "llm"
+              else cached_routes(items, strategy=strategy))
     todo = [i for i in items if i.id not in cached]
     est = len(todo) * args.tokens_per_call
     print(
@@ -386,7 +445,8 @@ def _cmd_eval_route(args: argparse.Namespace) -> None:
 
     from reglens.llm.provider import get_provider
 
-    s = run(get_provider(cfg), items, log=lambda m: print(m, flush=True))
+    s = (run(get_provider(cfg), items, log=lambda m: print(m, flush=True)) if strategy == "llm"
+         else run(None, items, strategy=strategy, log=lambda m: print(m, flush=True)))
     print(
         f"\naccuracy {s['accuracy']}  agent recall {s['agent_recall']}  "
         f"agent precision {s['agent_precision']}  confusion {s['confusion']}  "
@@ -403,6 +463,21 @@ def _cmd_register(args: argparse.Namespace) -> None:
     from reglens.gap import register as reg
     from reglens.index import db
 
+    if args.migrate_ids:
+        items = reg.load_register()
+        reg.assign_ids(items)
+        reg.write_register(items)
+        import json
+
+        manifest = (
+            json.loads(reg.MANIFEST_FILE.read_text(encoding="utf-8"))
+            if reg.MANIFEST_FILE.exists()
+            else {}
+        )
+        manifest["id_scheme"] = "content-sha256-v1"
+        reg.MANIFEST_FILE.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+        print(f"Migrated {len(items)} obligations to stable ids; legacy aliases retained")
+        return
     cfg = load_config(args.config)
     conn = db.connect()
     todo = reg.batches(reg.select_passages(conn))[: args.limit]
@@ -453,10 +528,14 @@ def _cmd_gap(args: argparse.Namespace) -> None:
     if args.rescore:
         _rescore_gap_run(args.rescore, obligations, clauses)
         return
-    system = m.system_prompt(clauses)
     todo = m.batches(obligations)[: args.limit]
     cached = {p.stem for p in (m.MATCH_DIR / m.MATCH_VERSION).glob("*.json")}
-    new = [b for b in todo if m.batch_id(b, system) not in cached]
+    model = cfg.model(m.MATCH_TIER)
+    new = [
+        b
+        for b in todo
+        if m.batch_id(b, m.system_prompt(m.select_clauses(b, clauses)[0]), model) not in cached
+    ]
     est = len(new) * args.tokens_per_call
     print(
         f"{len(clauses)} policy clauses; {sum(len(b) for b in todo)} obligations in {len(todo)} "
@@ -472,7 +551,10 @@ def _cmd_gap(args: argparse.Namespace) -> None:
     from reglens.llm.provider import get_provider
 
     verdicts, tokens = m.match(
-        get_provider(cfg), obligations, clauses, limit=args.limit,
+        get_provider(cfg),
+        obligations,
+        clauses,
+        limit=args.limit,
         log=lambda s: print(s, flush=True),
     )
     s = evaluate(load_gaps(obligations), verdicts)
@@ -481,8 +563,10 @@ def _cmd_gap(args: argparse.Namespace) -> None:
         f"\nplanted-gap recall {s['recall']} ({s['gaps_assessed']} of {s['gaps']} gaps assessed)"
         f"  type accuracy {s['type_accuracy']}  by type {s['by_type']}"
     )
-    print(f"statuses {s['statuses']}  other findings {s['other_findings']}  "
-          f"quotes not verbatim {s['quotes_not_verbatim']}  new tokens {tokens:,}")
+    print(
+        f"statuses {s['statuses']}  other findings {s['other_findings']}  "
+        f"quotes not verbatim {s['quotes_not_verbatim']}  new tokens {tokens:,}"
+    )
     for r in s["per_gap"]:
         if r["assessed"] and not r["found"]:
             print(f"  missed {r['id']} ({r['type']}): {r['statuses']}")
@@ -496,13 +580,17 @@ def _rescore_gap_run(run_id: str, obligations, clauses) -> None:
     from reglens.gap import match as m
     from reglens.gap.evaluate import evaluate, find_run
     from reglens.gap.gaps import load_gaps
+    from reglens.gap.register import id_lookup
 
     run = find_run(None if run_id == "latest" else run_id)
     if run is None:
         raise SystemExit(f"no gap run '{run_id}'")
     data = json.loads(run["path"].read_text(encoding="utf-8"))
-    by_id = {r["obligation_id"]: r for r in data["rows"]}
+    lookup = id_lookup(obligations)
+    by_id = {lookup[r["obligation_id"]].id: r for r in data["rows"]}
     verdicts = m.rescore(data["rows"], clauses)
+    for v in verdicts:
+        v.obligation_id = lookup[v.obligation_id].id
     rows = m.to_rows(verdicts, obligations)
     for r in rows:  # keep any reviewer columns already filled in
         old = by_id.get(r["obligation_id"], {})
@@ -512,11 +600,15 @@ def _rescore_gap_run(run_id: str, obligations, clauses) -> None:
     s = evaluate(load_gaps(obligations), verdicts)
     out = s | {"rows": rows, "rescored": f"{datetime.now():%Y-%m-%d}", "before_rescore": before}
     run["path"].write_text(json.dumps(out, indent=2, ensure_ascii=False), encoding="utf-8")
-    print(f"{run['label']}: recall {before['recall']} -> {s['recall']} "
-          f"({s['gaps_assessed']}/{s['gaps']} gaps assessed)")
+    print(
+        f"{run['label']}: recall {before['recall']} -> {s['recall']} "
+        f"({s['gaps_assessed']}/{s['gaps']} gaps assessed)"
+    )
     print(f"statuses before {before['statuses']}\nstatuses after  {s['statuses']}")
-    print(f"invalid verdicts {s['invalid_verdicts']}, quotes not verbatim "
-          f"{s['quotes_not_verbatim']}; written to {run['path']}")
+    print(
+        f"invalid verdicts {s['invalid_verdicts']}, quotes not verbatim "
+        f"{s['quotes_not_verbatim']}; written to {run['path']}"
+    )
 
 
 def _cmd_judge(args: argparse.Namespace) -> None:
@@ -530,7 +622,18 @@ def _cmd_judge(args: argparse.Namespace) -> None:
         raise SystemExit(f"{e}" if args.run == "latest" else f"no run '{args.run}'") from None
     in_run = {e["id"] for e in manifest["items"]}
     args.set = "all"  # the run decides which items are graded; --type / --id narrow it
-    items = [i for i in _golden_items(args) if i.id in in_run]
+    from reglens.eval.snapshots import run_items
+
+    if manifest.get("dataset"):
+        items = run_items(manifest)
+        if args.type:
+            items = [i for i in items if i.type == args.type]
+        if args.id:
+            items = [i for i in items if i.id in set(args.id.split(","))]
+    else:
+        print("Legacy run: frozen references unavailable; using current golden set.")
+        items = _golden_items(args)
+    items = [i for i in items if i.id in in_run]
     p = plan(manifest, items, cfg.model("bulk"))
     est = len(p["needs_call"]) * args.tokens_per_call
     print(
@@ -550,6 +653,10 @@ def _cmd_judge(args: argparse.Namespace) -> None:
     from reglens.llm.provider import get_provider
 
     s = judge(get_provider(cfg), cfg, manifest, items, log=lambda m: print(m, flush=True))
+    print(f"Score status: {s['score_status']} (raw automated scores, not practitioner approval)")
+    print(f"Known grading tokens: this invocation {s['new_tokens']:,}; "
+          f"cumulative {s['known_tokens_cumulative']:,}; "
+          f"unknown-usage calls {s['unknown_usage_calls_cumulative']}")
     print(
         f"\nrun {s['run_id']}: correctness (mean score/2): in-scope {s['correctness_in_scope']}  "
         f"single {s['correctness_single']}  multi-hop {s['correctness_multi_hop']}\n"
@@ -614,11 +721,19 @@ def main(argv: list[str] | None = None) -> None:
     prs = sub.add_parser("parse", help="parse downloaded sources into chunks (no LLM calls)")
     prs.add_argument("--source", nargs="*", help="source ids (default: all downloaded)")
     prs.add_argument("--force", action="store_true", help="re-run PDF conversion (Docling)")
+    prs.add_argument("--metadata", help="reviewed YAML provision dates/applicability overrides")
     prs.set_defaults(func=_cmd_parse)
 
     idx = sub.add_parser("index", help="load chunks + edges into Postgres and embed new chunks")
     idx.add_argument("--no-embed", action="store_true", help="skip embedding")
+    idx.add_argument("--resume", help="resume an unfinished generation using its stored corpus")
     idx.set_defaults(func=_cmd_index)
+
+    corpus = sub.add_parser("corpus", help="list, publish, or roll back corpus snapshots")
+    action = corpus.add_mutually_exclusive_group()
+    action.add_argument("--publish", help="publish a fully embedded, validated staged generation")
+    action.add_argument("--rollback", help="activate a previously published generation")
+    corpus.set_defaults(func=_cmd_corpus)
 
     srch = sub.add_parser("search", help="search the index (no LLM calls)")
     srch.add_argument("query")
@@ -636,9 +751,22 @@ def main(argv: list[str] | None = None) -> None:
 
     ask = sub.add_parser("ask", help="answer a question with citations (one LLM call)")
     ask.add_argument("question")
+    ask.add_argument(
+        "--semantic-review",
+        action="store_true",
+        help="request an additional model evidence assessment (extra tokens)",
+    )
+    ask.add_argument("--as-of", help="requested legal application date (YYYY-MM-DD)")
+    ask.add_argument("--approach", nargs="+", help="reviewed applicability values, e.g. SA IRB")
+    ask.add_argument(
+        "--known-validity", action="store_true", help="exclude unknown legal intervals"
+    )
     ask.add_argument("--json", action="store_true", help="print the full answer record")
-    ask.add_argument("--agent", action="store_true",
-                     help="agentic retrieval via the RegLens MCP tools (several tool calls)")
+    ask.add_argument(
+        "--agent",
+        action="store_true",
+        help="agentic retrieval via the RegLens MCP tools (several tool calls)",
+    )
     ask.add_argument(
         "--route", action="store_true", help="let the Haiku router pick single-pass or agent"
     )
@@ -649,7 +777,7 @@ def main(argv: list[str] | None = None) -> None:
         "--set", default="phase0", help="golden file stem (phase0 = smoke set) or 'all'"
     )
     eva.add_argument("--limit", type=int, help="first N items only")
-    eva.add_argument("--tokens-per-call", type=int, default=6000, help="for the estimate")
+    eva.add_argument("--tokens-per-call", type=int, default=12000, help="for the estimate")
     eva.add_argument("--yes", action="store_true", help="actually call the model")
     eva.add_argument("--agent", action="store_true", help="agentic answering (MCP tools)")
     eva.add_argument("--type", help="only this golden type, e.g. multi_hop")
@@ -659,8 +787,9 @@ def main(argv: list[str] | None = None) -> None:
         "--route", action="store_true", help="per item, the mode chosen by the cached router"
     )
     eva.add_argument(
-        "--agent-tokens-per-call", type=int, default=50000, help="for the routed estimate"
+        "--agent-tokens-per-call", type=int, default=300000, help="for the routed estimate"
     )
+    eva.add_argument("--snapshot", type=Path, help="content-addressed frozen evaluation JSON")
     eva.set_defaults(func=_cmd_eval_answers)
 
     rte = sub.add_parser("eval-route", help="router accuracy: agent vs single-pass (bulk tier)")
@@ -669,11 +798,12 @@ def main(argv: list[str] | None = None) -> None:
     rte.add_argument("--yes", action="store_true", help="actually call the router model")
     rte.add_argument("--type", help="only this golden type")
     rte.add_argument("--id", help="only these golden ids, comma-separated")
+    rte.add_argument("--snapshot", type=Path, help="content-addressed frozen evaluation JSON")
     rte.set_defaults(func=_cmd_eval_route)
 
     jdg = sub.add_parser("judge", help="LLM judge of one eval run's answers (bulk tier, cached)")
     jdg.add_argument("--run", default="latest", help="run id from eval-answers (default: latest)")
-    jdg.add_argument("--tokens-per-call", type=int, default=2000, help="for the estimate")
+    jdg.add_argument("--tokens-per-call", type=int, default=12000, help="for the estimate")
     jdg.add_argument("--yes", action="store_true", help="actually call the judge model")
     jdg.add_argument("--type", help="only this golden type, e.g. multi_hop")
     jdg.add_argument("--id", help="only these golden ids, comma-separated")
@@ -683,6 +813,9 @@ def main(argv: list[str] | None = None) -> None:
     rg.add_argument("--limit", type=int, help="first N batches only (a sample)")
     rg.add_argument("--overhead-tokens", type=int, default=4000, help="for the estimate")
     rg.add_argument("--yes", action="store_true", help="actually call the model")
+    rg.add_argument(
+        "--migrate-ids", action="store_true", help="assign stable IDs, retaining aliases; no LLM"
+    )
     rg.set_defaults(func=_cmd_register)
 
     gp = sub.add_parser("gap", help="policy gap analysis against the obligation register")
@@ -691,11 +824,49 @@ def main(argv: list[str] | None = None) -> None:
     gp.add_argument("--tokens-per-call", type=int, default=8500, help="for the estimate")
     gp.add_argument("--yes", action="store_true", help="actually call the model")
     gp.add_argument(
-        "--rescore", metavar="RUN",
+        "--rescore",
+        metavar="RUN",
         help="re-validate a saved run ('demo', a gap-… id, or 'latest') under the current "
         "rules and rewrite it (no LLM calls)",
     )
     gp.set_defaults(func=_cmd_gap)
+
+    frozen = sub.add_parser(
+        "eval-freeze", help="freeze verified references; audit future holdout overlap"
+    )
+    frozen.add_argument(
+        "--input", type=Path, nargs="+", help="golden JSONL files; defaults to development set"
+    )
+    frozen.add_argument("--role", choices=["development", "holdout"], default="development")
+
+    def freeze_evaluation(args):
+        from reglens.eval.golden import load_golden
+        from reglens.eval.snapshots import freeze
+
+        print(
+            freeze([i for i in load_golden(args.input) if i.status == "verified"], role=args.role)
+        )
+
+    frozen.set_defaults(func=freeze_evaluation)
+
+    adjud = sub.add_parser("adjudicate", help="record an immutable practitioner review")
+    adjud.add_argument("artifact", type=Path)
+    adjud.add_argument("--reviewer", required=True)
+    adjud.add_argument(
+        "--decision", required=True, choices=["accepted", "rejected", "needs_evidence"]
+    )
+    adjud.add_argument("--reason", required=True)
+
+    def record_adjudication(args):
+        from reglens.eval.artifacts import adjudicate
+
+        print(
+            adjudicate(
+                args.artifact, reviewer=args.reviewer, decision=args.decision, reason=args.reason
+            )
+        )
+
+    adjud.set_defaults(func=record_adjudication)
 
     gold = sub.add_parser("golden", help="validate the golden eval set and show its mix")
     gold.set_defaults(func=_cmd_golden)

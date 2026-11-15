@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
-from functools import lru_cache
+from dataclasses import dataclass, field
 
 import psycopg
 
@@ -22,6 +21,15 @@ class Hit:
     legal_level: str
     version: str | None
     score: float
+    published_on: str | None = None
+    effective_from: str | None = None
+    effective_until: str | None = None
+    application_from: str | None = None
+    application_until: str | None = None
+    temporal_verified: bool = False
+    applicability: dict[str, list[str]] = field(default_factory=dict)
+    generation: str = "legacy"
+    hierarchy: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -33,15 +41,29 @@ class Filters:
     # change-tracking sources (search_default: false in sources.yaml).
     exclude_kinds: tuple[str, ...] = ("background",)
     default_scope: bool = True
+    as_of: str | None = None
+    conditions: dict[str, list[str]] | None = None
+    require_known_validity: bool = False
+    require_known_applicability: bool = False
 
-    def sql(self) -> tuple[str, list]:
+    def __post_init__(self):
+        from datetime import date
+
+        from reglens.context import validate_metadata
+
+        if self.as_of:
+            self.as_of = date.fromisoformat(str(self.as_of)).isoformat()
+        validate_metadata({"applicability": self.conditions or {}})
+
+    def sql(self, conn=None) -> tuple[str, list]:
         where, params = [], []
         if self.source_ids:
             where.append("source_id = ANY(%s)")
             params.append(self.source_ids)
-        elif self.default_scope and _off_by_default():
-            where.append("NOT (source_id = ANY(%s))")
-            params.append(_off_by_default())
+        elif self.default_scope:
+            if excluded := _off_by_default(conn):
+                where.append("NOT (source_id = ANY(%s))")
+                params.append(excluded)
         if self.exclude_kinds:
             where.append("NOT (kind = ANY(%s))")
             params.append(list(self.exclude_kinds))
@@ -51,26 +73,46 @@ class Filters:
         if self.applies_to:
             where.append("applies_to IN (%s, 'all')")
             params.append(self.applies_to)
+        if self.as_of:
+            for col in ("effective_from", "application_from"):
+                where.append(f"({col} IS NULL OR {col} <= %s::date)")
+                params.append(self.as_of)
+            for col in ("effective_until", "application_until"):
+                where.append(f"({col} IS NULL OR %s::date < {col})")
+                params.append(self.as_of)
+            if self.require_known_validity:
+                where.append("temporal_verified")
+        for key, values in (self.conditions or {}).items():
+            where.append("((NOT (applicability ? %s)) OR (applicability -> %s) ?| %s)")
+            params.extend([key, key, values])
+            if self.require_known_applicability:
+                where.append("applicability ? %s")
+                params.append(key)
         return (" AND " + " AND ".join(where)) if where else "", params
 
 
-@lru_cache(maxsize=1)
-def _off_by_default() -> list[str]:
+def _off_by_default(conn=None) -> list[str]:
     from reglens.sources import load_sources
 
-    return [s.id for s in load_sources() if not s.search_default]
-
-
-_DF: dict[str, int] = {}
-_N: list[int] = [0]
+    return [s.id for s in load_sources(conn=conn) if not s.search_default]
 
 
 def _doc_freqs(conn: psycopg.Connection) -> tuple[dict[str, int], int]:
     """Lexeme -> number of chunks containing it (computed once per process)."""
-    if not _DF:
-        _DF.update(dict(conn.execute("SELECT word, ndoc FROM ts_stat('SELECT tsv FROM chunks')")))
-        _N[0] = conn.execute("SELECT count(*) FROM chunks").fetchone()[0]
-    return _DF, _N[0]
+    return _generation_freqs(conn)
+
+
+def _generation_freqs(conn) -> tuple[dict[str, int], int]:
+    # The per-generation data lives on the connection: concurrent readers of old/new
+    # generations never overwrite a process-global partially populated dictionary.
+    cached = getattr(conn, "_reglens_freqs", None)
+    if cached is None:
+        cached = (
+            dict(conn.execute("SELECT word, ndoc FROM ts_stat('SELECT tsv FROM chunks')")),
+            conn.execute("SELECT count(*) FROM chunks").fetchone()[0],
+        )
+        conn._reglens_freqs = cached
+    return cached
 
 
 def _rare_terms_query(
@@ -90,17 +132,36 @@ def _rare_terms_query(
 def _fetch(conn: psycopg.Connection, scored: list[tuple[str, float]]) -> list[Hit]:
     if not scored:
         return []
+    from reglens.context import METADATA
+    from reglens.index.generations import current
+
     rows = conn.execute(
-        "SELECT id, source_id, ref, title, text, legal_level, version "
+        "SELECT id, source_id, ref, title, text, legal_level, version, "
+        + ",".join(METADATA)
+        + ", hierarchy "
         "FROM chunks WHERE id = ANY(%s)",
         ([i for i, _ in scored],),
     ).fetchall()
     by_id = {r[0]: r for r in rows}
-    return [Hit(*by_id[i], score=s) for i, s in scored if i in by_id]
+    generation = current(conn)
+    return [
+        Hit(
+            *by_id[i][:7],
+            score=s,
+            generation=generation,
+            hierarchy=by_id[i][-1],
+            **{
+                k: str(v) if k in METADATA[:5] and v is not None else v
+                for k, v in zip(METADATA, by_id[i][7:-1], strict=True)
+            },
+        )
+        for i, s in scored
+        if i in by_id
+    ]
 
 
 def bm25(conn, question: str, k: int, filters: Filters) -> list[tuple[str, float]]:
-    where, params = filters.sql()
+    where, params = filters.sql(conn)
     rows = conn.execute(
         "SELECT id, ts_rank(tsv, q, 1) AS s FROM chunks, to_tsquery('simple', %s) q "
         f"WHERE tsv @@ q{where} ORDER BY s DESC LIMIT %s",
@@ -113,9 +174,12 @@ def dense(conn, question: str, k: int, filters: Filters) -> list[tuple[str, floa
     import numpy as np
 
     from reglens.index.embed import embed
+    from reglens.index.generations import metadata
 
-    vec = np.array(embed([question])[0], dtype=np.float32)
-    where, params = filters.sql()
+    vec = np.array(
+        embed([question], identity=metadata(conn).get("models") or None)[0], dtype=np.float32
+    )
+    where, params = filters.sql(conn)
     rows = conn.execute(
         "SELECT id, 1 - (embedding <=> %s) AS s FROM chunks "
         f"WHERE embedding IS NOT NULL{where} ORDER BY embedding <=> %s LIMIT %s",
@@ -145,8 +209,9 @@ def search(
     """`expand`: add glossary wording to the query for "none", "bm25" only, or "both"
     (BM25, dense and the reranker)."""
     from reglens.retrieve.glossary import expand_query
+    from reglens.retrieve.intent import source_filters
 
-    filters = filters or Filters()
+    filters = source_filters(conn, question, filters or Filters())
     expanded = expand_query(question) if expand != "none" else question
     q_bm25 = expanded
     q_dense = expanded if expand == "both" else question
@@ -163,7 +228,9 @@ def search(
 
     pool = _fetch(conn, fused[:candidates])
     # the reranker also sees the glossary wording (recall@10 0.81 -> 0.84 on the golden set)
-    scores = rerank(q_dense, [h.text for h in pool])
+    from reglens.index.generations import metadata
+
+    scores = rerank(q_dense, [h.text for h in pool], identity=metadata(conn).get("models") or None)
     for h, s in zip(pool, scores, strict=True):
         h.score = s
     return sorted(pool, key=lambda h: -h.score)[:k]

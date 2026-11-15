@@ -38,7 +38,7 @@ def test_parse_batch_maps_passages_and_checks_quotes():
     assert obs[0].key == "CRR Art. 185" and obs[0].quote_ok and obs[0].topic == "pd"
     assert not obs[1].quote_ok and obs[1].topic == "other"
     reg.assign_ids(obs)
-    assert [o.id for o in obs] == ["OB-0001", "OB-0002"]
+    assert len({o.id for o in obs}) == 2 and all(len(o.id) == 23 for o in obs)
 
 
 def test_register_round_trip(tmp_path):

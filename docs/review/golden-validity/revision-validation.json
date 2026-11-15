@@ -1,0 +1,79 @@
+{
+  "snapshot": "evals/frozen/24da390da84fc23a115c266f0ddb6d422af0819fb5844aa0e9e53e1c06856a9f.json",
+  "snapshot_sha256": "24da390da84fc23a115c266f0ddb6d422af0819fb5844aa0e9e53e1c06856a9f",
+  "role": "development",
+  "items": 118,
+  "revised_ids": [
+    "app-001",
+    "cmp-002",
+    "cmp-003",
+    "cmp-006",
+    "dod-003",
+    "dod-004",
+    "dod-005",
+    "dod-008",
+    "dod-013",
+    "dt-003",
+    "floor-001",
+    "irb-003",
+    "irb-004",
+    "mh-001",
+    "mh-003",
+    "mh-005",
+    "mh-006",
+    "mh-007",
+    "mh-010",
+    "mh-011",
+    "mh-023",
+    "pd-003",
+    "sa-001",
+    "sa-005",
+    "sa-008",
+    "val-004"
+  ],
+  "excluded_ids": [
+    "pd-004",
+    "oos-014"
+  ],
+  "old_snapshot": "evals/frozen/21c65bff731ac866cd1710f1411849ec3441089b5eb6b3a5949a34e1c2844326.json",
+  "old_snapshot_byte_sha256": "fa3793edcb890ae3bc52a27ee5e630b077a3efbac0f3935dc8def3a0a6154975",
+  "old_items": 120,
+  "llm_calls": 0,
+  "all_verified_citations_resolved": true,
+  "post_revision_scorer_probes": {
+    "val004_unrelated_passage_credit": {
+      "chunk_id": "ecb-validation-reporting:paragraph:b11:3:",
+      "starts_with": "EAD - application portfolio statistics at portfolio level.\nAll summary",
+      "credit_for_grade_definition": 0.0
+    },
+    "scope001_intro_only_credit": {
+      "chunk_id": "crr3-consolidated:article:142:1:",
+      "text": "For the purposes of this Chapter, the following definitions shall apply:",
+      "credit_for_large_corporate_definition": 1.0
+    },
+    "mh023_missing_qa_credit": {
+      "qa_normalized": [],
+      "only_article183_retrieved_citation_recall": 0.25
+    },
+    "cmp002_unscorable": false,
+    "dod004_170_alternative_credit": 0.0
+  },
+  "bm25_sanity": {
+    "mode": "bm25",
+    "k": 10,
+    "items": 103,
+    "skipped_not_evaluable": [],
+    "recall@5": 0.488,
+    "recall@10": 0.612,
+    "hit@5": 0.602,
+    "hit@10": 0.728,
+    "mrr@10": 0.418,
+    "seconds": 2.151
+  },
+  "tests_passed": 175,
+  "snapshot_roundtrip_and_repeat_freeze": "passed",
+  "source_corpus_updated": false,
+  "historical_ids": [
+    "dod-008"
+  ]
+}

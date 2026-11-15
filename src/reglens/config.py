@@ -51,6 +51,7 @@ class Config:
     chars_per_token: float = 4.0
     answer: dict | None = None  # tier, effort, k, abstain_below
     agent: dict | None = None  # max_calls, max_budget_usd, max_turns, max_tokens_per_question
+    provider: str = "claude"  # codex: opt-in subscription CLI; never an implicit API fallback
 
     def model(self, tier: str | None = None) -> str:
         """Model ID for a tier ('bulk', 'dev', 'milestone'); default tier if None."""
@@ -92,9 +93,15 @@ def load_config(path: str | Path | None = None) -> Config:
     billing = raw.get("billing", "api")
     if billing not in BILLING_MODES:
         raise ValueError(f"billing must be one of {sorted(BILLING_MODES)}, got {billing!r}")
+    provider = raw.get("provider", "claude")
+    if provider not in {"claude", "codex"}:
+        raise ValueError("provider must be claude or codex")
+    if provider == "codex" and billing != "subscription":
+        raise ValueError("The Codex CLI provider requires subscription billing")
 
     cfg = Config(
         billing=billing,
+        provider=provider,
         tiers=dict(models["tiers"]),
         default_tier=models["default_tier"],
         prices={name: _parse_price(p) for name, p in raw["pricing"].items()},
@@ -121,6 +128,6 @@ def load_config(path: str | Path | None = None) -> Config:
         } | (raw.get("agent") or {}),
     )
     missing = [m for m in cfg.tiers.values() if m not in cfg.prices]
-    if missing:
+    if missing and provider != "codex":
         raise ValueError(f"Tier models without pricing: {missing}")
     return cfg

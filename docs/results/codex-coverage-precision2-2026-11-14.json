@@ -1,0 +1,2037 @@
+{
+  "disclaimer": "Personal project; not legal or regulatory advice.",
+  "result_path": "C:\\Development\\RegLens\\data\\evals\\comparisons\\20261114-202925-271211-codex-coverage-precision2\\result-20261114-203132-332360.json",
+  "result_sha256": "4f618e1df4bcf1445edabfcaceee686bbd0c3ce878334cec451cf18c4b7320ef",
+  "run_id": "20261114-213122-572455-routed-codex-coverage-precision2",
+  "baseline_sha256": "d8ae3ec3e4a4bd8901f66225d17ed2aef51b93a70c2184d8a3dcf41892ea53c3",
+  "snapshot_id": "20d15f898cdbb3884c604c0fd36d67f414b764833768b200baaa8122132eba7b",
+  "baseline_mean": 0.75,
+  "current_mean": 1.0,
+  "baseline_answer_route_tokens": 134702,
+  "current_answer_route_tokens": 80598,
+  "current_reports_incomplete": [],
+  "silent_partials": [],
+  "current_score_counts": {
+    "2": 2
+  },
+  "known_tokens": 109121,
+  "unknown_usage_calls": 0,
+  "calls": 7,
+  "budget": 750000,
+  "tokens_by_purpose": {
+    "route": 24618,
+    "answer": 37309,
+    "answer_completion": 18671,
+    "judge": 28523
+  },
+  "active_call_seconds": {
+    "routing": 10.830126100001507,
+    "answers": 94.86158660000365,
+    "grading": 9.733529899996938
+  },
+  "audit": {
+    "attempt_artifacts_verified": 2,
+    "call_artifacts_verified": 7,
+    "manifest_verified": true,
+    "source_hashes_verified": true
+  },
+  "score_status": "automated_unreviewed",
+  "judge_model": "gpt-6.1-sol",
+  "judge_prompt": "75d32dd9",
+  "items": [
+    {
+      "id": "dod-005",
+      "question": "How long is the probation period for a defaulted exposure subject to distressed restructuring?",
+      "entry": {
+        "id": "dod-005",
+        "type": "factual",
+        "question_sha": "5740330a",
+        "planned": "single",
+        "route": "single",
+        "reason": "One definition-of-default guideline topic",
+        "attempts": [
+          "single"
+        ],
+        "router_tokens": 13260,
+        "tokens": 49492,
+        "usage_unknown_calls": 0,
+        "attempt_errors": [],
+        "artifact": "data/evals/answers/20261114-202925-271211-codex-coverage-precision2/single-24c2fce376/attempts/dod-005-5740330a-0195b70fdd0743418ed79bf47f07820e.json",
+        "artifact_sha256": "a1e72bd0737bc87babd0f602c4f626935a0fb3c8d6f0c39142d24f8d632f4c7f",
+        "errors": [],
+        "unverified": false,
+        "attempt_artifacts": [
+          {
+            "mode": "single",
+            "artifact": "data/evals/answers/20261114-202925-271211-codex-coverage-precision2/single-24c2fce376/attempts/dod-005-5740330a-0195b70fdd0743418ed79bf47f07820e.json",
+            "artifact_sha256": "a1e72bd0737bc87babd0f602c4f626935a0fb3c8d6f0c39142d24f8d632f4c7f"
+          }
+        ]
+      },
+      "answer": {
+        "question": "How long is the probation period for a defaulted exposure subject to distressed restructuring?",
+        "abstained": false,
+        "abstain_reason": "",
+        "answer": "The minimum probation period is **at least 1 year** from the latest of:\n- the moment of extending the restructuring measures;\n- the moment when the exposure was classified as defaulted;\n- the end of the grace period included in the restructuring arrangements. [C4]\n\nReturn to non-defaulted status after that period requires all the following:\n- During that period, the obligor has made a material payment.\n- **During that period, payments have been made regularly according to the schedule applicable after the restructuring arrangements.**\n- There are no past due credit obligations under that schedule.\n- No regulatory or institution-defined indications of unlikeliness to pay apply.\n- The institution does not otherwise consider full repayment under that schedule unlikely without realising security; it should examine particularly any large lump-sum or significantly larger final payments.\n- These conditions also hold for new exposures to the obligor, particularly where previously defaulted exposures subject to distressed restructuring were sold or written off. [C5]\n\nAccording to the ECB, in general, a new default trigger during probation resets the period to zero and it immediately starts again. [C1]",
+        "claims": [
+          {
+            "text": "The minimum probation period is at least 1 year from the latest of extending the restructuring measures, classification as defaulted, or the end of the grace period included in the restructuring arrangements.",
+            "citations": [
+              "C4"
+            ],
+            "kind": "supervisory",
+            "check": "ok"
+          },
+          {
+            "text": "A material payment must have been made by the obligor during that period.",
+            "citations": [
+              "C5"
+            ],
+            "kind": "supervisory",
+            "check": "ok"
+          },
+          {
+            "text": "During that period, payments must have been made regularly according to the schedule applicable after the restructuring arrangements.",
+            "citations": [
+              "C5"
+            ],
+            "kind": "supervisory",
+            "check": "ok"
+          },
+          {
+            "text": "There must be no past due credit obligations according to the schedule applicable after the restructuring arrangements.",
+            "citations": [
+              "C5"
+            ],
+            "kind": "supervisory",
+            "check": "ok"
+          },
+          {
+            "text": "No regulatory or institution-defined indications of unlikeliness to pay may apply.",
+            "citations": [
+              "C5"
+            ],
+            "kind": "supervisory",
+            "check": "ok"
+          },
+          {
+            "text": "The institution must not otherwise consider full repayment under the revised schedule unlikely without realising security, examining particularly large lump-sum or significantly larger final payments.",
+            "citations": [
+              "C5"
+            ],
+            "kind": "supervisory",
+            "check": "ok"
+          },
+          {
+            "text": "The reclassification conditions must also be met for new exposures to the obligor, particularly where previously defaulted exposures subject to distressed restructuring were sold or written off.",
+            "citations": [
+              "C5"
+            ],
+            "kind": "supervisory",
+            "check": "ok"
+          },
+          {
+            "text": "According to the ECB, in general, a new default trigger during probation resets the period to zero and it immediately starts again.",
+            "citations": [
+              "C1"
+            ],
+            "kind": "supervisory",
+            "check": "ok"
+          }
+        ],
+        "context": [
+          {
+            "id": "ecb-guide-internal-models:paragraph:b2:173:",
+            "source_id": "ecb-guide-internal-models",
+            "ref": "para. 173",
+            "title": "Credit risk",
+            "legal_level": "supervisory",
+            "version": "2026-10-27",
+            "score": 0.9976949095726013,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {},
+            "generation": "legacy",
+            "hierarchy": [
+              "Credit risk",
+              "12 Return to non-defaulted status"
+            ]
+          },
+          {
+            "id": "ecb-guide-internal-models:paragraph:b2:170:",
+            "source_id": "ecb-guide-internal-models",
+            "ref": "para. 170",
+            "title": "Credit risk",
+            "legal_level": "supervisory",
+            "version": "2026-10-27",
+            "score": 0.9954615235328674,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {},
+            "generation": "legacy",
+            "hierarchy": [
+              "Credit risk",
+              "12 Return to non-defaulted status"
+            ]
+          },
+          {
+            "id": "ecb-guide-internal-models:paragraph:b2:172:",
+            "source_id": "ecb-guide-internal-models",
+            "ref": "para. 172",
+            "title": "Credit risk",
+            "legal_level": "supervisory",
+            "version": "2026-10-27",
+            "score": 0.9774571061134338,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {},
+            "generation": "legacy",
+            "hierarchy": [
+              "Credit risk",
+              "12 Return to non-defaulted status"
+            ]
+          },
+          {
+            "id": "eba-gl-dod:paragraph:b0:72:",
+            "source_id": "eba-gl-dod",
+            "ref": "para. 72",
+            "title": "Guidelines",
+            "legal_level": "L3",
+            "version": "2026-10-27",
+            "score": 0.8318272233009338,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {},
+            "generation": "legacy",
+            "hierarchy": [
+              "Guidelines",
+              "7. Criteria for the return to a nondefaulted status",
+              "Minimum conditions for reclassification to a non-defaulted status"
+            ]
+          },
+          {
+            "id": "eba-gl-dod:paragraph:b0:73:",
+            "source_id": "eba-gl-dod",
+            "ref": "para. 73",
+            "title": "Guidelines",
+            "legal_level": "L3",
+            "version": "2026-10-27",
+            "score": 0.7854732275009155,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {},
+            "generation": "legacy",
+            "hierarchy": [
+              "Guidelines",
+              "7. Criteria for the return to a nondefaulted status",
+              "Minimum conditions for reclassification to a non-defaulted status"
+            ]
+          },
+          {
+            "id": "ecb-guide-internal-models:paragraph:b2:263:",
+            "source_id": "ecb-guide-internal-models",
+            "ref": "para. 263",
+            "title": "Credit risk",
+            "legal_level": "supervisory",
+            "version": "2026-10-27",
+            "score": 0.5194603800773621,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {},
+            "generation": "legacy",
+            "hierarchy": [
+              "Credit risk",
+              "17 Loss given default",
+              "17.1 Realised LGD",
+              "17.1.4 Treatment of multiple defaults"
+            ]
+          },
+          {
+            "id": "ecb-guide-internal-models:paragraph:b2:171:",
+            "source_id": "ecb-guide-internal-models",
+            "ref": "para. 171",
+            "title": "Credit risk",
+            "legal_level": "supervisory",
+            "version": "2026-10-27",
+            "score": 0.4962807595729828,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {},
+            "generation": "legacy",
+            "hierarchy": [
+              "Credit risk",
+              "12 Return to non-defaulted status"
+            ]
+          },
+          {
+            "id": "eba-gl-pd-lgd:paragraph:b0:101:",
+            "source_id": "eba-gl-pd-lgd",
+            "ref": "para. 101",
+            "title": "on PD estimation, LGD estimation and the treatment of defaulted exposures",
+            "legal_level": "L3",
+            "version": "2026-10-27",
+            "score": 0.25701841711997986,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {},
+            "generation": "legacy",
+            "hierarchy": [
+              "on PD estimation, LGD estimation and the treatment of defaulted exposures",
+              "6 LGD estimation",
+              "6.1 General requirements specific to LGD estimation",
+              "6.1.1 LGD estimation methodologies"
+            ]
+          }
+        ],
+        "as_of": "Answered 14 Nov 2026 from: other sources as downloaded 27 Oct 2026",
+        "model": "gpt-6.1-sol",
+        "usage_tokens": 36232,
+        "errors": [],
+        "trace": [
+          {
+            "tool": "answer_completion",
+            "requirements": [
+              "Review requested list coverage in EBA GL definition of default (GL/2016/07) para. 73, item (b): during that period the payments have been made regularly according to the schedule applicable after the restructuring arrangements"
+            ],
+            "basis": "required facts already delivered; no new retrieval"
+          }
+        ],
+        "missing_info": false,
+        "research_needed": false,
+        "missing_requirements": [],
+        "unverified": false,
+        "raw_output": "",
+        "partial_cids": [],
+        "coverage": {
+          "temporal": "not_requested",
+          "applicability": "not_requested"
+        },
+        "corpus_generation": "legacy",
+        "source_registry": {
+          "crr3-consolidated": {
+            "id": "crr3-consolidated",
+            "title": "Regulation (EU) No 575/2013 (CRR), consolidated version including CRR3 amendments",
+            "issuer": "EU (EP & Council)",
+            "legal_level": "L1",
+            "reference": "CELEX 32013R0575 (base act); consolidated versions CELEX 02013R0575-YYYYMMDD",
+            "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32013R0575",
+            "format": "html",
+            "applies_to": "all",
+            "scope": [
+              "Art. 4 (definitions)",
+              "Art. 92 (own funds requirements, output floor)",
+              "Part Three, Title II, Ch. 2 (Standardised Approach)",
+              "Part Three, Title II, Ch. 3 (IRB, Art. 142-191)",
+              "Part Three, Title II, Ch. 4 (Credit risk mitigation)",
+              "Transitional provisions for the output floor and IRB (Part Ten)"
+            ],
+            "reuse": "EUR-Lex content may be reused with acknowledgement of the source (Commission Decision 2011/833/EU). Only the Official Journal version is authentic; consolidated texts are documentation.",
+            "verify": false,
+            "celex": "02013R0575",
+            "consolidated": true,
+            "short_name": "CRR",
+            "articles": [
+              "4",
+              "92",
+              "107-241",
+              "465",
+              "501"
+            ],
+            "parts": null,
+            "blocks": null,
+            "search_default": true,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {}
+          },
+          "crr3-amending-act": {
+            "id": "crr3-amending-act",
+            "title": "Regulation (EU) 2024/1623 amending Regulation (EU) No 575/2013 (CRR3)",
+            "issuer": "EU (EP & Council)",
+            "legal_level": "L1",
+            "reference": "CELEX 32024R1623",
+            "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1623",
+            "format": "html",
+            "applies_to": "all",
+            "scope": [
+              "Recitals and application dates (used for \"what changed\" and as-of reasoning)"
+            ],
+            "reuse": "EUR-Lex content may be reused with acknowledgement of the source (Commission Decision 2011/833/EU). Only the Official Journal version is authentic; consolidated texts are documentation.",
+            "verify": false,
+            "celex": "32024R1623",
+            "consolidated": false,
+            "short_name": "CRR3 amending act (Reg. 2024/1623)",
+            "articles": null,
+            "parts": null,
+            "blocks": null,
+            "search_default": false,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {}
+          },
+          "rts-irb-assessment": {
+            "id": "rts-irb-assessment",
+            "title": "Delegated Regulation (EU) 2022/439 — RTS on the IRB assessment methodology",
+            "issuer": "European Commission (EBA draft)",
+            "legal_level": "L2",
+            "reference": "CELEX 32022R0439",
+            "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022R0439",
+            "format": "html",
+            "applies_to": "all",
+            "scope": [
+              "full"
+            ],
+            "reuse": "EUR-Lex content may be reused with acknowledgement of the source (Commission Decision 2011/833/EU). Only the Official Journal version is authentic; consolidated texts are documentation.",
+            "verify": false,
+            "celex": "32022R0439",
+            "consolidated": false,
+            "short_name": "RTS IRB assessment (Reg. 2022/439)",
+            "articles": null,
+            "parts": null,
+            "blocks": null,
+            "search_default": true,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {}
+          },
+          "rts-default-materiality": {
+            "id": "rts-default-materiality",
+            "title": "Delegated Regulation (EU) 2018/171 — RTS on the materiality threshold for credit obligations past due",
+            "issuer": "European Commission (EBA draft)",
+            "legal_level": "L2",
+            "reference": "CELEX 32018R0171",
+            "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32018R0171",
+            "format": "html",
+            "applies_to": "all",
+            "scope": [
+              "full"
+            ],
+            "reuse": "EUR-Lex content may be reused with acknowledgement of the source (Commission Decision 2011/833/EU). Only the Official Journal version is authentic; consolidated texts are documentation.",
+            "verify": false,
+            "celex": "32018R0171",
+            "consolidated": false,
+            "short_name": "RTS materiality threshold (Reg. 2018/171)",
+            "articles": null,
+            "parts": null,
+            "blocks": null,
+            "search_default": true,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {}
+          },
+          "rts-economic-downturn": {
+            "id": "rts-economic-downturn",
+            "title": "Delegated Regulation (EU) 2021/930 — RTS on the nature, severity and duration of an economic downturn",
+            "issuer": "European Commission (EBA draft)",
+            "legal_level": "L2",
+            "reference": "CELEX 32021R0930",
+            "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32021R0930",
+            "format": "html",
+            "applies_to": "all",
+            "scope": [
+              "full"
+            ],
+            "reuse": "EUR-Lex content may be reused with acknowledgement of the source (Commission Decision 2011/833/EU). Only the Official Journal version is authentic; consolidated texts are documentation.",
+            "verify": false,
+            "celex": "32021R0930",
+            "consolidated": false,
+            "short_name": "RTS economic downturn (Reg. 2021/930)",
+            "articles": null,
+            "parts": null,
+            "blocks": null,
+            "search_default": true,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {}
+          },
+          "eba-gl-dod": {
+            "id": "eba-gl-dod",
+            "title": "EBA Guidelines on the application of the definition of default",
+            "issuer": "EBA",
+            "legal_level": "L3",
+            "reference": "EBA/GL/2016/07",
+            "url": "https://www.eba.europa.eu/documents/10180/1721448/Guidelines+on+default+definition+%28EBA-GL-2016-07%29_EN.pdf/052c260f-da9a-4c86-8f0a-09a1d8ae56e7",
+            "format": "pdf",
+            "applies_to": "all",
+            "scope": [
+              "full"
+            ],
+            "reuse": "EBA publications: reproduction generally authorised with the source acknowledged — check the EBA legal notice.",
+            "verify": true,
+            "celex": null,
+            "consolidated": false,
+            "short_name": "EBA GL definition of default (GL/2016/07)",
+            "articles": null,
+            "parts": null,
+            "blocks": null,
+            "search_default": true,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {}
+          },
+          "eba-gl-pd-lgd": {
+            "id": "eba-gl-pd-lgd",
+            "title": "EBA Guidelines on PD estimation, LGD estimation and the treatment of defaulted exposures",
+            "issuer": "EBA",
+            "legal_level": "L3",
+            "reference": "EBA/GL/2017/16",
+            "url": "https://www.eba.europa.eu/documents/10180/2033363/6b062012-45d6-4655-af04-801d26493ed0/Guidelines%20on%20PD%20and%20LGD%20estimation%20%28EBA-GL-2017-16%29.pdf",
+            "format": "pdf",
+            "applies_to": "all",
+            "scope": [
+              "full"
+            ],
+            "reuse": "EBA publications: reproduction generally authorised with the source acknowledged — check the EBA legal notice.",
+            "verify": true,
+            "celex": null,
+            "consolidated": false,
+            "short_name": "EBA GL PD/LGD estimation (GL/2017/16)",
+            "articles": null,
+            "parts": null,
+            "blocks": null,
+            "search_default": true,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {}
+          },
+          "eba-gl-downturn-lgd": {
+            "id": "eba-gl-downturn-lgd",
+            "title": "EBA Guidelines for the estimation of LGD appropriate for an economic downturn",
+            "issuer": "EBA",
+            "legal_level": "L3",
+            "reference": "EBA/GL/2019/03",
+            "url": "https://www.eba.europa.eu/sites/default/documents/files/documents/10180/2551996/f892da33-5cb2-44f8-ae5d-68251b9bab8f/Final%20Report%20on%20Guidelines%20on%20LGD%20estimates%20under%20downturn%20conditions.pdf",
+            "format": "pdf",
+            "applies_to": "all",
+            "scope": [
+              "full"
+            ],
+            "reuse": "EBA publications: reproduction generally authorised with the source acknowledged — check the EBA legal notice.",
+            "verify": true,
+            "celex": null,
+            "consolidated": false,
+            "short_name": "EBA GL downturn LGD (GL/2019/03)",
+            "articles": null,
+            "parts": null,
+            "blocks": null,
+            "search_default": true,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {}
+          },
+          "eba-gl-crm-airb": {
+            "id": "eba-gl-crm-airb",
+            "title": "EBA Guidelines on credit risk mitigation for institutions applying the IRB approach with own estimates of LGD",
+            "issuer": "EBA",
+            "legal_level": "L3",
+            "reference": "EBA/GL/2020/05",
+            "url": "https://www.eba.europa.eu/sites/default/files/document_library/Publications/Guidelines/2020/Guidelines%20on%20Credit%20Risk%20Mitigation%20for%20institutions%20applying%20the%20IRB%20approach%20with%20own%20estimates%20of%20LGDs/883366/Guidelines%20on%20CRM%20for%20A-IRB%20institutions.pdf",
+            "format": "pdf",
+            "applies_to": "all",
+            "scope": [
+              "full"
+            ],
+            "reuse": "EBA publications: reproduction generally authorised with the source acknowledged — check the EBA legal notice.",
+            "verify": true,
+            "celex": null,
+            "consolidated": false,
+            "short_name": "EBA GL CRM for A-IRB (GL/2020/05)",
+            "articles": null,
+            "parts": null,
+            "blocks": null,
+            "search_default": true,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {}
+          },
+          "eba-gl-lom": {
+            "id": "eba-gl-lom",
+            "title": "EBA Guidelines on loan origination and monitoring",
+            "issuer": "EBA",
+            "legal_level": "L3",
+            "reference": "EBA/GL/2020/06",
+            "url": "https://www.eba.europa.eu/sites/default/files/document_library/Publications/Guidelines/2020/Guidelines%20on%20loan%20origination%20and%20monitoring/884283/EBA%20GL%202020%2006%20Final%20Report%20on%20GL%20on%20loan%20origination%20and%20monitoring.pdf",
+            "format": "pdf",
+            "applies_to": "all",
+            "scope": [
+              "Credit-risk-relevant sections (governance, creditworthiness assessment, monitoring)"
+            ],
+            "reuse": "EBA publications: reproduction generally authorised with the source acknowledged — check the EBA legal notice.",
+            "verify": true,
+            "celex": null,
+            "consolidated": false,
+            "short_name": "EBA GL loan origination (GL/2020/06)",
+            "articles": null,
+            "parts": null,
+            "blocks": null,
+            "search_default": true,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {}
+          },
+          "eba-qa-credit-risk": {
+            "id": "eba-qa-credit-risk",
+            "title": "EBA Single Rulebook Q&A — credit risk topics",
+            "issuer": "EBA",
+            "legal_level": "qa",
+            "reference": "Single Rulebook Q&A tool, filtered to CRR credit risk articles",
+            "url": "https://www.eba.europa.eu/single-rule-book-qa/all?qa_legal_act%5B%5D=33&qa_legal_act_topic%5B%5D=181&qa_final_publishing_date_start=2000-01-01",
+            "format": "eba-qa",
+            "applies_to": "all",
+            "scope": [
+              "Final answers on CRR Part Three Title II and Art. 178 (default)"
+            ],
+            "reuse": "EBA publications: reproduction generally authorised with the source acknowledged — check the EBA legal notice.",
+            "verify": false,
+            "celex": null,
+            "consolidated": false,
+            "short_name": "EBA Q&A",
+            "articles": null,
+            "parts": null,
+            "blocks": null,
+            "search_default": false,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {}
+          },
+          "ecb-guide-internal-models": {
+            "id": "ecb-guide-internal-models",
+            "title": "ECB Guide to internal models (latest revision)",
+            "issuer": "ECB Banking Supervision",
+            "legal_level": "supervisory",
+            "reference": "ECB guide to internal models, June 2026 release (checked 2026-10-27)",
+            "url": "https://www.bankingsupervision.europa.eu/ecb/pub/pdf/ssm.supervisory_guide_egim_202606.en.pdf",
+            "format": "pdf",
+            "applies_to": "SI",
+            "scope": [
+              "General topics chapter",
+              "Credit risk chapter"
+            ],
+            "reuse": "ECB publications: reproduction generally permitted with the source acknowledged — check the ECB copyright notice.",
+            "verify": true,
+            "celex": null,
+            "consolidated": false,
+            "short_name": "ECB guide to internal models",
+            "articles": null,
+            "parts": [
+              "Document releases",
+              "Foreword",
+              "Overarching principles for internal models",
+              "Credit risk",
+              "Market risk.*",
+              "Counterparty credit risk"
+            ],
+            "blocks": [
+              "Document releases",
+              "Foreword",
+              "Overarching principles",
+              "Credit risk"
+            ],
+            "search_default": true,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {}
+          },
+          "ecb-validation-reporting": {
+            "id": "ecb-validation-reporting",
+            "title": "ECB instructions for reporting the validation results of internal models (credit risk)",
+            "issuer": "ECB Banking Supervision",
+            "legal_level": "supervisory",
+            "reference": "Instructions for reporting validation results, February 2019 (pre-CRR3; check for updates)",
+            "url": "https://www.bankingsupervision.europa.eu/activities/internal_models/shared/pdf/instructions_validation_reporting_credit_risk.en.pdf",
+            "format": "pdf",
+            "applies_to": "SI",
+            "scope": [
+              "full"
+            ],
+            "reuse": "ECB publications: reproduction generally permitted with the source acknowledged — check the ECB copyright notice.",
+            "verify": true,
+            "celex": null,
+            "consolidated": false,
+            "short_name": "ECB validation reporting instructions",
+            "articles": null,
+            "parts": null,
+            "blocks": null,
+            "search_default": true,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {}
+          }
+        },
+        "research": {
+          "basis": "model_reported; delivery_checked",
+          "checks": {
+            "rule": {
+              "status": "unresolved",
+              "reason": "Research check not reported",
+              "citations": []
+            },
+            "definitions": {
+              "status": "unresolved",
+              "reason": "Research check not reported",
+              "citations": []
+            },
+            "exceptions": {
+              "status": "unresolved",
+              "reason": "Research check not reported",
+              "citations": []
+            },
+            "applicability": {
+              "status": "unresolved",
+              "reason": "Research check not reported",
+              "citations": []
+            },
+            "temporal": {
+              "status": "unresolved",
+              "reason": "Research check not reported",
+              "citations": []
+            }
+          },
+          "unresolved": [
+            "rule",
+            "definitions",
+            "exceptions",
+            "applicability",
+            "temporal"
+          ]
+        },
+        "semantic_review": {
+          "status": "not_run"
+        },
+        "usage_unknown_calls": 0,
+        "retryable_error": false,
+        "answer_requirements": [
+          {
+            "requirement": "Identify the minimum probation period and all three starting events.",
+            "status": "supported",
+            "citations": [
+              "C4"
+            ],
+            "retrievable": false
+          },
+          {
+            "requirement": "State all paragraph 73 reclassification conditions, explicitly including regular payments during the probation period under the post-restructuring schedule.",
+            "status": "supported",
+            "citations": [
+              "C5"
+            ],
+            "retrievable": false
+          },
+          {
+            "requirement": "Explain the general effect of a new default trigger during probation.",
+            "status": "supported",
+            "citations": [
+              "C1"
+            ],
+            "retrievable": false
+          }
+        ],
+        "evidence": [
+          {
+            "id": "ecb-guide-internal-models:paragraph:b2:173:",
+            "generation": "legacy",
+            "sha256": "d55c9db168f689279cd2f40fe0e59284d78510bd9636d818dea7d44166ce324b",
+            "text": "ECB guide to internal models › Credit risk › 12 Return to non-defaulted status › para. 173\nThe activation of new default triggers for already defaulted exposures has a different impact on the probation period depending on whether the exposure is subject to distressed restructuring or not. This is explained as follows.\n(a) Where distressed restructuring does not apply to a defaulted exposure, the probation period should last a minimum of three months from the moment that all default triggers cease to apply. According to the ECB's understanding, this means that if a new default trigger becomes applicable while the probation period is running, then the probation period is reset to zero and will start again when all default triggers, including the new one, will again cease to apply.\n(b) Where distressed restructuring applies to a defaulted exposure, the probation period should last a minimum of one year from the latest of the events specified in paragraph 72 of the EBA Guidelines on DoD and should be reset in the circumstances described in question ID 2022\\_6527 of the EBA Single Rulebook Q&amp;A. 121 According to the ECB's understanding, in general, whenever a new default trigger becomes applicable while the probation period is running, then the probation period is reset to zero and immediately starts again."
+          },
+          {
+            "id": "ecb-guide-internal-models:paragraph:b2:170:",
+            "generation": "legacy",
+            "sha256": "539fc155221ab25897f858335381860cd40ca0025449dbc46e459c006074297c",
+            "text": "ECB guide to internal models › Credit risk › 12 Return to non-defaulted status › para. 170\nParagraphs 72 to 73 and 71 of the EBA Guidelines on DoD provide the minimum conditions for reclassification to non-defaulted status for exposures subject to distressed restructurings and for all other exposures respectively. In particular, for exposures subject to distressed restructurings the minimum probation period 120 is generally longer than for exposures not subject to distressed restructuring. This implies the following.\n(a) If the definition of default is applied at obligor level, institutions should monitor the conditions for reclassification to non-defaulted status that are applicable to each exposure of the obligor, and the obligor may return to non-defaulted status only when all exposures meet their respective conditions.\n(b) If the definition of default is applied at facility level, institutions should monitor the conditions for reclassification to non-defaulted status that are applicable to the facility, and when these are met then the facility may return to non-defaulted status. This means that different defaulted facilities belonging to the same obligor may possibly return to non-defaulted status at different moments in time. However, institutions may make use of the possibility of setting longer probation periods (as set out in paragraphs 71 and 72 of the EBA Guidelines on DoD) to ultimately align these moments."
+          },
+          {
+            "id": "ecb-guide-internal-models:paragraph:b2:172:",
+            "generation": "legacy",
+            "sha256": "5bba4c2c3c72d22a0809d8008380900ca9ae283b2606780518335a5f09d6400e",
+            "text": "ECB guide to internal models › Credit risk › 12 Return to non-defaulted status › para. 172\nMinimum conditions for returning to non-defaulted status with regard to past due amounts are different for exposures subject to distressed restructurings. These conditions are as follows.\n(a) Where distressed restructuring does not apply to a defaulted exposure, if all other conditions described in paragraph 71 of the EBA Guidelines on DoD are met, a defaulted exposure can be reclassified to non-defaulted status even if there are still past due amounts that are either not material or material but are less than 90 consecutive days past due.\n(b) Where distressed restructuring applies to a defaulted exposure, under paragraph 73 of the EBA Guidelines on DoD there should be no past due\n120 The minimum probation period is the minimum period of time over which a defaulted exposure and related obligor should be monitored before the exposure may possibly return to non-defaulted status.\ncredit obligations according to the schedule applicable after the restructuring arrangements. Hence, it is the ECB's understanding that institutions should refrain from allowing the return to non-default status as long as exposures are subject to outstanding past due amounts, even if these past due amounts are immaterial or are material and less than 90 days past due. This condition ensures alignment between defaulted exposures subject to distressed restructuring and forborne non-performing exposures (as also required by paragraphs 54 and 107 of the EBA Guidelines on DoD)."
+          },
+          {
+            "id": "eba-gl-dod:paragraph:b0:72:",
+            "generation": "legacy",
+            "sha256": "bba779d888dedb8edfaf88d0da0420fd7f5ed42783c343645873808ba40ac33b",
+            "text": "EBA GL definition of default (GL/2016/07) › Guidelines › 7. Criteria for the return to a nondefaulted status › Minimum conditions for reclassification to a non-defaulted status › para. 72\nFor the purposes of the application of Article 178(5) of Regulation (EU) 575/2013, and where distressed restructuring according to paragraph 49 of these guidelines applies to a defaulted exposure, regardless of whether such restructuring was carried out before or after the identification of default, institutions should consider that no trigger of default continues to apply to a previously defaulted exposure, where at least 1 year has passed from the latest between one of the following events:\n(a) the moment of extending the restructuring measures;\n(b) the moment when the exposure has been classified as defaulted;\n(c) the end of the grace period included in the restructuring arrangements."
+          },
+          {
+            "id": "eba-gl-dod:paragraph:b0:73:",
+            "generation": "legacy",
+            "sha256": "d2cefcaf77b1c0f4391ecb6c33bfb3e2bc2409a4f6b972cb3b266dd8fec48b36",
+            "text": "EBA GL definition of default (GL/2016/07) › Guidelines › 7. Criteria for the return to a nondefaulted status › Minimum conditions for reclassification to a non-defaulted status › para. 73\nInstitutions should reclassify the exposure to a non-defaulted status after at least the one year period referred to in the previous paragraph, where all of the following conditions are met:\n(a) during that period a material payment has been made by the obligor; material payment may be considered to be made where the debtor has paid, via its regular payments in accordance with the restructuring arrangements, a total equal to the amount that was previously past-due (if there were past-due amounts) or that has been written-off (if there were no past-due amounts) under the restructuring measures;\n(b) during that period the payments have been made regularly according to the schedule applicable after the restructuring arrangements;\n(c) there are no past due credit obligations according to the schedule applicable after the restructuring arrangements;\n(d) no indications of unlikeliness to pay as specified in Article 178(3) of Regulation (EU) No 575/2013 or any additional indications of unlikeliness to pay specified by the institution apply;\n(e) the institution does not consider it otherwise unlikely that the obligor will pay its credit obligations in full according to the schedule after the restructuring arrangements without recourse to realising security. In this assessment institutions should examine in particular situations where a large lumpsum payment or significantly larger payments are envisaged at the end of the repayment schedule;\n(f) the conditions referred to in points (a) to (e) should be met also with regard to new exposures to the obligor, in particular where the previous defaulted exposures to this obligor that were subject to distressed restructuring were sold or written off."
+          },
+          {
+            "id": "ecb-guide-internal-models:paragraph:b2:263:",
+            "generation": "legacy",
+            "sha256": "b0cbb2f0cfc3d727dce852df2168ea186e91282d016b5a08e4b374bba85eec90",
+            "text": "ECB guide to internal models › Credit risk › 17 Loss given default › 17.1 Realised LGD › 17.1.4 Treatment of multiple defaults › para. 263\nFor the purpose of LGD estimation and in order to ensure an appropriate measurement of economic loss as defined in Article 5(2) of the CRR, institutions should consider an exposure that returns to normal status and subsequently defaults in a short period of time as being constantly defaulted from the moment the first default occurred. This treatment should be applied under paragraph 101 of the EBA Guidelines on PD and LGD. In addition, institutions should follow the observations in the following paragraphs.\n(a) Paragraph 101 of the EBA Guidelines on PD and LGD envisages the definition of a period longer than nine months when this is appropriate for the specific type of exposures and reflects the economic meaning of the default experience. It is the ECB's understanding that a longer period is adequate when the proportion of subsequent defaults occurring on individual facilities over a period of more than nine months is significant, unless institutions are able to provide evidence that the second (or subsequent) default is unconnected with the original default event. This evidence may include analysis of the curing process.\n(b) In the particular case of an institution opening new facilities to replace previously defaulted facilities as part of restructuring or for technical reasons, it should be able to make or trace a connection between the restructured facility and the facility (or facilities) previously advanced and which it is restructuring."
+          },
+          {
+            "id": "ecb-guide-internal-models:paragraph:b2:171:",
+            "generation": "legacy",
+            "sha256": "6fcea044e5eca87536df7a156753d8d56b92f99ef243b8b79e24a2485873c6c4",
+            "text": "ECB guide to internal models › Credit risk › 12 Return to non-defaulted status › para. 171\nIn the case of exposures subject to distressed restructuring, one of the minimum conditions for the reclassification to non-defaulted status is that during the probation period a material payment has been made by the obligor. In this regard, paragraph 73(a) of the EBA Guidelines on DoD provides examples of material payments that should not be construed as mandatory conditions; institutions may define material payments otherwise. It is the ECB's understanding that the appropriateness of such a definition is one of the elements that institutions should consider when monitoring the effectiveness of the policy for the return to non-default status as described in paragraphs 76 to 78 of the EBA Guidelines on DoD."
+          },
+          {
+            "id": "eba-gl-pd-lgd:paragraph:b0:101:",
+            "generation": "legacy",
+            "sha256": "6731c4bc05f1c51b5a1801acff5b95b5acd91799662e7cb899f4b1acdfb8e76c",
+            "text": "EBA GL PD/LGD estimation (GL/2017/16) › on PD estimation, LGD estimation and the treatment of defaulted exposures › 6 LGD estimation › 6.1 General requirements specific to LGD estimation › 6.1.1 LGD estimation methodologies › para. 101\nFor the purpose of LGD estimation, with regard to defaults recognised on a single facility, where the time between the moment of the return of the exposure to non-defaulted status and the subsequent classification as default is shorter than nine months, institutions should treat such exposure as having been constantly defaulted from the first moment when the default occurred. Institutions may specify a period longer than nine months for the purpose of considering two subsequent defaults as a single default in the LGD estimation, if this is adequate to the specific type of exposures and reflects the economic meaning of the default experience."
+          }
+        ],
+        "check": {
+          "claims": 8,
+          "ok": 8,
+          "supported_rate": 1.0,
+          "problems": {}
+        },
+        "id": "dod-005",
+        "mode": "single"
+      },
+      "grade": {
+        "id": "dod-005",
+        "type": "factual",
+        "route": "single",
+        "score": 2,
+        "missing": [],
+        "contradictions": [],
+        "rationale": "The answer correctly states the one-year minimum and all three latest-of starting events, separately includes the required cure conditions, and supports the additional ECB reset qualification with the supplied citation.",
+        "flags": [],
+        "method": "llm",
+        "model": "gpt-6.1-sol",
+        "tokens": 12491
+      },
+      "metrics": {
+        "id": "dod-005",
+        "type": "factual",
+        "route": "single",
+        "attempts": [
+          "single"
+        ],
+        "scope": "answered",
+        "reports_incomplete": false,
+        "abstained": false,
+        "abstain_correct": true,
+        "usable_answer": true,
+        "citation_recall": 1.0,
+        "check_pass_rate": 1.0,
+        "tokens": 49492,
+        "errors": []
+      },
+      "baseline": {
+        "grade": {
+          "id": "dod-005",
+          "type": "factual",
+          "route": "single",
+          "score": 1,
+          "missing": [
+            "Reclassification also requires a material payment during the probation period, no past-due amounts, and no remaining concerns about full repayment."
+          ],
+          "contradictions": [],
+          "rationale": "The answer correctly states the one-year minimum and latest-of start dates but omits the separate cure conditions required for reclassification.",
+          "flags": [],
+          "method": "llm",
+          "model": "gpt-6.1-sol",
+          "tokens": 13787
+        },
+        "entry": {
+          "id": "dod-005",
+          "type": "factual",
+          "question_sha": "5740330a",
+          "planned": "single",
+          "route": "single",
+          "reason": "One definition-of-default guideline topic",
+          "attempts": [
+            "single"
+          ],
+          "router_tokens": 13243,
+          "tokens": 28472,
+          "usage_unknown_calls": 0,
+          "attempt_errors": [],
+          "artifact": "data/evals/answers/20261114-175004-126803-codex-completeness8/single-12ab37c947/attempts/dod-005-5740330a-9d7319bbe48142eebd244bf87bf6b5d1.json",
+          "artifact_sha256": "2cb22d87892eb6ba17f38146c32570453d68aaea13a94d08078f539a41d1d7b1",
+          "errors": [],
+          "unverified": false,
+          "attempt_artifacts": [
+            {
+              "mode": "single",
+              "artifact": "data/evals/answers/20261114-175004-126803-codex-completeness8/single-12ab37c947/attempts/dod-005-5740330a-9d7319bbe48142eebd244bf87bf6b5d1.json",
+              "artifact_sha256": "2cb22d87892eb6ba17f38146c32570453d68aaea13a94d08078f539a41d1d7b1"
+            }
+          ]
+        },
+        "metrics": {
+          "id": "dod-005",
+          "type": "factual",
+          "route": "single",
+          "attempts": [
+            "single"
+          ],
+          "scope": "answered",
+          "reports_incomplete": false,
+          "abstained": false,
+          "abstain_correct": true,
+          "usable_answer": true,
+          "citation_recall": 0.5,
+          "check_pass_rate": 1.0,
+          "tokens": 28472,
+          "errors": []
+        },
+        "missing_info": false,
+        "missing_requirements": []
+      }
+    },
+    {
+      "id": "mh-012",
+      "question": "Which elements enter the economic loss when computing realised LGD?",
+      "entry": {
+        "id": "mh-012",
+        "type": "multi_hop",
+        "question_sha": "409fbc3c",
+        "planned": "single",
+        "route": "single",
+        "reason": "One guideline topic defines economic loss components",
+        "attempts": [
+          "single"
+        ],
+        "router_tokens": 11358,
+        "tokens": 31106,
+        "usage_unknown_calls": 0,
+        "attempt_errors": [],
+        "artifact": "data/evals/answers/20261114-202925-271211-codex-coverage-precision2/single-24c2fce376/attempts/mh-012-409fbc3c-52d6c7c287114bab86a6f1f356f6ffff.json",
+        "artifact_sha256": "6a80f09e154f65d9c673d6da29215c094bc710253a861ea47e542e8664d4632f",
+        "errors": [],
+        "unverified": false,
+        "attempt_artifacts": [
+          {
+            "mode": "single",
+            "artifact": "data/evals/answers/20261114-202925-271211-codex-coverage-precision2/single-24c2fce376/attempts/mh-012-409fbc3c-52d6c7c287114bab86a6f1f356f6ffff.json",
+            "artifact_sha256": "6a80f09e154f65d9c673d6da29215c094bc710253a861ea47e542e8664d4632f"
+          }
+        ]
+      },
+      "answer": {
+        "question": "Which elements enter the economic loss when computing realised LGD?",
+        "abstained": false,
+        "abstain_reason": "",
+        "answer": "Economic loss is **the amount outstanding at default, including principal, interest and fees, plus material direct and indirect collection costs, minus recoveries after default**, with costs and recoveries discounted to default. [C12]\n\nThe passages specify these treatments:\n- **Forgiveness and write-offs:** include amounts forgiven or written off before or at default. Replacement facilities following restructuring must capture any diminished financial obligation arising from material forgiveness or postponed payments, without double-counting forgiveness. [C1][C2]\n- **Fees and interest:** include those capitalised before default. Those capitalised after default do not increase the outstanding amount at default; post-default capitalised fees also do not increase economic loss, but recoveries relating to them are included. Avoid counting fees reimbursing collection costs twice where those costs are already included. [C1][C6]\n- **Discounting:** discount all recoveries, costs and additional drawings after default using the rate applicable at default: 3-month EURIBOR, or a comparable liquid rate in the exposure’s currency, increased by **5%-points**. [C11]\n- **Return to non-defaulted status:** add a discounted artificial recovery equal to the outstanding principal, interest and fees at return. Where paragraph 101’s multiple-default treatment applies, use cash flows from the first default, including intervening cash flows, without artificial cash flows. [C4]\n- **Netting:** for exposures covered by master netting or on-balance-sheet netting, calculate economic loss from the prescribed E* outstanding amount; do not also count netting cash flows as post-default recoveries. [C3]",
+        "claims": [
+          {
+            "text": "Economic loss comprises the outstanding principal, interest and fees at default, plus discounted material direct and indirect collection costs, less discounted post-default recoveries.",
+            "citations": [
+              "C12"
+            ],
+            "kind": "supervisory",
+            "check": "ok"
+          },
+          {
+            "text": "The outstanding amount at default includes amounts forgiven or written off before or at default.",
+            "citations": [
+              "C1"
+            ],
+            "kind": "supervisory",
+            "check": "ok"
+          },
+          {
+            "text": "For replacement facilities following restructuring, economic loss includes diminished financial obligations arising from material forgiveness or payment postponement, without double-counting forgiveness.",
+            "citations": [
+              "C2"
+            ],
+            "kind": "supervisory",
+            "check": "ok"
+          },
+          {
+            "text": "Interest and fees capitalised before default enter the outstanding amount at default, whereas those capitalised after default do not.",
+            "citations": [
+              "C1"
+            ],
+            "kind": "supervisory",
+            "check": "ok"
+          },
+          {
+            "text": "Post-default capitalised fees do not increase economic loss, but recoveries relating to those fees are included.",
+            "citations": [
+              "C6"
+            ],
+            "kind": "supervisory",
+            "check": "ok"
+          },
+          {
+            "text": "Fees reimbursing direct costs already included in economic loss must not be counted again.",
+            "citations": [
+              "C6"
+            ],
+            "kind": "supervisory",
+            "check": "ok"
+          },
+          {
+            "text": "Post-default recoveries, costs and additional drawings are discounted using the primary interbank offered rate applicable at default—3-month EURIBOR or a comparable liquid rate in the exposure’s currency—increased by 5%-points.",
+            "citations": [
+              "C11"
+            ],
+            "kind": "supervisory",
+            "check": "ok"
+          },
+          {
+            "text": "Return to non-defaulted status entails a discounted artificial recovery equal to the outstanding amount at return; where paragraph 101 applies, cash flows are instead measured from the first default without artificial cash flows.",
+            "citations": [
+              "C4"
+            ],
+            "kind": "supervisory",
+            "check": "ok"
+          },
+          {
+            "text": "For master netting or on-balance-sheet netting, economic loss is based on the prescribed E* outstanding amount and excludes netting cash flows from post-default recoveries.",
+            "citations": [
+              "C3"
+            ],
+            "kind": "supervisory",
+            "check": "ok"
+          }
+        ],
+        "context": [
+          {
+            "id": "ecb-guide-internal-models:paragraph:b2:261:",
+            "source_id": "ecb-guide-internal-models",
+            "ref": "para. 261",
+            "title": "Credit risk",
+            "legal_level": "supervisory",
+            "version": "2026-10-27",
+            "score": 0.9605096578598022,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {},
+            "generation": "legacy",
+            "hierarchy": [
+              "Credit risk",
+              "17 Loss given default",
+              "17.1 Realised LGD",
+              "17.1.3 Calculation of realised LGD"
+            ]
+          },
+          {
+            "id": "ecb-guide-internal-models:paragraph:b2:262:",
+            "source_id": "ecb-guide-internal-models",
+            "ref": "para. 262",
+            "title": "Credit risk",
+            "legal_level": "supervisory",
+            "version": "2026-10-27",
+            "score": 0.9354645609855652,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {},
+            "generation": "legacy",
+            "hierarchy": [
+              "Credit risk",
+              "17 Loss given default",
+              "17.1 Realised LGD",
+              "17.1.3 Calculation of realised LGD"
+            ]
+          },
+          {
+            "id": "eba-gl-crm-airb:paragraph:b1:29:",
+            "source_id": "eba-gl-crm-airb",
+            "ref": "para. 29",
+            "title": "Guidelines",
+            "legal_level": "L3",
+            "version": "2026-10-27",
+            "score": 0.8474634885787964,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {},
+            "generation": "legacy",
+            "hierarchy": [
+              "Guidelines",
+              "6. The effects of credit risk mitigation",
+              "6.1 The effects of funded credit protection"
+            ]
+          },
+          {
+            "id": "eba-gl-pd-lgd:paragraph:b0:135:",
+            "source_id": "eba-gl-pd-lgd",
+            "ref": "para. 135",
+            "title": "on PD estimation, LGD estimation and the treatment of defaulted exposures",
+            "legal_level": "L3",
+            "version": "2026-10-27",
+            "score": 0.8203255534172058,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {},
+            "generation": "legacy",
+            "hierarchy": [
+              "on PD estimation, LGD estimation and the treatment of defaulted exposures",
+              "6 LGD estimation",
+              "6.3 LGD calibration",
+              "6.3.1 Calculation of economic loss and realised LGD",
+              "6.3.1.1 Definition of economic loss and realised LGD"
+            ]
+          },
+          {
+            "id": "ecb-guide-internal-models:paragraph:b2:304:",
+            "source_id": "ecb-guide-internal-models",
+            "ref": "para. 304",
+            "title": "Credit risk",
+            "legal_level": "supervisory",
+            "version": "2026-10-27",
+            "score": 0.8060905337333679,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {},
+            "generation": "legacy",
+            "hierarchy": [
+              "Credit risk",
+              "17 Loss given default",
+              "17.3 Risk quantification",
+              "17.3.6 Downturn LGD",
+              "LGD reference value"
+            ]
+          },
+          {
+            "id": "eba-gl-pd-lgd:paragraph:b0:137:",
+            "source_id": "eba-gl-pd-lgd",
+            "ref": "para. 137",
+            "title": "on PD estimation, LGD estimation and the treatment of defaulted exposures",
+            "legal_level": "L3",
+            "version": "2026-10-27",
+            "score": 0.7844842076301575,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {},
+            "generation": "legacy",
+            "hierarchy": [
+              "on PD estimation, LGD estimation and the treatment of defaulted exposures",
+              "6 LGD estimation",
+              "6.3 LGD calibration",
+              "6.3.1 Calculation of economic loss and realised LGD",
+              "6.3.1.2 Treatment of fees, interest and additional drawings after default"
+            ]
+          },
+          {
+            "id": "eba-gl-pd-lgd:paragraph:b0:131:",
+            "source_id": "eba-gl-pd-lgd",
+            "ref": "para. 131",
+            "title": "on PD estimation, LGD estimation and the treatment of defaulted exposures",
+            "legal_level": "L3",
+            "version": "2026-10-27",
+            "score": 0.7645401358604431,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {},
+            "generation": "legacy",
+            "hierarchy": [
+              "on PD estimation, LGD estimation and the treatment of defaulted exposures",
+              "6 LGD estimation",
+              "6.3 LGD calibration",
+              "6.3.1 Calculation of economic loss and realised LGD",
+              "6.3.1.1 Definition of economic loss and realised LGD"
+            ]
+          },
+          {
+            "id": "eba-gl-pd-lgd:paragraph:b0:140:",
+            "source_id": "eba-gl-pd-lgd",
+            "ref": "para. 140",
+            "title": "on PD estimation, LGD estimation and the treatment of defaulted exposures",
+            "legal_level": "L3",
+            "version": "2026-10-27",
+            "score": 0.7390459179878235,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {},
+            "generation": "legacy",
+            "hierarchy": [
+              "on PD estimation, LGD estimation and the treatment of defaulted exposures",
+              "6 LGD estimation",
+              "6.3 LGD calibration",
+              "6.3.1 Calculation of economic loss and realised LGD",
+              "6.3.1.2 Treatment of fees, interest and additional drawings after default"
+            ]
+          },
+          {
+            "id": "ecb-guide-internal-models:paragraph:b2:258:",
+            "source_id": "ecb-guide-internal-models",
+            "ref": "para. 258",
+            "title": "Credit risk",
+            "legal_level": "supervisory",
+            "version": "2026-10-27",
+            "score": 0.9605096578598022,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {},
+            "generation": "legacy",
+            "hierarchy": [
+              "Credit risk",
+              "17 Loss given default",
+              "17.1 Realised LGD",
+              "17.1.3 Calculation of realised LGD"
+            ]
+          },
+          {
+            "id": "ecb-guide-internal-models:paragraph:b2:263:",
+            "source_id": "ecb-guide-internal-models",
+            "ref": "para. 263",
+            "title": "Credit risk",
+            "legal_level": "supervisory",
+            "version": "2026-10-27",
+            "score": 0.9605096578598022,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {},
+            "generation": "legacy",
+            "hierarchy": [
+              "Credit risk",
+              "17 Loss given default",
+              "17.1 Realised LGD",
+              "17.1.4 Treatment of multiple defaults"
+            ]
+          },
+          {
+            "id": "eba-gl-pd-lgd:paragraph:b0:143:",
+            "source_id": "eba-gl-pd-lgd",
+            "ref": "para. 143",
+            "title": "on PD estimation, LGD estimation and the treatment of defaulted exposures",
+            "legal_level": "L3",
+            "version": "2026-10-27",
+            "score": 0.9605096578598022,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {},
+            "generation": "legacy",
+            "hierarchy": [
+              "on PD estimation, LGD estimation and the treatment of defaulted exposures",
+              "6 LGD estimation",
+              "6.3 LGD calibration",
+              "6.3.1 Calculation of economic loss and realised LGD",
+              "6.3.1.3 Discounting rate"
+            ]
+          },
+          {
+            "id": "eba-gl-pd-lgd:paragraph:b0:132:",
+            "source_id": "eba-gl-pd-lgd",
+            "ref": "para. 132",
+            "title": "on PD estimation, LGD estimation and the treatment of defaulted exposures",
+            "legal_level": "L3",
+            "version": "2026-10-27",
+            "score": 0.9605096578598022,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {},
+            "generation": "legacy",
+            "hierarchy": [
+              "on PD estimation, LGD estimation and the treatment of defaulted exposures",
+              "6 LGD estimation",
+              "6.3 LGD calibration",
+              "6.3.1 Calculation of economic loss and realised LGD",
+              "6.3.1.1 Definition of economic loss and realised LGD"
+            ]
+          }
+        ],
+        "as_of": "Answered 14 Nov 2026 from: other sources as downloaded 27 Oct 2026",
+        "model": "gpt-6.1-sol",
+        "usage_tokens": 19748,
+        "errors": [],
+        "trace": [],
+        "missing_info": false,
+        "research_needed": false,
+        "missing_requirements": [],
+        "unverified": false,
+        "raw_output": "",
+        "partial_cids": [],
+        "coverage": {
+          "temporal": "not_requested",
+          "applicability": "not_requested"
+        },
+        "corpus_generation": "legacy",
+        "source_registry": {
+          "crr3-consolidated": {
+            "id": "crr3-consolidated",
+            "title": "Regulation (EU) No 575/2013 (CRR), consolidated version including CRR3 amendments",
+            "issuer": "EU (EP & Council)",
+            "legal_level": "L1",
+            "reference": "CELEX 32013R0575 (base act); consolidated versions CELEX 02013R0575-YYYYMMDD",
+            "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32013R0575",
+            "format": "html",
+            "applies_to": "all",
+            "scope": [
+              "Art. 4 (definitions)",
+              "Art. 92 (own funds requirements, output floor)",
+              "Part Three, Title II, Ch. 2 (Standardised Approach)",
+              "Part Three, Title II, Ch. 3 (IRB, Art. 142-191)",
+              "Part Three, Title II, Ch. 4 (Credit risk mitigation)",
+              "Transitional provisions for the output floor and IRB (Part Ten)"
+            ],
+            "reuse": "EUR-Lex content may be reused with acknowledgement of the source (Commission Decision 2011/833/EU). Only the Official Journal version is authentic; consolidated texts are documentation.",
+            "verify": false,
+            "celex": "02013R0575",
+            "consolidated": true,
+            "short_name": "CRR",
+            "articles": [
+              "4",
+              "92",
+              "107-241",
+              "465",
+              "501"
+            ],
+            "parts": null,
+            "blocks": null,
+            "search_default": true,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {}
+          },
+          "crr3-amending-act": {
+            "id": "crr3-amending-act",
+            "title": "Regulation (EU) 2024/1623 amending Regulation (EU) No 575/2013 (CRR3)",
+            "issuer": "EU (EP & Council)",
+            "legal_level": "L1",
+            "reference": "CELEX 32024R1623",
+            "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1623",
+            "format": "html",
+            "applies_to": "all",
+            "scope": [
+              "Recitals and application dates (used for \"what changed\" and as-of reasoning)"
+            ],
+            "reuse": "EUR-Lex content may be reused with acknowledgement of the source (Commission Decision 2011/833/EU). Only the Official Journal version is authentic; consolidated texts are documentation.",
+            "verify": false,
+            "celex": "32024R1623",
+            "consolidated": false,
+            "short_name": "CRR3 amending act (Reg. 2024/1623)",
+            "articles": null,
+            "parts": null,
+            "blocks": null,
+            "search_default": false,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {}
+          },
+          "rts-irb-assessment": {
+            "id": "rts-irb-assessment",
+            "title": "Delegated Regulation (EU) 2022/439 — RTS on the IRB assessment methodology",
+            "issuer": "European Commission (EBA draft)",
+            "legal_level": "L2",
+            "reference": "CELEX 32022R0439",
+            "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022R0439",
+            "format": "html",
+            "applies_to": "all",
+            "scope": [
+              "full"
+            ],
+            "reuse": "EUR-Lex content may be reused with acknowledgement of the source (Commission Decision 2011/833/EU). Only the Official Journal version is authentic; consolidated texts are documentation.",
+            "verify": false,
+            "celex": "32022R0439",
+            "consolidated": false,
+            "short_name": "RTS IRB assessment (Reg. 2022/439)",
+            "articles": null,
+            "parts": null,
+            "blocks": null,
+            "search_default": true,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {}
+          },
+          "rts-default-materiality": {
+            "id": "rts-default-materiality",
+            "title": "Delegated Regulation (EU) 2018/171 — RTS on the materiality threshold for credit obligations past due",
+            "issuer": "European Commission (EBA draft)",
+            "legal_level": "L2",
+            "reference": "CELEX 32018R0171",
+            "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32018R0171",
+            "format": "html",
+            "applies_to": "all",
+            "scope": [
+              "full"
+            ],
+            "reuse": "EUR-Lex content may be reused with acknowledgement of the source (Commission Decision 2011/833/EU). Only the Official Journal version is authentic; consolidated texts are documentation.",
+            "verify": false,
+            "celex": "32018R0171",
+            "consolidated": false,
+            "short_name": "RTS materiality threshold (Reg. 2018/171)",
+            "articles": null,
+            "parts": null,
+            "blocks": null,
+            "search_default": true,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {}
+          },
+          "rts-economic-downturn": {
+            "id": "rts-economic-downturn",
+            "title": "Delegated Regulation (EU) 2021/930 — RTS on the nature, severity and duration of an economic downturn",
+            "issuer": "European Commission (EBA draft)",
+            "legal_level": "L2",
+            "reference": "CELEX 32021R0930",
+            "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32021R0930",
+            "format": "html",
+            "applies_to": "all",
+            "scope": [
+              "full"
+            ],
+            "reuse": "EUR-Lex content may be reused with acknowledgement of the source (Commission Decision 2011/833/EU). Only the Official Journal version is authentic; consolidated texts are documentation.",
+            "verify": false,
+            "celex": "32021R0930",
+            "consolidated": false,
+            "short_name": "RTS economic downturn (Reg. 2021/930)",
+            "articles": null,
+            "parts": null,
+            "blocks": null,
+            "search_default": true,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {}
+          },
+          "eba-gl-dod": {
+            "id": "eba-gl-dod",
+            "title": "EBA Guidelines on the application of the definition of default",
+            "issuer": "EBA",
+            "legal_level": "L3",
+            "reference": "EBA/GL/2016/07",
+            "url": "https://www.eba.europa.eu/documents/10180/1721448/Guidelines+on+default+definition+%28EBA-GL-2016-07%29_EN.pdf/052c260f-da9a-4c86-8f0a-09a1d8ae56e7",
+            "format": "pdf",
+            "applies_to": "all",
+            "scope": [
+              "full"
+            ],
+            "reuse": "EBA publications: reproduction generally authorised with the source acknowledged — check the EBA legal notice.",
+            "verify": true,
+            "celex": null,
+            "consolidated": false,
+            "short_name": "EBA GL definition of default (GL/2016/07)",
+            "articles": null,
+            "parts": null,
+            "blocks": null,
+            "search_default": true,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {}
+          },
+          "eba-gl-pd-lgd": {
+            "id": "eba-gl-pd-lgd",
+            "title": "EBA Guidelines on PD estimation, LGD estimation and the treatment of defaulted exposures",
+            "issuer": "EBA",
+            "legal_level": "L3",
+            "reference": "EBA/GL/2017/16",
+            "url": "https://www.eba.europa.eu/documents/10180/2033363/6b062012-45d6-4655-af04-801d26493ed0/Guidelines%20on%20PD%20and%20LGD%20estimation%20%28EBA-GL-2017-16%29.pdf",
+            "format": "pdf",
+            "applies_to": "all",
+            "scope": [
+              "full"
+            ],
+            "reuse": "EBA publications: reproduction generally authorised with the source acknowledged — check the EBA legal notice.",
+            "verify": true,
+            "celex": null,
+            "consolidated": false,
+            "short_name": "EBA GL PD/LGD estimation (GL/2017/16)",
+            "articles": null,
+            "parts": null,
+            "blocks": null,
+            "search_default": true,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {}
+          },
+          "eba-gl-downturn-lgd": {
+            "id": "eba-gl-downturn-lgd",
+            "title": "EBA Guidelines for the estimation of LGD appropriate for an economic downturn",
+            "issuer": "EBA",
+            "legal_level": "L3",
+            "reference": "EBA/GL/2019/03",
+            "url": "https://www.eba.europa.eu/sites/default/documents/files/documents/10180/2551996/f892da33-5cb2-44f8-ae5d-68251b9bab8f/Final%20Report%20on%20Guidelines%20on%20LGD%20estimates%20under%20downturn%20conditions.pdf",
+            "format": "pdf",
+            "applies_to": "all",
+            "scope": [
+              "full"
+            ],
+            "reuse": "EBA publications: reproduction generally authorised with the source acknowledged — check the EBA legal notice.",
+            "verify": true,
+            "celex": null,
+            "consolidated": false,
+            "short_name": "EBA GL downturn LGD (GL/2019/03)",
+            "articles": null,
+            "parts": null,
+            "blocks": null,
+            "search_default": true,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {}
+          },
+          "eba-gl-crm-airb": {
+            "id": "eba-gl-crm-airb",
+            "title": "EBA Guidelines on credit risk mitigation for institutions applying the IRB approach with own estimates of LGD",
+            "issuer": "EBA",
+            "legal_level": "L3",
+            "reference": "EBA/GL/2020/05",
+            "url": "https://www.eba.europa.eu/sites/default/files/document_library/Publications/Guidelines/2020/Guidelines%20on%20Credit%20Risk%20Mitigation%20for%20institutions%20applying%20the%20IRB%20approach%20with%20own%20estimates%20of%20LGDs/883366/Guidelines%20on%20CRM%20for%20A-IRB%20institutions.pdf",
+            "format": "pdf",
+            "applies_to": "all",
+            "scope": [
+              "full"
+            ],
+            "reuse": "EBA publications: reproduction generally authorised with the source acknowledged — check the EBA legal notice.",
+            "verify": true,
+            "celex": null,
+            "consolidated": false,
+            "short_name": "EBA GL CRM for A-IRB (GL/2020/05)",
+            "articles": null,
+            "parts": null,
+            "blocks": null,
+            "search_default": true,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {}
+          },
+          "eba-gl-lom": {
+            "id": "eba-gl-lom",
+            "title": "EBA Guidelines on loan origination and monitoring",
+            "issuer": "EBA",
+            "legal_level": "L3",
+            "reference": "EBA/GL/2020/06",
+            "url": "https://www.eba.europa.eu/sites/default/files/document_library/Publications/Guidelines/2020/Guidelines%20on%20loan%20origination%20and%20monitoring/884283/EBA%20GL%202020%2006%20Final%20Report%20on%20GL%20on%20loan%20origination%20and%20monitoring.pdf",
+            "format": "pdf",
+            "applies_to": "all",
+            "scope": [
+              "Credit-risk-relevant sections (governance, creditworthiness assessment, monitoring)"
+            ],
+            "reuse": "EBA publications: reproduction generally authorised with the source acknowledged — check the EBA legal notice.",
+            "verify": true,
+            "celex": null,
+            "consolidated": false,
+            "short_name": "EBA GL loan origination (GL/2020/06)",
+            "articles": null,
+            "parts": null,
+            "blocks": null,
+            "search_default": true,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {}
+          },
+          "eba-qa-credit-risk": {
+            "id": "eba-qa-credit-risk",
+            "title": "EBA Single Rulebook Q&A — credit risk topics",
+            "issuer": "EBA",
+            "legal_level": "qa",
+            "reference": "Single Rulebook Q&A tool, filtered to CRR credit risk articles",
+            "url": "https://www.eba.europa.eu/single-rule-book-qa/all?qa_legal_act%5B%5D=33&qa_legal_act_topic%5B%5D=181&qa_final_publishing_date_start=2000-01-01",
+            "format": "eba-qa",
+            "applies_to": "all",
+            "scope": [
+              "Final answers on CRR Part Three Title II and Art. 178 (default)"
+            ],
+            "reuse": "EBA publications: reproduction generally authorised with the source acknowledged — check the EBA legal notice.",
+            "verify": false,
+            "celex": null,
+            "consolidated": false,
+            "short_name": "EBA Q&A",
+            "articles": null,
+            "parts": null,
+            "blocks": null,
+            "search_default": false,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {}
+          },
+          "ecb-guide-internal-models": {
+            "id": "ecb-guide-internal-models",
+            "title": "ECB Guide to internal models (latest revision)",
+            "issuer": "ECB Banking Supervision",
+            "legal_level": "supervisory",
+            "reference": "ECB guide to internal models, June 2026 release (checked 2026-10-27)",
+            "url": "https://www.bankingsupervision.europa.eu/ecb/pub/pdf/ssm.supervisory_guide_egim_202606.en.pdf",
+            "format": "pdf",
+            "applies_to": "SI",
+            "scope": [
+              "General topics chapter",
+              "Credit risk chapter"
+            ],
+            "reuse": "ECB publications: reproduction generally permitted with the source acknowledged — check the ECB copyright notice.",
+            "verify": true,
+            "celex": null,
+            "consolidated": false,
+            "short_name": "ECB guide to internal models",
+            "articles": null,
+            "parts": [
+              "Document releases",
+              "Foreword",
+              "Overarching principles for internal models",
+              "Credit risk",
+              "Market risk.*",
+              "Counterparty credit risk"
+            ],
+            "blocks": [
+              "Document releases",
+              "Foreword",
+              "Overarching principles",
+              "Credit risk"
+            ],
+            "search_default": true,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {}
+          },
+          "ecb-validation-reporting": {
+            "id": "ecb-validation-reporting",
+            "title": "ECB instructions for reporting the validation results of internal models (credit risk)",
+            "issuer": "ECB Banking Supervision",
+            "legal_level": "supervisory",
+            "reference": "Instructions for reporting validation results, February 2019 (pre-CRR3; check for updates)",
+            "url": "https://www.bankingsupervision.europa.eu/activities/internal_models/shared/pdf/instructions_validation_reporting_credit_risk.en.pdf",
+            "format": "pdf",
+            "applies_to": "SI",
+            "scope": [
+              "full"
+            ],
+            "reuse": "ECB publications: reproduction generally permitted with the source acknowledged — check the ECB copyright notice.",
+            "verify": true,
+            "celex": null,
+            "consolidated": false,
+            "short_name": "ECB validation reporting instructions",
+            "articles": null,
+            "parts": null,
+            "blocks": null,
+            "search_default": true,
+            "published_on": null,
+            "effective_from": null,
+            "effective_until": null,
+            "application_from": null,
+            "application_until": null,
+            "temporal_verified": false,
+            "applicability": {}
+          }
+        },
+        "research": {
+          "basis": "model_reported; delivery_checked",
+          "checks": {
+            "rule": {
+              "status": "unresolved",
+              "reason": "Research check not reported",
+              "citations": []
+            },
+            "definitions": {
+              "status": "unresolved",
+              "reason": "Research check not reported",
+              "citations": []
+            },
+            "exceptions": {
+              "status": "unresolved",
+              "reason": "Research check not reported",
+              "citations": []
+            },
+            "applicability": {
+              "status": "unresolved",
+              "reason": "Research check not reported",
+              "citations": []
+            },
+            "temporal": {
+              "status": "unresolved",
+              "reason": "Research check not reported",
+              "citations": []
+            }
+          },
+          "unresolved": [
+            "rule",
+            "definitions",
+            "exceptions",
+            "applicability",
+            "temporal"
+          ]
+        },
+        "semantic_review": {
+          "status": "not_run"
+        },
+        "usage_unknown_calls": 0,
+        "retryable_error": false,
+        "answer_requirements": [
+          {
+            "requirement": "Identify the components of economic loss.",
+            "status": "supported",
+            "citations": [
+              "C12"
+            ],
+            "retrievable": false
+          },
+          {
+            "requirement": "Explain discounting of post-default cash flows.",
+            "status": "supported",
+            "citations": [
+              "C11"
+            ],
+            "retrievable": false
+          },
+          {
+            "requirement": "Identify the supplied qualifications affecting inclusion or double-counting of loss components.",
+            "status": "supported",
+            "citations": [
+              "C1",
+              "C2",
+              "C3",
+              "C4",
+              "C6"
+            ],
+            "retrievable": false
+          }
+        ],
+        "evidence": [
+          {
+            "id": "ecb-guide-internal-models:paragraph:b2:261:",
+            "generation": "legacy",
+            "sha256": "56a5604b89eba31470dadd120970fec45d77a8c18faa4b35b9755f86e88e9c1e",
+            "text": "ECB guide to internal models › Credit risk › 17 Loss given default › 17.1 Realised LGD › 17.1.3 Calculation of realised LGD › para. 261\nAs mentioned in paragraph 255 of this chapter, for the purposes of Article 181(1)(a) of the CRR institutions are required to calculate realised LGD, which is defined by Article 4(1)(55) of the CRR as the \"ratio of the loss on an exposure related to a single facility due to the default of an obligor or, where applicable, of a credit facility to the amount outstanding at default or at a given reference date after the date of default […]\". Furthermore, Article 5(2) of the CRR defines loss as an economic loss, including material discount effects, and material direct and indirect costs associated with collecting on the instrument. In accordance with these provisions, it is the ECB's understanding that institutions should calculate realised LGD as a ratio of the economic loss to the outstanding amount of the credit obligation at the moment of default, including any amount of principal, interest or fee (hereinafter outstanding amount at default). To calculate realised LGD, institutions should follow paragraphs 131 to 146 of the EBA Guidelines on PD and LGD. In addition, they should pay particular attention to the following points.\n(a) Outstanding amount at default includes any part of the exposure that has been forgiven or written off before or at the date of default (paragraph 134 of the EBA Guidelines on PD and LGD). Institutions should ensure consistency with the accounting value gross of credit risk adjustment (i.e. \"provisions\") (Article 166(1) of the CRR) by explaining any differences. This amount also includes interest and fees capitalised in the institution's income statement before the moment of default. However, interest and fees capitalised after the moment of default are not considered (paragraphs 137 to 138 of the EBA Guidelines on PD and LGD). Where institutions include additional drawings after the moment of default to estimate CCFs, these additional drawings discounted to the moment of default are added to the outstanding amount at default in the denominator (paragraphs 139 to 142 of the EBA Guidelines on PD and LGD). In other words, institutions should ensure that the exposure used for CCF estimation, where additional drawings after default are discounted with the same discount factor as applied for LGD, is consistent with the denominator of the LGD.\n(b) Economic loss is calculated under paragraph 132 of the EBA Guidelines on PD and LGD. This also applies in the specific case of facilities that return to non-defaulted status, where losses arising from payment delays are expected to be accounted for as well as the \"artificial cash flow\" envisaged by paragraph 135 of the EBA Guidelines on PD and LGD.\n(c) When recoveries are not directly observed but calculated on the basis of the difference between exposure values at two consecutive dates or derived, even partially, from some other treatment, all assumptions should be duly justified and clearly documented in order to adequately replicate the recovery flows that occur during the recovery process in accordance with letters a) and b) above. Institutions are expected to pay particular attention to the treatment of interest and fees capitalised after default, the treatment of additional drawings and the treatment of write-offs."
+          },
+          {
+            "id": "ecb-guide-internal-models:paragraph:b2:262:",
+            "generation": "legacy",
+            "sha256": "1fc81f568f8226313b9c86f3b9fdbe20b574b675a1fccb5c6b0f9e21233016e0",
+            "text": "ECB guide to internal models › Credit risk › 17 Loss given default › 17.1 Realised LGD › 17.1.3 Calculation of realised LGD › para. 262\nThe economic loss as defined in Article 5(2) of the CRR also includes material discounts. The ECB's understanding is as follows.\n(a) Paragraph 134 of the EBA Guidelines on PD and LGD refers to all losses incurred through forgiveness or write-off.\n(b) Where institutions open new facilities to replace previously defaulted facilities as part of restructuring or for technical reasons, the economic loss should include the decrease in the degree of financial obligation arising from changes in the contractual conditions (i.e. material forgiveness or postponement of payment of principal, interest or fees). The amount by which the financial obligation has diminished should be calculated under paragraph 51 of the EBA Guidelines on DoD. However, no doublecounting of debt forgiveness is intended (for example, in the case of exposures that return to non-defaulted status, a possible double-counting\nthrough the diminished financial obligation and the artificial cash flow is not intended).\n(c) Realised LGD for individual facilities may be zero or lower when it is the actual result of the recovery process (for example, where additional recoveries offset the discounting effect and costs). Institutions should, however, pay particular attention to no-loss exposures, since they may reveal issues with the calculation of realised losses - for example, costs not being adequately allocated to recovery processes, or inadequate treatment of amounts forgiven or written off."
+          },
+          {
+            "id": "eba-gl-crm-airb:paragraph:b1:29:",
+            "generation": "legacy",
+            "sha256": "cbe96b255473d201fb9f9a2d0cde694fc78bf779ad8ada2183c6cfb3ade78676",
+            "text": "EBA GL CRM for A-IRB (GL/2020/05) › Guidelines › 6. The effects of credit risk mitigation › 6.1 The effects of funded credit protection › para. 29\nFor the purposes of LGD estimation as referred to in Article 181(1)(a) of Regulation (EU) No 575/2013 and in accordance with paragraph 131 of the EBA GL on PD and LGD estimation, institutions should calculate the realised LGD for each exposure that is covered by a master netting agreement or on-balance sheet netting as the ratio of the economic loss to the outstanding amount of the credit obligation at the moment of default calculated as E* in accordance with paragraph 27 or 28. Institutions should calculate the economic loss on the basis of this outstanding amount, and no cash flows from netting should be included as recoveries after default in the economic loss. Nevertheless, in line with paragraph 131 of the EBA GL on PD and LGD estimation, it is important to recall that the outstanding amount of the credit obligation at the moment of default calculated as E* needs to include any amount of principal, interest or fee realised so far."
+          },
+          {
+            "id": "eba-gl-pd-lgd:paragraph:b0:135:",
+            "generation": "legacy",
+            "sha256": "da070045145578a7ba94ab5263eeceb30f7acd05697838e3d521fa8876899ced",
+            "text": "EBA GL PD/LGD estimation (GL/2017/16) › on PD estimation, LGD estimation and the treatment of defaulted exposures › 6 LGD estimation › 6.3 LGD calibration › 6.3.1 Calculation of economic loss and realised LGD › 6.3.1.1 Definition of economic loss and realised LGD › para. 135\nIn the case of exposures that return to non-defaulted status, institutions should calculate economic loss as for all other defaulted exposures with the only difference that an additional recovery cash flow should be added to the calculation as if a payment had been made by the obligor in the amount that was outstanding at the date of the return to non-defaulted status, including any principal, interests and fees ('artificial cash flow'). This artificial cash flow should be discounted to the moment of default in the same manner as all observed cash flows. Where the exposures meet the criteria of paragraph 101, the realised LGD should be calculated with the reference to the date of the first default event taking into account all cash flows observed from the date of the first default event, including those observed during the period between the first and the second defaulted status, without adding any artificial cash flows."
+          },
+          {
+            "id": "ecb-guide-internal-models:paragraph:b2:304:",
+            "generation": "legacy",
+            "sha256": "7350cfe9b2ef60b3a9d0eac1c8384c775bd70c03b67ed32bb249c5801a52cfee",
+            "text": "ECB guide to internal models › Credit risk › 17 Loss given default › 17.3 Risk quantification › 17.3.6 Downturn LGD › LGD reference value › para. 304\nUnder paragraph 37 of the EBA Guidelines on downturn LGD, institutions should calculate a reference value, to be compared with the final downturn LGD estimates, as a two-step process: first by identifying the two worst years with the highest observed economic loss, and then by computing the reference value as the simple average of the average realised LGD over those years. 181 It is the ECB's understanding that the following principles should be adhered to when doing so:\n(a) For the identification of the two individual years with the highest observed economic loss, according to paragraph 37(a) of the EBA Guidelines on downturn LGD:\n(i) all available loss data should be considered when selecting the two individual years with the highest observed economic loss;\n(ii) the relevant indicator for selecting the two individual years with the highest observed economic loss is the ratio of the total economic loss to the total outstanding amount 182 , computed by grouping all defaults according to the year in which the defaults occurred, in accordance with paragraph 37(a)(ii) of the EBA Guidelines on downturn LGD;\n(iii) both closed and incomplete recovery processes should be considered in point (ii), whereby the economic loss associated with the incomplete recovery processes should be derived from the realised LGD after the treatment of incomplete recovery processes, so as to be consistent with the LRA LGD calculation, in accordance with paragraphs 153 to 159 of the EBA Guidelines on PD and LGD.\n(b) For the calculation of the reference value, according to paragraph 37(b) of the EBA Guidelines on downturn LGD:\n(i) both closed and incomplete recovery processes should be accounted for 183 , whereby the realised LGDs associated with the incomplete recovery processes should be considered after the treatment of incomplete recovery processes, so as to be consistent with the LRA LGD calculation, in accordance with paragraphs 153 to 159 of the EBA Guidelines on PD and LGD;\n181 Where the LGD estimates are the result of a combination of different components, the task of identifying the relevant years and calculating the reference value described in this paragraph should be performed once the components have been aggregated (i.e. with the realised LGD, not at the level of each of the underlying components). For models based on components with underlying data covering time windows with different lengths and/or periods for each of the components, these should be performed for the available common time period. In addition, where an identified downturn period falls outside the available common time period among components, the task of identifying the relevant years and calculating the reference value, as described in this paragraph, should be performed also at the level of the component(s) (by considering the realised value of the component) with available underlying data in the identified downturn period, if any.\n182 Where total economic loss and total outstanding amount are, respectively, aligned with the definitions employed in the calculation of the numerator and denominator of the realised LGD used in the model.\n183 Including the treatment of massive disposals as discussed in Section 17.1.5 of this chapter, if relevant.\n(ii) first, a default-weighted average realised LGD should be calculated for each of the two years selected; then, the reference value should be calculated as the simple average of the two annual averages."
+          },
+          {
+            "id": "eba-gl-pd-lgd:paragraph:b0:137:",
+            "generation": "legacy",
+            "sha256": "5f7178ea4e41490a9287ade77b8d2c32a5fc1e51a2baeed1386c6f54d5b76d07",
+            "text": "EBA GL PD/LGD estimation (GL/2017/16) › on PD estimation, LGD estimation and the treatment of defaulted exposures › 6 LGD estimation › 6.3 LGD calibration › 6.3.1 Calculation of economic loss and realised LGD › 6.3.1.2 Treatment of fees, interest and additional drawings after default › para. 137\nFor the purpose of Article 181(1)(i) of Regulation (EU) No 575/2013, institutions should take into account in the calculation of realised LGD any fees for delays in payments that have been capitalised in the institution's income statement before the moment of default by including them in the outstanding amount of the credit obligation at the moment of default in the numerator and denominator of the realised LGD. Where the fees were extended to the obligor in order to recover direct costs already incurred by the institution and these costs are already included in the calculation of the economic loss, institutions should not add these amounts to the economic loss or outstanding amount again. Any fees capitalised after the moment of default should not increase the amount of economic loss or amount outstanding at the moment of default. However, all recoveries, including those related to fees capitalised after default, should be included in the calculation of economic loss."
+          },
+          {
+            "id": "eba-gl-pd-lgd:paragraph:b0:131:",
+            "generation": "legacy",
+            "sha256": "36d8ab75553e29af5e3da9dc666e9539c1198fc0041cb4197a3a39194ce05e28",
+            "text": "EBA GL PD/LGD estimation (GL/2017/16) › on PD estimation, LGD estimation and the treatment of defaulted exposures › 6 LGD estimation › 6.3 LGD calibration › 6.3.1 Calculation of economic loss and realised LGD › 6.3.1.1 Definition of economic loss and realised LGD › para. 131\nFor the purpose of LGD estimation as referred to in Article 181(1)(a) of Regulation (EU) No 575/2013, institutions should calculate realised LGDs for each exposure, as referred to in point (55) of Article 4(1) of that Regulation, as a ratio of the economic loss to the outstanding amount of the credit obligation at the moment of default, including any amount of principal, interest or fee."
+          },
+          {
+            "id": "eba-gl-pd-lgd:paragraph:b0:140:",
+            "generation": "legacy",
+            "sha256": "f3f43ae89c304a4c27909b2560e4b769c07b109e740348d318c027be195bac96",
+            "text": "EBA GL PD/LGD estimation (GL/2017/16) › on PD estimation, LGD estimation and the treatment of defaulted exposures › 6 LGD estimation › 6.3 LGD calibration › 6.3.1 Calculation of economic loss and realised LGD › 6.3.1.2 Treatment of fees, interest and additional drawings after default › para. 140\nWhere institutions include additional drawings by the obligor after the moment of default in their conversion factors they should calculate realised LGD as a ratio of the economic loss to the outstanding amount of the credit obligation at the moment of default increased by the amount of additional drawings by the obligor after the moment of default discounted to the moment of default."
+          },
+          {
+            "id": "ecb-guide-internal-models:paragraph:b2:258:",
+            "generation": "legacy",
+            "sha256": "c7b245bb3aeafe07fe2c9657f655f6dd3af41453862d8874798d7100bd95f2ed",
+            "text": "ECB guide to internal models › Credit risk › 17 Loss given default › 17.1 Realised LGD › 17.1.3 Calculation of realised LGD › para. 258\nInstitutions must document the specific definitions of default and loss used internally and ensure that they are consistent with the definitions set out in the CRR. 165 To comply with these requirements, institutions should have in place sufficiently detailed policies and procedures to ensure that the realised LGD is calculated consistently and accurately, including the implementation of the definition of economic loss. These policies and procedures should include sufficiently detailed documentation to allow third parties to replicate the calculation of realised LGD. To ensure that the policies and procedures are implemented in an appropriate and adequate manner, the calculation process should be regularly reviewed by an independent unit."
+          },
+          {
+            "id": "ecb-guide-internal-models:paragraph:b2:263:",
+            "generation": "legacy",
+            "sha256": "b0cbb2f0cfc3d727dce852df2168ea186e91282d016b5a08e4b374bba85eec90",
+            "text": "ECB guide to internal models › Credit risk › 17 Loss given default › 17.1 Realised LGD › 17.1.4 Treatment of multiple defaults › para. 263\nFor the purpose of LGD estimation and in order to ensure an appropriate measurement of economic loss as defined in Article 5(2) of the CRR, institutions should consider an exposure that returns to normal status and subsequently defaults in a short period of time as being constantly defaulted from the moment the first default occurred. This treatment should be applied under paragraph 101 of the EBA Guidelines on PD and LGD. In addition, institutions should follow the observations in the following paragraphs.\n(a) Paragraph 101 of the EBA Guidelines on PD and LGD envisages the definition of a period longer than nine months when this is appropriate for the specific type of exposures and reflects the economic meaning of the default experience. It is the ECB's understanding that a longer period is adequate when the proportion of subsequent defaults occurring on individual facilities over a period of more than nine months is significant, unless institutions are able to provide evidence that the second (or subsequent) default is unconnected with the original default event. This evidence may include analysis of the curing process.\n(b) In the particular case of an institution opening new facilities to replace previously defaulted facilities as part of restructuring or for technical reasons, it should be able to make or trace a connection between the restructured facility and the facility (or facilities) previously advanced and which it is restructuring."
+          },
+          {
+            "id": "eba-gl-pd-lgd:paragraph:b0:143:",
+            "generation": "legacy",
+            "sha256": "06bd1358f0cd15afc07b2de602667582a4b098a4b4417f9229d563b1ce676ea4",
+            "text": "EBA GL PD/LGD estimation (GL/2017/16) › on PD estimation, LGD estimation and the treatment of defaulted exposures › 6 LGD estimation › 6.3 LGD calibration › 6.3.1 Calculation of economic loss and realised LGD › 6.3.1.3 Discounting rate › para. 143\nFor the purpose of the calculation of economic loss, in accordance with point (2) of Article 5 of Regulation (EU) No 575/2013, institutions should discount all recoveries, costs and additional drawings after the moment of default using an annual discounting rate composed of a primary interbank offered rate applicable at the moment of default increased by an addon of 5%-points. For this purpose the primary interbank offered rate should be considered the 3-month EURIBOR or a comparable liquid interest rate in the currency of the exposure."
+          },
+          {
+            "id": "eba-gl-pd-lgd:paragraph:b0:132:",
+            "generation": "legacy",
+            "sha256": "ce269f271e4242f4dfd0b163b41b95c15b10a5796ac5d379fcf669544e6b0021",
+            "text": "EBA GL PD/LGD estimation (GL/2017/16) › on PD estimation, LGD estimation and the treatment of defaulted exposures › 6 LGD estimation › 6.3 LGD calibration › 6.3.1 Calculation of economic loss and realised LGD › 6.3.1.1 Definition of economic loss and realised LGD › para. 132\nFor the purpose of paragraph 131, institutions should calculate the economic loss realised on an instrument (i.e. defaulted facility), as referred to in point (2) of Article 5 of Regulation (EU) No 575/2013 as a difference between:\n(a) the outstanding amount of the credit obligation at the moment of default, without prejudice to paragraph 140, including any amount of principal, interest or fee, increased by material direct and indirect costs associated with collecting on that instrument discounted to the moment of default; and\n(b) any recoveries realised after the moment of default discounted to the moment of default."
+          }
+        ],
+        "check": {
+          "claims": 9,
+          "ok": 9,
+          "supported_rate": 1.0,
+          "problems": {}
+        },
+        "id": "mh-012",
+        "mode": "single"
+      },
+      "grade": {
+        "id": "mh-012",
+        "type": "multi_hop",
+        "route": "single",
+        "score": 2,
+        "missing": [],
+        "contradictions": [],
+        "rationale": "The answer includes all core elements of economic loss under Article 5(2) CRR, including material direct and indirect recovery costs and all post-default recoveries, costs and additional drawings discounted at the interbank rate applicable at default plus 5 percentage points.",
+        "flags": [],
+        "method": "llm",
+        "model": "gpt-6.1-sol",
+        "tokens": 16032
+      },
+      "metrics": {
+        "id": "mh-012",
+        "type": "multi_hop",
+        "route": "single",
+        "attempts": [
+          "single"
+        ],
+        "scope": "answered",
+        "reports_incomplete": false,
+        "abstained": false,
+        "abstain_correct": true,
+        "usable_answer": true,
+        "citation_recall": 0.5,
+        "check_pass_rate": 1.0,
+        "tokens": 31106,
+        "errors": []
+      },
+      "baseline": {
+        "grade": {
+          "id": "mh-012",
+          "type": "multi_hop",
+          "route": "agent",
+          "score": 2,
+          "missing": [],
+          "contradictions": [],
+          "rationale": "The answer covers all recoveries, material direct and indirect recovery costs, additional post-default drawings, and discounting at the default-date interbank rate plus 5 percentage points, with citations linking economic loss to Article 5(2) CRR.",
+          "flags": [],
+          "method": "llm",
+          "model": "gpt-6.1-sol",
+          "tokens": 16714
+        },
+        "entry": {
+          "id": "mh-012",
+          "type": "multi_hop",
+          "question_sha": "409fbc3c",
+          "planned": "single",
+          "route": "agent",
+          "reason": "fallback: single pass lacked information (Single guideline topic: economic loss components for realised LGD)",
+          "attempts": [
+            "single",
+            "agent"
+          ],
+          "router_tokens": 13256,
+          "tokens": 106230,
+          "usage_unknown_calls": 0,
+          "attempt_errors": [],
+          "artifact": "data/evals/answers/20261114-175004-126803-codex-completeness8/agent-8ab814f64e/attempts/mh-012-409fbc3c-c87b237f7a2e4b139cc25b188c1cea22.json",
+          "artifact_sha256": "67c4243ea29dbe5dfdc68f15fdf55d9957294e4db45afd57156a2c0eebff4955",
+          "errors": [],
+          "unverified": false,
+          "attempt_artifacts": [
+            {
+              "mode": "single",
+              "artifact": "data/evals/answers/20261114-175004-126803-codex-completeness8/single-12ab37c947/attempts/mh-012-409fbc3c-239f160804be48c0a88055414af04086.json",
+              "artifact_sha256": "4685fa639b9ffabcab27c2220a78a2302561a7107fe537e8eef7852ae52ac2a5"
+            },
+            {
+              "mode": "agent",
+              "artifact": "data/evals/answers/20261114-175004-126803-codex-completeness8/agent-8ab814f64e/attempts/mh-012-409fbc3c-c87b237f7a2e4b139cc25b188c1cea22.json",
+              "artifact_sha256": "67c4243ea29dbe5dfdc68f15fdf55d9957294e4db45afd57156a2c0eebff4955"
+            }
+          ]
+        },
+        "metrics": {
+          "id": "mh-012",
+          "type": "multi_hop",
+          "route": "agent",
+          "attempts": [
+            "single",
+            "agent"
+          ],
+          "scope": "answered",
+          "reports_incomplete": true,
+          "abstained": false,
+          "abstain_correct": true,
+          "usable_answer": true,
+          "citation_recall": 1.0,
+          "check_pass_rate": 1.0,
+          "tokens": 106230,
+          "errors": []
+        },
+        "missing_info": true,
+        "missing_requirements": [
+          "Any additional economic-loss adjustments specified in paragraph 135 were not retrieved.",
+          "The detailed specification of indirect recovery costs was not retrieved.",
+          "Resolve any further economic-loss adjustments in unread paragraph 135 and the detailed specification of indirect recovery costs.",
+          "Read required scope/list evidence: EBA GL PD/LGD estimation (GL/2017/16) para. 131",
+          "Read required scope/list evidence: EBA GL PD/LGD estimation (GL/2017/16) para. 135",
+          "Resolve the required answer fact: Resolve any further economic-loss adjustments in unread paragraph 135 and the detailed specification of indirect recovery costs."
+        ]
+      }
+    }
+  ]
+}

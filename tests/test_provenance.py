@@ -65,3 +65,25 @@ def test_extraction_cache_key_covers_text_and_model():
     assert batch_id(a, "claude-sonnet-5-5") != batch_id(b, "claude-sonnet-5-5")
     assert batch_id(a, "claude-sonnet-5-5") != batch_id(a, "claude-opus-5-5")
     assert batch_id(a, "claude-sonnet-5-5") == batch_id(list(a), "claude-sonnet-5-5")
+
+
+def test_answer_preserves_evidence_and_frozen_links_without_workspace_registry(monkeypatch):
+    import hashlib
+
+    from reglens.answer.pipeline import Answer, Claim
+    from reglens.api.app import answer_payload
+    from reglens.retrieve.search import Hit
+
+    hit = Hit("id", "source", "para. 1", "Rule", "Source › original evidence", "L3", "v1", 1.)
+    answer = Answer("Question", False, "", "Rule [C1]", [Claim("Rule", ["C1"], "supervisory")],
+                    [hit], "", corpus_generation="snapshot",
+                    source_registry={"source": {"url": "https://example.org/frozen"}})
+    def changed_registry(*args, **kwargs):
+        raise AssertionError("The answer must not consult a later workspace registry")
+    monkeypatch.setattr("reglens.sources.load_sources", changed_registry)
+    payload = answer_payload(answer, {"ok": 1, "claims": 1})
+    assert payload["sources"][0]["url"] == "https://example.org/frozen"
+    record = answer.to_dict()
+    assert record["evidence"][0]["text"] == hit.text
+    assert record["evidence"][0]["sha256"] == hashlib.sha256(hit.text.encode()).hexdigest()
+    assert record["evidence"][0]["generation"] == "snapshot"

@@ -21,12 +21,13 @@ import threading
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import replace
+from datetime import date
 from typing import Literal
 
 from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response, StreamingResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from reglens.answer.pipeline import LEVEL_LABEL, Answer
 from reglens.answer.verify import check_answer
@@ -50,8 +51,14 @@ async def lifespan(_app: FastAPI):
 
             WARMUP.update(state="loading", error=None)
             try:
-                embedder()
-                reranker()
+                from reglens.inference_client import endpoint
+                from reglens.inference_client import ready as inference_ready
+
+                if endpoint():
+                    inference_ready()
+                else:
+                    embedder()
+                    reranker()
                 WARMUP["state"] = "ready"
             except Exception as e:  # reported by /api/ready, not lost in a background thread
                 WARMUP.update(state="failed", error=f"{type(e).__name__}: {e}"[:300])
@@ -81,6 +88,20 @@ class AskRequest(BaseModel):
     mode: Mode = "auto"
     access: Access = "api"
     applies_to: Literal["SI", "LSI"] | None = None
+    as_of: date | None = None
+    conditions: dict[str, list[str]] | None = None
+    require_known_validity: bool = False
+    require_known_applicability: bool = False
+
+    @field_validator("conditions")
+    @classmethod
+    def validate_conditions(cls, value):
+        from reglens.context import validate_metadata
+
+        if value and (len(value) > 4 or any(len(v) > 20 for v in value.values())):
+            raise ValueError("Too many applicability conditions")
+        validate_metadata({"applicability": value or {}})
+        return value
 
 
 @app.get("/api/health")
@@ -100,11 +121,29 @@ def ready() -> Response:
             conn.execute("SELECT 1 FROM chunks LIMIT 1")
     except Exception as e:
         db_ok, db_error = False, type(e).__name__
-    models_ok = WARMUP["state"] in ("ready", "skipped")
-    body = {"ready": db_ok and models_ok, "models": WARMUP["state"], "database": db_ok,
-            "error": WARMUP.get("error") or db_error, "busy": MAX_CONCURRENT - _slots._value}
-    return Response(json.dumps(body), status_code=200 if body["ready"] else 503,
-                    media_type="application/json")
+    models_state, model_error = WARMUP["state"], WARMUP.get("error")
+    models_ok = models_state in ("ready", "skipped")
+    from reglens.inference_client import endpoint
+    from reglens.inference_client import ready as inference_ready
+
+    if os.environ.get("REGLENS_INFERENCE_URL"):
+        try:
+            endpoint()  # reject invalid configuration as unavailable, never silently local
+            models_ok = bool(inference_ready().get("ready"))
+        except Exception:
+            models_ok = False
+        models_state = "ready" if models_ok else "unavailable"
+        model_error = None if models_ok else "Shared inference unavailable"
+    body = {
+        "ready": db_ok and models_ok,
+        "models": models_state,
+        "database": db_ok,
+        "error": model_error or db_error,
+        "busy": MAX_CONCURRENT - _slots._value,
+    }
+    return Response(
+        json.dumps(body), status_code=200 if body["ready"] else 503, media_type="application/json"
+    )
 
 
 @app.get("/api/meta")
@@ -132,13 +171,19 @@ def _provider(cfg, access: Access, key: str | None):
 _CONSOLIDATED = re.compile(r"0\d{4}R\d{4}-(\d{4})(\d{2})(\d{2})$")
 
 
-def official_source(source_id: str, version: str | None) -> dict:
+def official_source(source_id: str, version: str | None, registry: dict | None = None) -> dict:
     """Link to the official text and the version the passage was taken from. A consolidated
     regulation links to that exact consolidated version on EUR-Lex; other sources link to the
     registered document (no guessed deep links)."""
+    from types import SimpleNamespace
+
     from reglens.sources import load_sources
 
-    src = next((s for s in load_sources() if s.id == source_id), None)
+    src = (
+        (SimpleNamespace(**registry[source_id]) if source_id in registry else None)
+        if (registry is not None)
+        else next((s for s in load_sources() if s.id == source_id), None)
+    )
     url = src.url if src else None
     v = version or ""
     if m := _CONSOLIDATED.match(v):
@@ -177,7 +222,7 @@ def answer_payload(ans: Answer, check: dict) -> dict:
                 "level_key": h.legal_level,
                 "text": h.text,
             }
-            | official_source(h.source_id, h.version)
+            | official_source(h.source_id, h.version, ans.source_registry)
         )
     text = re.sub(r"\[(C\d+)\]", lambda m: f"[{renumber.get(m.group(1), m.group(1))}]", ans.answer)
     route = next((t for t in ans.trace if t.get("tool") == "route"), None)
@@ -206,10 +251,17 @@ def answer_payload(ans: Answer, check: dict) -> dict:
         ],
         "model": ans.model,
         "tokens": ans.usage_tokens,
+        "usage_unknown_calls": ans.usage_unknown_calls,
         "errors": ans.errors,
         "unverified": ans.unverified,
         # R3: completeness, separate from the mechanical checks and from scope (abstained)
         "missing_info": ans.missing_info,
+        "research_needed": ans.research_needed,
+        "missing_requirements": ans.missing_requirements,
+        "coverage": ans.coverage,
+        "research": ans.research,
+        "semantic_review": ans.semantic_review,
+        "corpus_generation": ans.corpus_generation,
         "partial_reads": len(ans.partial_cids),
         "raw_output": ans.raw_output if ans.unverified else "",
         "unresolved": [k for t in ans.trace for k in t.get("unresolved_keys", [])],
@@ -221,23 +273,26 @@ def _run(req: AskRequest, provider, emit) -> dict:
 
     cfg = load_config()
     conn = db.connect()
-    filters = Filters(applies_to=req.applies_to)  # SI / LSI applies in every mode
+    filters = Filters(
+        applies_to=req.applies_to,
+        as_of=str(req.as_of) if req.as_of else None,
+        conditions=req.conditions,
+        require_known_validity=req.require_known_validity,
+        require_known_applicability=req.require_known_applicability,
+    )
     try:
         if req.mode == "agent":
             from reglens.agent.run import answer_agentic
 
-            ans = answer_agentic(conn, provider, cfg, req.question, progress=emit,
-                                 filters=filters)
+            ans = answer_agentic(conn, provider, cfg, req.question, progress=emit, filters=filters)
         elif req.mode == "auto":
             from reglens.answer.route import answer_routed
 
-            ans = answer_routed(conn, provider, cfg, req.question, progress=emit,
-                                filters=filters)
+            ans = answer_routed(conn, provider, cfg, req.question, progress=emit, filters=filters)
         else:
             from reglens.answer.pipeline import answer_question
 
-            ans = answer_question(conn, provider, cfg, req.question, filters=filters,
-                                  progress=emit)
+            ans = answer_question(conn, provider, cfg, req.question, filters=filters, progress=emit)
     finally:
         conn.close()
     return answer_payload(ans, check_answer(ans))
@@ -259,8 +314,9 @@ def ask(
     question is cancelled: no further model call or tool call starts and a running
     `claude -p` process is killed (see reglens/cancel.py)."""
     if not _slots.acquire(blocking=False):
-        raise HTTPException(429, f"Busy: {MAX_CONCURRENT} questions are being answered. "
-                                 "Try again shortly.")
+        raise HTTPException(
+            429, f"Busy: {MAX_CONCURRENT} questions are being answered. Try again shortly."
+        )
     token = CancelToken()
     try:
         provider = _provider(load_config(), req.access, x_anthropic_key).with_cancel(token)
@@ -321,8 +377,12 @@ def _gap_data(run: str | None = None) -> dict:
             raise HTTPException(404, f"No gap analysis run '{run}'.")
         raise HTTPException(404, "No gap analysis run yet. Run `reglens gap --yes` first.")
     data = json.loads(found["path"].read_text(encoding="utf-8"))
-    return data | {"file": found["path"].name, "run_id": found["id"],
-                   "run_label": found["label"], "is_demo": found["is_demo"]}
+    return data | {
+        "file": found["path"].name,
+        "run_id": found["id"],
+        "run_label": found["label"],
+        "is_demo": found["is_demo"],
+    }
 
 
 @app.get("/api/gap/runs")

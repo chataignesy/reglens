@@ -1,0 +1,112 @@
+{
+  "reviewer": "Codex automated follow-up review",
+  "reviewer_kind": "automated; not practitioner sign-off",
+  "source_run": "20261113-164248-605265-routed-all-quota-resume",
+  "raw_scores_unchanged": true,
+  "aggregate_recomputed": false,
+  "items": [
+    {
+      "id": "mh-003",
+      "answer_artifact": "data/evals/answers/single-e3fe620624-quota-resume-20261113/mh-003-3948141c.json",
+      "answer_sha256": "cf0341cda0e5154efde5a44e412d972cf05824d1c9aad7c68a194acba4a19d32",
+      "raw_verdict": {
+        "id": "mh-003",
+        "type": "multi_hop",
+        "route": "single",
+        "score": 1,
+        "missing": [
+          "Art. 181(1)(b) CRR core rule: downturn-appropriate LGD required when more conservative than long-run average",
+          "Downturn periods identified using relevant economic indicators and their most severe 12-month values, lasting at least 12 months (may be longer)",
+          "Section 6 estimated-impact calibration must be considered before the final fallback when observed loss data cannot support calibration; the answer explicitly says the passages do not describe Section 6, so this step is not explained",
+          "Fallback safeguards are present but the answer omits the rule that the fallback applies only where neither observed-impact nor Section 6 calibration is possible and the distinction between no observed impact, no relevant data, and inability to estimate impact is only partly drawn"
+        ],
+        "contradictions": [
+          "The answer routes missing-data cases to Section 7 directly after Section 5, which the reference does not state; the reference treats Section 6 as the first consideration before the paragraph-36 fallback"
+        ],
+        "rationale": "The answer correctly covers the fallback conditions (strictly positive Category A MoC, min(LRA+15pp, 105%) floor, justification to the competent authority) but omits the Art. 181(1)(b) normal downturn rule and the Section 6 step before the fallback, so it is partly correct.",
+        "flags": [
+          "score 1 but contradictions listed"
+        ],
+        "method": "llm",
+        "model": "claude-haiku-5-5",
+        "tokens": 11472
+      },
+      "review_status": "needs_evidence",
+      "reason": "The answer actually states that Section 7 requires Section 6 to be unavailable. The old rationale overstates a direct jump. The underlying Article 181 rule and downturn-identification details are still absent. Preserve raw score 1 pending a source-aware adjudication."
+    },
+    {
+      "id": "lgd-006",
+      "answer_artifact": "data/evals/answers/single-e3fe620624-quota-resume-20261113/lgd-006-7299d499.json",
+      "answer_sha256": "3547aaf8898af1a03317d4e46f73af833d14992a219cd416e34b4dc083d68102",
+      "raw_verdict": {
+        "id": "lgd-006",
+        "type": "factual",
+        "route": "single",
+        "score": 1,
+        "missing": [
+          "Explicit statement that the rate is an annual rate (the reference names EURIBOR-based rate plus add-on as the discount rate, and the answer states this, so only minor)",
+          "Clear answer that the discount rate is the primary interbank rate at moment of default (answer does say this)"
+        ],
+        "contradictions": [
+          "Answer says the ECB validation reporting instructions set no rate and defer to the institution's own LGD model [C5], whereas the reference's rate (EURIBOR at default plus 5 percentage points) is the definite rule; the answer's implication that the rate is left to models is not supported by the cited excerpt, which only defines estimated LGD and does not address discounting."
+        ],
+        "rationale": "The answer correctly states the core rule (3-month EURIBOR or comparable liquid rate at default plus 5 percentage points, applied to recoveries, costs and additional drawings), but it adds a hedging claim about C5 deferring to institution models and states the add-on as '5%-points' without clearly tying it to the annual rate, so it is not fully definite as the reference is.",
+        "flags": [
+          "score 1 but contradictions listed"
+        ],
+        "method": "llm",
+        "model": "claude-haiku-5-5",
+        "tokens": 7870
+      },
+      "review_status": "needs_evidence",
+      "reason": "The answer explicitly says annual rate, contrary to its missing-list entry. Its core discounting rule is stated. The added ECB claim does not follow from the cited specific definitions alone; review that unsupported addition separately from whether the core rule is contradicted. Do not automatically upgrade."
+    },
+    {
+      "id": "dod-008",
+      "answer_artifact": "data/evals/answers/single-e3fe620624-quota-resume-20261113/dod-008-0678f901.json",
+      "answer_sha256": "5fbf152e43e55c41caabf83fd49764ccc1e76566ec5f962bfa7d0102341c879c",
+      "raw_verdict": {
+        "id": "dod-008",
+        "type": "factual",
+        "route": "single",
+        "score": 1,
+        "missing": [],
+        "contradictions": [],
+        "rationale": "The answer covers all four para. 23 cases (a) to (d), the non-default status, the duty to rectify errors promptly, and the IRB data-set removal, but it hedges that it cannot confirm the passages are the original 2016 wording, where the question and reference treat that as settled.",
+        "flags": [],
+        "method": "llm",
+        "model": "claude-haiku-5-5",
+        "tokens": 9753
+      },
+      "review_status": "needs_evidence",
+      "reason": "All required historical cases and handling rules are present. The source-version caveat is explicit, so whether it deserves a deduction depends on verified source provenance and the grading policy for justified qualifications. Do not present the historical 30-day case as current law or automatically upgrade."
+    },
+    {
+      "id": "app-002",
+      "answer_artifact": "data/evals/answers/agent-489add8a11-quota-resume-20261113/app-002-6e81e2fb.json",
+      "answer_sha256": "97e92a8de167f154ebe1a0013d6d02b7457d25c03cc449d7f81558e181288bdd",
+      "raw_verdict": {
+        "id": "app-002",
+        "type": "applicability",
+        "route": "agent",
+        "score": 1,
+        "missing": [
+          "Explicit statement that the bank with foundation IRB for corporate exposures is in the scenario where all parts apply except Chapters 6 and 7 (the answer states this, so this is covered; no true omission of the core carve-out)"
+        ],
+        "contradictions": [
+          "The answer's 'Interpretation' bullet says the bank is 'covered by the PD-related parts and the other general parts' and the closing bullet says the carve-out refers to exposures other than retail, which is consistent; however the answer adds that Chapter 7 is excluded but does not state that the exclusion of Chapter 6 and 7 is the same as the reference's 'all parts except Chapters 6 and 7' framing without hedging, so no contradiction exists."
+        ],
+        "rationale": "The answer captures all key facts (all parts apply except Chapters 6 and 7 for foundation IRB non-retail, and the Article 157 dilution-risk exclusion), so it should score 2, but the missing list and contradictions list must be empty for a 2, and the answer has no actual missing facts or contradictions, making the score 2.",
+        "flags": [
+          "score 1 but contradictions listed",
+          "rationale says the score should be 2"
+        ],
+        "method": "llm",
+        "model": "claude-haiku-5-5",
+        "tokens": 5109
+      },
+      "review_status": "internally_inconsistent",
+      "reason": "The answer begins with all parts except Chapters 6 and 7 and includes the dilution-risk exclusion. The rationale and lists explicitly acknowledge that no core facts are missing and that the score should be 2. Reject the internal consistency of the raw verdict; retain raw score 1, with no aggregate recomputation."
+    }
+  ]
+}

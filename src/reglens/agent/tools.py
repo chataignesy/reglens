@@ -8,9 +8,10 @@ Every passage is returned with a citation key in brackets, e.g. [CRR Art. 178(1)
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from reglens.answer.pipeline import LEVEL_LABEL
+from reglens.context import METADATA
 from reglens.ingest.cite import _sources, citation_key
 from reglens.retrieve.search import Filters, Hit, search
 from reglens.sources import Source
@@ -18,7 +19,10 @@ from reglens.sources import Source
 CRR = "crr3-consolidated"
 QA = "eba-qa-credit-risk"
 _COLS = (
-    "id, source_id, ref, title, text, legal_level, version, kind, article, paragraph, point, cite"
+    ("id, source_id, ref, title, text, legal_level, version, kind, article, paragraph, point, cite")
+    + ", "
+    + ", ".join(METADATA)
+    + ", hierarchy"
 )
 
 
@@ -36,6 +40,14 @@ class Row:
     paragraph: str | None
     point: str | None
     cite: str = ""  # stored citation key (unique per logical unit)
+    published_on: str | None = None
+    effective_from: str | None = None
+    effective_until: str | None = None
+    application_from: str | None = None
+    application_until: str | None = None
+    temporal_verified: bool = False
+    applicability: dict[str, list[str]] = field(default_factory=dict)
+    hierarchy: list[str] = field(default_factory=list)
 
     def hit(self, score: float = 0.0) -> Hit:
         return Hit(
@@ -47,13 +59,42 @@ class Row:
             self.legal_level,
             self.version,
             score,
+            hierarchy=self.hierarchy,
+            **{
+                k: str(getattr(self, k))
+                if k in METADATA[:5] and getattr(self, k) is not None
+                else getattr(self, k)
+                for k in METADATA
+            },
         )
 
 
-def source_by_name(name: str) -> Source | None:
+def definition_rows(conn, term: str) -> list[Row]:
+    """Exact defined terms, with a bounded plural fallback; no fuzzy legal classification."""
+    value = term.strip()
+    if not re.fullmatch(r"[\w -]{2,80}", value):
+        return []
+    candidates = [value]
+    if value.endswith("ies"):
+        candidates.append(value[:-3] + "y")
+    elif value.endswith("s") and not value.endswith("ss"):
+        candidates.append(value[:-1])
+    where = "source_id = %s AND article IN ('4', '142') AND point IS NOT NULL AND body ILIKE %s"
+    for candidate in candidates:
+        rows = _rows(conn, where, [CRR, f"‘{candidate}’%"], limit=3)
+        if not rows:
+            rows = _rows(conn, where, [CRR, f"%‘{candidate}’%means%"], limit=3)
+        if rows:
+            return rows
+    return []
+
+
+def source_by_name(name: str, conn=None) -> Source | None:
     """Accept a source id ('crr3-consolidated') or its short label ('CRR'), case-insensitive."""
     n = name.strip().lower()
-    for s in _sources().values():
+    from reglens.sources import load_sources
+
+    for s in load_sources(conn=conn):
         if n in (s.id.lower(), s.label().lower()) or s.label().lower().startswith(n + " "):
             return s
     return None
@@ -112,7 +153,10 @@ def _format(rows: list[Row], max_chars: int) -> str:
         body = r.text
         if len(body) > max_chars:  # search snippets: the full text is one get_passage call away
             body = body[:max_chars] + f" …[truncated; get_passage('{key}') for the full text]"
-        out.append(f"[{key}] ({level})\n{body}")
+        meta = {k: str(getattr(r, k)) for k in METADATA if getattr(r, k)}
+        out.append(
+            f"[{key}] ({level})\nMetadata: {meta}; temporal verified: {r.temporal_verified}\n{body}"
+        )
     return "\n\n".join(out) if out else "No passages found."
 
 
@@ -178,9 +222,11 @@ class Toolbox:
         passage_chars: int = 4000,
         result_chars: int = 14000,
         applies_to: str | None = None,
+        filters: Filters | None = None,
     ):
         self.conn = conn
         self.applies_to = applies_to  # "SI" / "LSI": search only texts that apply (or apply to all)
+        self.filters = filters or Filters(applies_to=applies_to)
         self.max_calls = max_calls
         self.snippet_chars = snippet_chars
         self.passage_chars = passage_chars
@@ -201,9 +247,24 @@ class Toolbox:
             )
         return None
 
+    def _eligible(self, rows: list[Row]) -> list[Row]:
+        if self.conn is None or not rows:
+            return rows
+        from dataclasses import replace
+
+        where, params = replace(self.filters, default_scope=False).sql(self.conn)
+        ids = {
+            r[0]
+            for r in self.conn.execute(
+                "SELECT id FROM chunks WHERE id=ANY(%s)" + where, [[r.id for r in rows], *params]
+            ).fetchall()
+        }
+        return [r for r in rows if r.id in ids]
+
     def _out(self, rows: list[Row], note: str = "", *, snippets: bool = False) -> str:
         """Whole passages up to `result_chars`; a passage is never cut by the size limit, and
         what is left out is said. Only passages actually returned count as delivered (`seen`)."""
+        rows = self._eligible(rows)
         cap = self.snippet_chars if snippets else self.passage_chars
         head = note + "\n\n" if note else ""
         blocks: list[str] = []
@@ -227,12 +288,14 @@ class Toolbox:
         """Hybrid search (BM25 + embeddings + reranker) over the corpus."""
         if msg := self._budget():
             return msg
-        filters = Filters(applies_to=self.applies_to)
+        from dataclasses import replace
+
+        filters = self.filters
         if source:
-            s = source_by_name(source)
+            s = source_by_name(source, self.conn)
             if not s:
                 return f"Unknown source '{source}'."
-            filters = Filters(source_ids=[s.id], applies_to=self.applies_to)
+            filters = replace(self.filters, source_ids=[s.id])
         hits = search(self.conn, query, mode="rerank", k=min(int(k), 8), filters=filters)
         ids = [h.id for h in hits]
         rows = {r.id: r for r in _rows(self.conn, "id = ANY(%s)", [ids])}
@@ -247,6 +310,12 @@ class Toolbox:
             return (
                 f"Unknown citation key '{citation_key_}'. Use a key exactly as shown in brackets."
             )
+        from reglens.answer.amendments import parent_units
+
+        seen = {r.id for r in rows}
+        for _, group in parent_units(self.conn, [r.hit() for r in rows], self.filters):
+            rows += [r for r in group if r.id not in seen]
+            seen.update(r.id for r in group)
         return self._out(rows)
 
     def get_article(
@@ -256,11 +325,16 @@ class Toolbox:
         articles come in pages: the reply says which passages it holds and how to continue."""
         if msg := self._budget():
             return msg
-        s = source_by_name(source)
+        s = source_by_name(source, self.conn)
         if not s:
             return f"Unknown source '{source}'."
         art = str(article).strip().removeprefix("Art.").removeprefix("Article").strip()
         where, params = "source_id = %s AND article = %s AND kind = 'article'", [s.id, art]
+        from dataclasses import replace
+
+        extra, values = replace(self.filters, default_scope=False).sql(self.conn)
+        where += extra
+        params.extend(values)
         para = str(paragraph).strip("() ") if paragraph else None
         if para:
             where += " AND paragraph = %s"
@@ -272,7 +346,18 @@ class Toolbox:
         if not rows:
             where_ = f" at offset {offset} of {total}." if total else "."
             return f"No passages for {what}{where_}"
-        text = self._out(rows)
+        from reglens.answer.research import incoming_exceptions
+
+        candidates = incoming_exceptions(self.conn, s.id, [art], self.filters)
+        keys = list(dict.fromkeys(key_of(r) for r in candidates))[:4]
+        note = ""
+        if keys:
+            note = (
+                "Possible exceptions referring back to this rule (pointers only; "
+                "read the passage and check its conditions before concluding):\n"
+                + "\n".join(f"- candidate: {key}" for key in keys)
+            )[:1000]
+        text = self._out(rows, note)
         end = offset + self.last_shown
         if offset or end < total:
             more = (
@@ -314,6 +399,16 @@ class Toolbox:
         )
         hint = f"\n{n_qa} EBA Q&As concern this article (use get_qa)." if n_qa else ""
         body = "\n".join(lines) if lines else "No outgoing references."
+        from reglens.answer.research import incoming_exceptions
+
+        incoming = incoming_exceptions(
+            self.conn, rows[0].source_id,
+            list(dict.fromkeys(r.article for r in rows if r.article)), self.filters,
+        )
+        candidates = list(dict.fromkeys(key_of(r) for r in incoming))[:4]
+        if candidates:
+            body += "\nPossible exceptions referring back to this rule (check applicability):\n"
+            body += "\n".join(f"- candidate: {key}" for key in candidates)
         return (
             f"References from [{key_of(rows[0])}]:\n{body}{hint}\n"
             "Use get_article / get_definition to read them."
@@ -323,10 +418,7 @@ class Toolbox:
         """A CRR definition (Art. 4(1), or Art. 142(1) for IRB terms such as 'large corporate')."""
         if msg := self._budget():
             return msg
-        where = "source_id = %s AND article IN ('4', '142') AND point IS NOT NULL AND body ILIKE %s"
-        rows = _rows(self.conn, where, [CRR, f"‘{term.strip()}’%"], limit=3)
-        if not rows:  # also match "'X' or 'Y' means"
-            rows = _rows(self.conn, where, [CRR, f"%‘{term.strip()}’%means%"], limit=3)
+        rows = definition_rows(self.conn, term)
         if not rows:
             return f"No CRR definition found for '{term}'."
         quals: list[Row] = []  # Art. 142(1): "For the purposes of … point (5a) …"
@@ -340,7 +432,14 @@ class Toolbox:
                     limit=3,
                 )
         ids = {r.id for r in rows}
-        return self._out(rows + [q for q in quals if q.id not in ids])
+        # A qualifier may match only one window of its enclosing paragraph. Its citation
+        # names the whole unit, so deliver the other windows too (within the usual cap).
+        for q in quals:
+            for full in resolve_key(self.conn, key_of(q)) or [q]:
+                if full.id not in ids:
+                    rows.append(full)
+                    ids.add(full.id)
+        return self._out(rows)
 
     def get_qa(self, article: str, query: str | None = None, k: int = 4) -> str:
         """Final EBA Q&As about a CRR article (most relevant first if a query is given)."""
@@ -353,8 +452,11 @@ class Toolbox:
             return f"No EBA Q&A found for CRR Art. {art}."
         if query and len(rows) > k:
             from reglens.index.embed import rerank
+            from reglens.index.generations import metadata
 
-            scores = rerank(query, [r.text for r in rows])
+            scores = rerank(
+                query, [r.text for r in rows], identity=metadata(self.conn).get("models") or None
+            )
             rows = [r for _, r in sorted(zip(scores, rows, strict=True), key=lambda x: -x[0])]
         note = f"{len(rows)} Q&As on CRR Art. {art}."
         return self._out(rows[: min(int(k), 6)], note=note, snippets=True)

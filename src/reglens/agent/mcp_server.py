@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import os
+import threading
 
 from mcp.server.mcpserver import MCPServer
 from mcp.types import ToolAnnotations
@@ -29,6 +30,7 @@ get_article / get_definition -> get_qa for EBA interpretations of a CRR article.
 server = MCPServer("reglens", instructions=INSTRUCTIONS)
 READ_ONLY = ToolAnnotations(readOnlyHint=True, openWorldHint=False)
 _box: Toolbox | None = None
+_call_lock = threading.Lock()
 
 
 def box() -> Toolbox:
@@ -38,15 +40,29 @@ def box() -> Toolbox:
 
         cap = os.environ.get("REGLENS_MAX_TOOL_CALLS")
         applies = os.environ.get("REGLENS_APPLIES_TO") or None  # "SI" / "LSI"
-        _box = Toolbox(db.connect(), max_calls=int(cap) if cap else None, applies_to=applies)
+        from reglens.retrieve.search import Filters
+
+        context = json.loads(os.environ.get("REGLENS_QUERY_CONTEXT", "{}"))
+        filters = Filters(**context) if context else Filters(applies_to=applies)
+        _box = Toolbox(db.connect(), max_calls=int(cap) if cap else None, applies_to=applies,
+                       filters=filters)
     return _box
 
 
 def _call(tool: str, *args) -> str:
+    # MCP may schedule independent synchronous tools on multiple threads. Keep the shared
+    # toolbox's budget, connection and per-call evidence trace together.
+    with _call_lock:
+        return _call_serial(tool, *args)
+
+
+def _call_serial(tool: str, *args) -> str:
     """Run a Toolbox method and append it to the trace file (if any)."""
-    out = getattr(box(), tool)(*args)
+    from reglens.agent.contracts import invoke, positional
+
+    out, values = invoke(box(), tool, positional(tool, args))
     if path := os.environ.get("REGLENS_TRACE_FILE"):
-        entry = trace_entry(box().calls, tool, list(args), out, getattr(box(), "last_chunks", None))
+        entry = trace_entry(box().calls, tool, values, out, getattr(box(), "last_chunks", None))
         with open(path, "a", encoding="utf-8") as f:
             f.write(json.dumps(entry, ensure_ascii=False) + "\n")
     return out

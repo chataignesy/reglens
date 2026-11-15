@@ -10,6 +10,8 @@ approach, credit risk mitigation and the definition of default.
 
 There is no hosted demo: watch the demo video (link to follow) or run it locally (below).
 
+Continuing development: [current handoff and next fixes](docs/HANDOFF.md).
+
 > **Disclaimer.** Personal open-source project. Not affiliated with any employer, supervisor or
 > regulator. Not legal or regulatory advice. Always check the official texts.
 
@@ -123,7 +125,7 @@ uv run reglens ask --route "Can a bank use own LGD estimates for a large corpora
 
 ### Start the web UI
 
-Once the corpus is indexed (the steps above, done once), three processes run the UI. Each
+Once the corpus is indexed (the steps above, done once), the following processes run the UI. Each
 command goes in its own terminal and starts from the repository root.
 
 1. **Database.** Docker Desktop must be running.
@@ -132,8 +134,17 @@ command goes in its own terminal and starts from the repository root.
    docker compose up -d
    ```
 
-2. **API** on http://localhost:8000. It loads the embedding model and the reranker at startup
-   and is ready once it logs `Application startup complete`.
+2. **Inference and API.** For agent runs, start one shared GPU service in its own terminal:
+
+   ```bash
+   uv run uvicorn reglens.inference:app --host 127.0.0.1 --port 8001 --workers 1
+   ```
+
+   Set `REGLENS_INFERENCE_URL=http://127.0.0.1:8001` in the API terminal (PowerShell:
+   `$env:REGLENS_INFERENCE_URL='http://127.0.0.1:8001'`). Agent subprocesses inherit this setting.
+   Then start the **API** on http://localhost:8000. `/api/ready` reports actual model/database
+   readiness; application startup alone does not establish model readiness. Without this setting,
+   each process loads its own models, which is suitable only for simple single-process use.
 
    ```bash
    uv run uvicorn reglens.api.app:app --port 8000
@@ -153,7 +164,7 @@ stays in the page's memory and goes, via your local RegLens API, only to the Ant
 Quick answers take a few
 seconds. Research-agent answers take up to a minute or two, with each step shown live.
 
-To stop, press Ctrl+C in both terminals, then run `docker compose stop`.
+To stop, press Ctrl+C in the API, inference-service and web terminals, then run `docker compose stop`.
 
 More on the front end: [web/README.md](web/README.md). The earlier Streamlit UI still works as a fallback
 (`uv sync --extra ui`, then `uv run streamlit run src/reglens/ui/app.py`).
@@ -169,6 +180,21 @@ an agent answer 40–90k.
 `reglens judge` (dry run unless `--yes`; cached). Every LLM call is logged; `reglens usage`
 reports tokens per phase, model and purpose. The whole project so far, development and
 evaluation, used about 10.6M tokens (≈ €19 at API prices; 8 Nov 2026).
+
+**Optional Codex subscription evaluation:** local development can select
+`reglens --config config.codex.yaml ...` after `codex login` with ChatGPT. This uses
+`gpt-6.1-sol` through the Codex CLI and the bounded RegLens research loop; the default
+configuration remains Claude. No OpenAI API key is used. See the
+[30-question comparison](docs/results/codex-claude-smoke30-2026-11-13.md) and
+[initial three-question run](docs/review/CODEX-SUBSCRIPTION-FOLLOWUP-2026-11-13.md)
+for results, usage and reproduction steps. The subsequent
+[completeness fixes and focused runtime checks](docs/review/COMPLETENESS-FOLLOWUP-2026-11-13.md)
+record the evidence-selection changes and remaining limitations. The subsequent
+[full 118-question Codex benchmark](docs/results/codex-frozen118-2026-11-14.md) scored 86.4%
+across 103 in-scope questions, with 15/15 out-of-scope refusals;
+[review findings](docs/review/CODEX-FULL118-FINDINGS-2026-11-14.md) document the remaining gaps.
+These are automated development-set scores. Codex API-equivalent prices are unconfigured;
+unpriced ledger entries do not mean zero subscription usage or a zero-cost API run.
 
 ## Licence
 

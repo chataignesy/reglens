@@ -83,6 +83,7 @@ def test_judge_verdicts_that_disagree_with_themselves_are_flagged():
              "rationale": "Omits the defaulted retail fact, so it should be 1 rather than 2."}
     assert consistency_flags(pd002) == ["rationale says the score should be 1"]
     assert consistency_flags({"score": 2, "missing": ["the 5% floor"], "contradictions": [],
-                              "rationale": ""}) == ["score 2 but key facts listed as missing"]
+                              "rationale": ""}) == ["empty rationale",
+                                                     "score 2 but key facts listed as missing"]
     assert consistency_flags({"score": 1, "missing": ["x"], "contradictions": [],
                               "rationale": "partly"}) == []

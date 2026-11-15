@@ -1,0 +1,42 @@
+# Opt-in Codex subscription run. Default config.yaml remains Claude.
+# No API prices asserted: cost_eur is unknown/null, never a zero-cost estimate.
+# The bounded RegLens tool loop is used; this is a separate backend benchmark.
+billing: subscription
+models:
+  tiers:
+    bulk: gpt-6.1-sol
+    dev: gpt-6.1-sol
+    milestone: gpt-6.1-sol
+  default_tier: dev
+pricing: {}
+pricing_rules:
+  cache_write_multiplier: 1.25
+  batch_discount: 0.5
+budget:
+  usd_to_eur: 0.9
+  target_eur: 150
+  ceiling_eur: 250
+  approval_threshold_eur: 2
+  approval_threshold_tokens: 1000000
+  current_phase: 4
+  phases_eur:
+    0: 5
+    1: 10
+    2: 40
+    3: 45
+    4: 40
+    5: 10
+answer:
+  tier: dev
+  effort: medium
+  k: 8
+  abstain_below: 0.05
+agent:
+  max_calls: 10
+  max_budget_usd: 0.75
+  max_turns: 13
+  max_tokens_per_question: 200000
+tokens:
+  chars_per_token: 3.01
+ledger_path: data/ledger.jsonl
+provider: codex

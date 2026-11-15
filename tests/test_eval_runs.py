@@ -125,7 +125,7 @@ def test_routed_run_uses_dispatch_and_writes_manifest(sandbox):
     # the gate abstains: no router tokens, single pass
     assert by_id["o1"]["attempts"] == ["single"] and by_id["o1"]["router_tokens"] == 0
     assert manifest["kind"] == "routed" and len(by_id["a1"]["artifact_sha256"]) == 64
-    assert by_id["g1"]["artifact"].startswith("answers/single-x/g1-")
+    assert by_id["g1"]["artifact"].startswith("answers/single-x/attempts/g1-")
 
     n = len(calls)
     ea.run(None, None, load_config(), items, routes=routes, log=lambda m: None)

@@ -147,6 +147,11 @@ def _match_received(key: str, received: list[str]) -> str | None:
     return hits.pop() if len(hits) == 1 else None
 
 
+# Bracketed text in an answer that looks like a legal citation key ("[CRR Art. 178(1)]",
+# "[EBA GL ... para. 71(a)]", "[C3]"): resolved to C# badges and delivery-checked.
+_CITATION_LIKE_RE = re.compile(
+    r"\b(?:Art(?:icle)?\.?\s*\d|paras?\.\s*\d|Section\s+\d)|\bC\d+\b", re.I
+)
 _RANGE_RE = re.compile(r"^(.*?)\bparas?\.\s*(\d+)\s*(?:-|–|to|and)\s*(\d+)$")
 _POINT_RE = re.compile(r"\([^()]*\)(?:\s*(?:-|–|and|to)\s*\([^()]*\))?$")  # "(b)" or "(b)-(c)"
 
@@ -471,7 +476,7 @@ def answer_agentic(
         for k in bracket_keys
         if k in keys
         or k in received
-        or re.search(r"\b(?:Art(?:icle)?\.?\s*\d|paras?\.\s*\d|Section\s+\d|C\d+)\b", k, re.I)
+        or _CITATION_LIKE_RE.search(k)
     ]
     unread: list[str] = []
     canonical: dict[str, str] = {}

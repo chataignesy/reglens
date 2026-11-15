@@ -55,8 +55,8 @@ materiality threshold at EUR 100 and 1%, a retail obligor owes EUR 120 past due,
 its exposure, for 95 days, then pays it off. Is it in default, and when can it return to
 non-default?*
 **Show:** the live timeline: "Needs several provisions: research agent", then each tool call as
-it happens (reads CRR Art. 178, searches for the materiality threshold and the probation
-period). The agent takes 30 s to 2 min; cut the wait in editing. Then the answer: in default,
+it happens (in the dry run: two searches, for the materiality threshold and for the probation
+period; the steps vary between runs). The agent takes 30 s to 2 min; cut the wait in editing. Then the answer: in default,
 both components exceeded and more than 90 days; return to non-default only after at least
 three months' probation → the assumption it flags as *interpretation*.
 **Say:** "Questions like this need several provisions. A small model routes it to an agent that
@@ -86,22 +86,39 @@ output is a matrix for a reviewer to sign off, not a final judgement."
 
 ### 6. Close (≈ 15 s)
 **Show:** the README results table on GitHub (or a title card).
-**Say:** "[HEADLINE RESULT — to decide; see note] It was built on a deliberately small budget.
-It's open source, and the tools also run as an MCP server inside Claude. Not legal advice:
-always check the official texts."
+**Say:** "On a reviewed set of 118 development questions, automated grading gives it 86 percent
+on the 103 in scope, and it declines all 15 out-of-scope ones. It was built on a deliberately
+small budget. It's open source, and the tools also run as an MCP server inside Claude. Not
+legal advice: always check the official texts."
+**On-screen caption (required with the number):** "Frozen 118-question development set,
+14 Nov 2026 · answers by GPT-6.1 via the Codex CLI backend · automated LLM grading, not
+independent review."
 
-**Note on the headline result.** The old line ("80 expert-checked questions, 0.91") is
-outdated. Available, differently scoped measurements: Claude routed 0.89 on 120 questions
-(8 Nov 2026 code, [results](../results/golden-120.md)); Codex 86.4% on 103 in-scope questions of
-the frozen 118-question development set, before the completeness fixes
-([results](../results/codex-frozen118-2026-11-14.md)). Neither measures the current Claude
-configuration. Quote one with its date, model and scope, or rerun Claude first; all are
-automated grades on a development set, not independent validation.
+**Note on the headline result (decided 15 Nov 2026: use the Codex runs for now).** Source: the
+full Codex run on the frozen 118-question set ([results](../results/codex-frozen118-2026-11-14.md)):
+86.4% mean in-scope score, 76 full / 26 partial / 1 wrong, 15/15 out-of-scope refusals. It is
+the broadest Codex measurement; the routing14 (92.3%) and smoke30 runs cover far fewer
+questions. The video itself shows Claude answering, so the caption must name the benchmark
+model; the run predates the completeness fixes, and the set has been used for development.
+Replace with a Claude measurement on the current code once one exists.
 
 ## Optional scene: MCP in Claude Desktop (≈ 30 s)
 Add the RegLens MCP server to Claude Desktop (`uv run python -m reglens.agent.mcp_server`) and
 ask Claude a question that uses the `search` and `get_article` tools. Only include it if the
 setup is already working; the main video stands without it.
+
+## Dry run — 15 Nov 2026 (merged code, Claude subscription, web UI)
+
+All four services as above; web UI on a non-3000 port. 57,260 tokens in total (ledger).
+
+| Scene | Result | Time · tokens | Watch for |
+|---|---|---|---|
+| 2 Quick | ✅ 0,05 % / 0,1 % QRRE revolvers; Art. 163(1) *law*; 4/4 checks passed | 18 s · 11k | Also added an Art. 159a guarantee exception with a hedging sentence; re-ask if it reads awkwardly |
+| 3 Auto | ✅ routed to agent; default yes (both components > threshold, 95 ≥ 90 days); return after ≥ 3 months, ECB reset; assumptions stated; 5/5 checks | 28 s · 29k | EBA GL para. 71(a)–(e) citations showed as raw `[…]` text, not badges; fixed afterwards (multi-digit bracket keys, `agent/run.py`), not yet re-run live |
+| 4 Out of scope | ✅ declined; mentions Art. 92 also lists the leverage ratio | 16 s · ~17k | — |
+
+Status lines under each answer ("Semantic evidence assessment: not performed", "Research checks
+still unresolved: …") are new since the merge; be ready to explain them or crop them out.
 
 ## After recording
 

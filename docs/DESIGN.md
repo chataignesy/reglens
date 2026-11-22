@@ -24,7 +24,7 @@ shared inference, frozen evaluations, and bounded context expansion are implemen
 the default; an opt-in Codex subscription backend has completed the full frozen118 benchmark.
 See [implementation status](ARCHITECTURE-IMPLEMENTATION.md),
 [operation and remaining limits](ARCHITECTURE-OPERATIONS.md), and the
-[next-session handoff](HANDOFF.md).
+[development handoff](archive/HANDOFF-2026-11-14.md) (archived).
 
 The current bottleneck is **answer completeness**: the latest full Codex benchmark scored 86.4% across 103
 in-scope questions (76 full, 26 partial, one wrong/unanswered), with 15/15 out-of-scope refusals.
@@ -370,7 +370,7 @@ earlier Streamlit UI remains as a fallback.
 - **Gap analysis:** a second synthetic policy for an untuned recall test; precision calibration.
 - **Batch API** for offline jobs (obligation extraction, bulk judging).
 - Next Q&A work: scope/addressee coverage and detection of omitted conditions, components and
-  exceptions; see [handoff](HANDOFF.md) and [roadmap](ROADMAP.md).
+  exceptions; see the [roadmap](ROADMAP.md).
 - National regulators (DNB first), complete reviewed multi-version legal history, an independently
   authored holdout, and practitioner adjudication. Staged publication/rollback, temporal annotation,
   holdout-freezing tools and opt-in semantic review already exist; they do not establish complete

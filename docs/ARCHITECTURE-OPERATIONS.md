@@ -3,7 +3,7 @@
 Implemented on `codex/architecture-foundations`, 11 November 2026. The application remains
 local and uses one Postgres database. Shared inference is an optional local process.
 
-Current Q&A follow-up and session entry point: [HANDOFF.md](HANDOFF.md). The foundation description
+Q&A follow-up history: [archived handoff](archive/HANDOFF-2026-11-14.md). The foundation description
 below is supplemented by the dated runtime updates; completed infrastructure is not a guarantee
 of complete legal answers.
 

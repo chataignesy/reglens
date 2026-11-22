@@ -8,9 +8,9 @@ does not support an answer, RegLens says so instead of guessing.
 Built for credit risk modellers and validators working with the IRB approach, the standardised
 approach, credit risk mitigation and the definition of default.
 
-There is no hosted demo: watch the demo video (link to follow) or run it locally (below).
+There is no hosted demo; run it locally (below).
 
-Continuing development: [current handoff and next fixes](docs/HANDOFF.md).
+Next steps: [roadmap](docs/ROADMAP.md). Development history: [archived handoff](docs/archive/HANDOFF-2026-11-14.md).
 
 > **Disclaimer.** Personal open-source project. Not affiliated with any employer, supervisor or
 > regulator. Not legal or regulatory advice. Always check the official texts.

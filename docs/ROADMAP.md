@@ -5,7 +5,7 @@ shared inference and frozen evaluations are implemented. See [implementation ste
 and [operation and remaining limits](ARCHITECTURE-OPERATIONS.md).
 
 Project rules and budget policy: [../CLAUDE.md](../CLAUDE.md). Last updated: 2026-11-15.
-Next-session entry point: [HANDOFF.md](HANDOFF.md).
+Development history: [archived handoff](archive/HANDOFF-2026-11-14.md).
 
 ## Goal
 
@@ -53,7 +53,7 @@ and its remaining evidence limits:
 | 5 | Routing efficiency and broader verification | **Paired14 complete**: LLM 92.3%, single-first 88.5%; candidate routing/answer tokens 48.1% lower but governance grade lower | Default stays LLM; candidate opt-in. [Results and limits](results/handoff-routing14-2026-11-15.md); 272 tests pass |
 | Review track | Practitioner adjudication | **Complete as author practitioner review**, assisted by Claude; both original baseline answers accepted | Not independent; stage 1 not blind. Raw scores unchanged; future rubric revision deferred. [Closure and verified decisions](review/PRACTITIONER-REVIEW-CLOSURE-2026-11-15.md). Holdout out of scope per user |
 
-Use [the handoff](HANDOFF.md) for saved artifacts, code entry points and verification constraints.
+The [archived handoff](archive/HANDOFF-2026-11-14.md) lists the saved artifacts, code entry points and verification constraints.
 The demonstrated cure-condition omission and economic-loss over-research are resolved in the
 two-case follow-up. Citation work and paired broader/routing verification are now complete;
 author practitioner review is complete, the holdout is out of scope per user, and general

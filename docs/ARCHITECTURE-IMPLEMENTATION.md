@@ -2,8 +2,8 @@
 
 Branch: `codex/architecture-foundations`, started 11 November 2026.
 
-This table records the completed foundation milestone. Current Q&A work is on
-`codex/frozen118-followup`; see the [14 November handoff](HANDOFF.md). Foundation steps marked
+This table records the completed foundation milestone. The Q&A follow-up work has been merged;
+see the [14 November handoff](archive/HANDOFF-2026-11-14.md) (archived). Foundation steps marked
 done below do not imply that answer completeness is solved.
 
 The target remains a local modular application using Postgres. Each step includes runnable
@@ -39,6 +39,6 @@ Operation, migration and remaining limits: [ARCHITECTURE-OPERATIONS.md](ARCHITEC
 | Routing cost reduction | Later; 24.5% of known benchmark tokens, with quality-regression checks required |
 | Rubric adjudication and independent holdout | Pending; tools exist, actual practitioner decisions and independent questions still needed |
 
-The next session should start from [HANDOFF.md](HANDOFF.md), reproduce the saved failures with
-free local checks, settle the implementation design, and then make scoped fixes. The full
+That work started from the [handoff](archive/HANDOFF-2026-11-14.md) (now archived), reproduced the saved failures with
+free local checks, settled the implementation design, and then made scoped fixes. The full
 benchmark's code and reference artifacts remain historical evidence and must not be rewritten.

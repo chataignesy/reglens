@@ -31,8 +31,8 @@ Operation, migration and remaining limits: [ARCHITECTURE-OPERATIONS.md](ARCHITEC
 | Work | Status and evidence |
 |---|---|
 | Codex subscription transport using the shared bounded tool loop | Implemented; Claude remains default; API keys still use the Anthropic adapter |
-| Amendment source opt-in, requested ranges, parent qualifiers, relevant sibling paragraphs, available required definitions | Implemented in `d8c8b40`; bounded to four extra rows / 12,000 characters; filters and whole units preserved |
-| Full frozen118 Codex runtime benchmark | Complete, documented in `482d52e`; 86.4% mean, 76 full / 26 partial / one wrong or unanswered; 15/15 refusals; 247-test product baseline |
+| Amendment source opt-in, requested ranges, parent qualifiers, relevant sibling paragraphs, available required definitions | Implemented in `50afa58`; bounded to four extra rows / 12,000 characters; filters and whole units preserved |
+| Full frozen118 Codex runtime benchmark | Complete, documented in `107d254`; 86.4% mean, 76 full / 26 partial / one wrong or unanswered; 15/15 refusals; 247-test product baseline |
 | Scope/addressee recovery for required applicability gaps | **Next — not implemented**; reproduce `app-004` without changing its reference |
 | Broader completeness checks for conditions, components and exceptions | **Next — not implemented**; 22/26 graded partial answers did not report a gap |
 | Nested amendment introduction and citation support | Queued after the two completeness tasks; retain `cmp-001`'s mechanical warning |

@@ -1,6 +1,6 @@
 # Review and implementation — frozen-118 runtime findings
 
-Date: 13 November 2026. Baseline: `506d334`, answer run
+Date: 13 November 2026. Baseline: `28dc4bf`, answer run
 `20261111-230849-885073-routed-all`, frozen development set `24da390d…`.
 Personal open-source project; not affiliated with an employer or supervisor; not legal advice.
 

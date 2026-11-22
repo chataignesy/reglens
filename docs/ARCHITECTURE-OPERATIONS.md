@@ -233,7 +233,7 @@ policy assessments. This is bounded retrieval, not proof that the rest of the po
   Duplicate service ownership was rejected. The real API reported models and database ready.
 - Six-question smoke: reranked recall@10 0.917 in 3.59 seconds. Full development retrieval: 103
   evaluable in-scope items, recall@5 0.745, recall@10 0.805, hit@10 0.913, total 64.40 seconds.
-  Against original retrieval code at `a913d74`, using the same corpus/models, all 103 top-ten
+  Against original retrieval code at `5cb314b`, using the same corpus/models, all 103 top-ten
   lists and metrics were identical (baseline 60.04 seconds; timings are not a load benchmark).
   `cmp-002` was not evaluable against the current indexed expected reference. Out-of-scope and
   unverified questions are excluded by the existing retrieval evaluator. These are retrieval

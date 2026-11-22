@@ -220,7 +220,7 @@ export function AskView() {
           onKeyDown={(e) => {
             if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) submit();
           }}
-          placeholder="e.g. Which LGD input floors apply to retail exposures secured by residential property?"
+          placeholder="Ask about the CRR, RTS, EBA guidelines or the ECB guide to internal models"
           rows={3}
           aria-label="Your question"
         />

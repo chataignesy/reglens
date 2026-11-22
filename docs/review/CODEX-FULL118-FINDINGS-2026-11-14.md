@@ -4,7 +4,7 @@ Personal project; not affiliated with any employer or supervisor. Not legal or r
 
 ## Outcome
 
-The full run is complete on product revision `d8c8b40`. All 118 questions have fresh answer/refusal
+The full run is complete on product revision `50afa58`. All 118 questions have fresh answer/refusal
 records and final grades against the unchanged frozen references. The mean in-scope score is
 **86.4%**: **76 full, 26 partial, one wrong/unanswered**, with **15/15 out-of-scope refusals**.
 The grades are automated and unreviewed by a practitioner. The score gives partial answers half

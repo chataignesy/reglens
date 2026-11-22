@@ -72,9 +72,11 @@ async def lifespan(_app: FastAPI):
 app = FastAPI(
     title="RegLens API", docs_url="/api/docs", openapi_url="/api/openapi.json", lifespan=lifespan
 )
-app.add_middleware(  # the Next.js dev server proxies /api, so this only matters for direct calls
+app.add_middleware(  # the web UI calls the API directly from the browser (web/src/lib/api.ts)
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    # Local web UI on any port: Windows can reserve 3000 (excluded port range), forcing another.
+    # Only pages served from this machine qualify; remote sites never match.
+    allow_origin_regex=r"http://(localhost|127\.0\.0\.1)(:\d+)?",
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type", "X-Anthropic-Key"],
 )

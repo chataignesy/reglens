@@ -156,7 +156,9 @@ command goes in its own terminal and starts from the repository root.
    cd web && npm install && npm run dev
    ```
 
-Then open http://localhost:3000.
+Then open http://localhost:3000. If port 3000 is taken or reserved (on Windows, Docker/WSL can
+reserve a range that includes it: `netsh int ipv4 show excludedportrange protocol=tcp`), run
+`npm run dev -- -p 3200` instead; the API accepts the web UI on any `localhost` port.
 
 Answers are generated with your **Claude subscription** (the `claude` CLI must be installed and
 logged in), or with your **own Anthropic API key**: choose "Your API key" in the UI. The key

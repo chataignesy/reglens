@@ -1,7 +1,7 @@
 {
   "recorded_at_utc": "2026-11-08T10:44:11.348078+00:00",
-  "retrieval_commit": "9f9d35ea458e87c90f4e6ca62b83aec8ff810ae2",
-  "head_after_runs": "b53f43aa1ded12d0e8c5bbbc981b7b23dc4498b6",
+  "retrieval_commit": "f5edcaf59e89af724df622fc8503e9d2a714ab3c",
+  "head_after_runs": "d68249cc9121b46376e38a73ccdaf5af3cc0662c",
   "source_changes_during_review": [
     " M src/reglens/answer/route.py",
     "?? docs/review/runtime/",

@@ -6,7 +6,7 @@ Personal project; not affiliated with any employer or supervisor. Not legal or r
 
 Review closure (15 November 2026): **the requested handoff work is complete**. The project author,
 an EU credit-risk practitioner, approved the Claude-assisted review of the two original baseline
-answers in commit `d3d42f6`; both were accepted. This was not independent or blind validation.
+answers in commit `246e8e9`; both were accepted. This was not independent or blind validation.
 See the [closure and verified decisions](review/PRACTITIONER-REVIEW-CLOSURE-2026-11-15.md).
 Raw automated grades (1 for `mh-006`, 2 for `mh-014`), frozen references and published results
 remain unchanged. A future versioned rubric change remains deferred. Independent holdout work
@@ -48,8 +48,8 @@ coding; the direction below is a handoff, not a claim that those fixes are alrea
 
 Workspace: `C:\Development\RegLens`. Shell: PowerShell. Branch: `codex/frozen118-followup`.
 
-- `d8c8b40`: latest measured product code, bounded context/completeness helpers.
-- `482d52e`: completed full Codex benchmark, exporter, audit and findings.
+- `50afa58`: latest measured product code, bounded context/completeness helpers.
+- `107d254`: completed full Codex benchmark, exporter, audit and findings.
 - This handoff and the accompanying architecture/roadmap updates form the next documentation
   commit; check `git log` and `git status` rather than assuming the checkout has not changed.
 - An untracked `.codegraph/` directory belongs to the existing workspace. Leave it intact.

@@ -5,7 +5,7 @@ DISCLAIMER = (
     "Not legal or regulatory advice; always check the official texts."
 )
 EXAMPLES = [
-    "What PD input floors apply to retail exposures under CRR3?",
+    "What is the minimum number of obligor grades for a corporate rating system?",
     "Can a bank use own LGD estimates for a large corporate under A-IRB?",
     "How long is the probation period after distressed restructuring?",
     "What happens to downturn LGD if no downturn can be observed in the bank's data?",

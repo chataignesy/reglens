@@ -4,7 +4,7 @@ Personal project; not affiliated with any employer or supervisor. Not legal or r
 
 The requested review phase is complete as an **author practitioner review with Claude
 assistance**. MistVista approved the source-based analysis and accepted both original baseline
-answers in commit `d3d42f68b9df40ffa830217f00b55587f0123616`. The reviewer is the project author;
+answers in commit `246e8e98bd96744b613593ce90b091e925e9b273`. The reviewer is the project author;
 stage 1 was not blind. This does not constitute independent validation.
 
 | Original baseline answer | Author decision | Preserved automated score |

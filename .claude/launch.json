@@ -14,10 +14,30 @@
       "port": 8000
     },
     {
+      "name": "reglens-inference",
+      "runtimeExecutable": "uv",
+      "runtimeArgs": ["run", "--no-sync", "uvicorn", "reglens.inference:app", "--host", "127.0.0.1", "--port", "8001", "--workers", "1"],
+      "port": 8001
+    },
+    {
+      "name": "reglens-api-shared",
+      "runtimeExecutable": "uv",
+      "runtimeArgs": ["run", "--no-sync", "uvicorn", "reglens.api.app:app", "--port", "8000"],
+      "env": { "REGLENS_INFERENCE_URL": "http://127.0.0.1:8001" },
+      "port": 8000
+    },
+    {
       "name": "reglens-web",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["--prefix", "web", "run", "dev"],
       "port": 3000
+    },
+    {
+      "name": "reglens-web-demo",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "web", "run", "dev", "--", "-p", "4000"],
+      "port": 4000,
+      "autoPort": false
     }
   ]
 }

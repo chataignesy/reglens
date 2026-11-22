@@ -97,7 +97,7 @@
     "mrr@10": 0.72,
     "seconds": 60.042,
     "comparison": {
-      "base_commit": "a913d74",
+      "base_commit": "5cb314b",
       "same_corpus_and_models": true,
       "all_top_ten_lists_equal": true
     }

@@ -2,6 +2,8 @@ import json
 from dataclasses import replace
 from datetime import date
 
+import pytest
+
 import reglens.agent.run as run
 from reglens.agent.tools import Row, citation_key, source_by_name
 from reglens.answer.verify import check_answer
@@ -150,3 +152,29 @@ def test_keys_fall_back_to_the_enclosing_passage_and_expand_ranges(monkeypatch):
     assert run._expand_range("EBA GL DoD paras. 71-73") == [
         "EBA GL DoD para. 71", "EBA GL DoD para. 72", "EBA GL DoD para. 73"]
     assert run._expand_range("EBA GL DoD para. 71") == ["EBA GL DoD para. 71"]
+
+
+@pytest.mark.parametrize(
+    "key",
+    [
+        "EBA GL definition of default (GL/2016/07) para. 71(a)",
+        "CRR Art. 178(1)(b)",
+        "CRR Article 500a",
+        "ECB guide to internal models para. 173",
+        "CRR Art. 5",
+        "C12",
+    ],
+)
+def test_bracketed_multi_digit_citation_keys_are_recognised(key):
+    """Dry run 15 Nov 2026: '[EBA GL ... para. 71(a)]' stayed raw text and skipped the delivery
+    check because the pattern only matched single-digit article/paragraph numbers."""
+    from reglens.agent.run import _CITATION_LIKE_RE
+
+    assert _CITATION_LIKE_RE.search(key)
+
+
+@pytest.mark.parametrize("text", ["file name", "see link", "Artemis", "C-level summary"])
+def test_ordinary_bracketed_text_is_not_a_citation_key(text):
+    from reglens.agent.run import _CITATION_LIKE_RE
+
+    assert not _CITATION_LIKE_RE.search(text)

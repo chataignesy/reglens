@@ -1,5 +1,5 @@
 {
-  "code_commit": "3517a13",
+  "code_commit": "365ecee",
   "snapshot_sha256": "20d15f898cdbb3884c604c0fd36d67f414b764833768b200baaa8122132eba7b",
   "corpus_generation": "legacy",
   "model_identity": {
@@ -8482,7 +8482,7 @@
       "parent_run_id": "20261113-120749-223310-routed-all",
       "parent_manifest_sha256": "5b0a11ceaf839a5a7602899d1ccb92d9a4078ae471ec28db2d9411f3ab5825bd",
       "snapshot": "20d15f898cdbb3884c604c0fd36d67f414b764833768b200baaa8122132eba7b",
-      "code_commit": "3517a13",
+      "code_commit": "365ecee",
       "base_namespaces": {
         "single": "single-e3fe620624",
         "agent": "agent-489add8a11"
@@ -9282,7 +9282,7 @@
     "resume_harness_source": "import argparse\nimport json\nfrom datetime import datetime, timezone\nfrom pathlib import Path\n\nfrom reglens.config import load_config\nfrom reglens.eval import answers\nfrom reglens.eval.route import cached_routes\nfrom reglens.eval.snapshots import load\nfrom reglens.index.db import connect\nfrom reglens.llm.provider import get_provider\n\nroot = Path(\"data/evals/frozen118-rerun-2026-11-13\")\nplan = json.loads((root / \"resume-plan.json\").read_text(encoding=\"utf-8\"))\nmonitor = json.loads((root / \"monitor.json\").read_text())\nparser = argparse.ArgumentParser()\nparser.add_argument(\"--yes\", action=\"store_true\")\nargs = parser.parse_args()\nsnapshot, items = load(Path(\"evals/frozen\") / (plan[\"snapshot\"] + \".json\"))\ncfg = load_config()\noriginal_version = answers.answer_version\n\ndef resume_version(config, conn, agent=False):\n    mode = \"agent\" if agent else \"single\"\n    actual = original_version(config, conn, agent)\n    if actual != plan[\"base_namespaces\"][mode]:\n        raise ValueError(\"Code/config/corpus changed since the preserved first pass\")\n    return plan[\"resume_namespaces\"][mode]\n\nwith connect(generation=monitor[\"generation\"]) as conn:\n    answers.answer_version = resume_version\n    routes = cached_routes(items)\n    if any(i.id not in routes for i in items):\n        raise ValueError(\"Router cache missing; do not silently change classification\")\n    dirs = {mode: answers.ANSWER_DIR / resume_version(cfg, conn, mode == \"agent\")\n            for mode in (\"single\", \"agent\")}\n    calls = answers.required_calls(items, dirs, routes=routes)\n    estimate = sum(300000 if mode == \"agent\" else 12000 for _, mode in calls)\n    print(f\"Infrastructure resume: {len(calls)} new calls, estimate {estimate:,} tokens\", flush=True)\n    print(calls, flush=True)\n    if not args.yes:\n        raise SystemExit(\"Dry run; no language-model calls\")\n    if datetime.now(timezone.utc) < datetime.fromisoformat(plan[\"reset_utc\"]):\n        raise SystemExit(\"Still before the announced subscription reset\")\n    result = answers.run(conn, get_provider(cfg), cfg, items, routes=routes,\n                         label=\"all-quota-resume\", dataset=snapshot,\n                         log=lambda text: print(text, flush=True))\n    with (root / \"resumed-summary.json\").open(\"x\", encoding=\"utf-8\") as f:\n        json.dump(result, f, ensure_ascii=False, indent=2)\n    print(json.dumps({k:v for k,v in result.items() if k != \"per_item\"},\n                     ensure_ascii=False, indent=2), flush=True)\n"
   },
   "timing": {
-    "code_commit": "3517a13",
+    "code_commit": "365ecee",
     "snapshot": "20d15f898cdbb3884c604c0fd36d67f414b764833768b200baaa8122132eba7b",
     "started_utc": "2026-11-13T08:39:11.972117+00:00",
     "approved_estimate_tokens": [

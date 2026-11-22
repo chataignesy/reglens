@@ -48,7 +48,7 @@ def main():
         ),
         "independent_validation": False,
         "scope": "Two exact original baseline answer artifacts; not later paired-run answers",
-        "source_review_commit": "d3d42f68b9df40ffa830217f00b55587f0123616",
+        "source_review_commit": "246e8e98bd96744b613593ce90b091e925e9b273",
         "review_document_sha256": file_sha(review),
         "baseline_report_sha256": file_sha(baseline),
         "historical_scores_and_references_changed": False,

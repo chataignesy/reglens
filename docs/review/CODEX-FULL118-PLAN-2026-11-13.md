@@ -7,7 +7,7 @@ All 118 questions graded; 5,776,251 known tokens plus one quota rejection with u
 See [results](../results/codex-frozen118-2026-11-14.md) and
 [review findings](CODEX-FULL118-FINDINGS-2026-11-14.md).
 
-- Product revision: `d8c8b40` on `codex/frozen118-followup`.
+- Product revision: `50afa58` on `codex/frozen118-followup`.
 - Frozen dataset: `20d15f898cdbb3884c604c0fd36d67f414b764833768b200baaa8122132eba7b`.
 - All 118 verified questions: 69 factual, 23 multi-hop, 6 comparison, 5 applicability, 15 out of scope.
 - Provider: Codex subscription; `config.codex.yaml`; `gpt-6.1-sol` for routing, answers and grading.

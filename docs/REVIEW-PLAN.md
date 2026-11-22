@@ -88,7 +88,7 @@ New items, to go before step 8 (they change answers or how they are graded):
 
 ### Additions from the second review
 
-[SECOND-REVIEW-2026-11-08.md](SECOND-REVIEW-2026-11-08.md) checked commit `8a1a7bf` and found seven remaining defects. The plan was one small code fix per finding, each with a regression test built from the review's reproduction, in `tests/test_second_review.py`. None of the fixes needs an LLM call.
+[SECOND-REVIEW-2026-11-08.md](SECOND-REVIEW-2026-11-08.md) checked commit `86315c1` and found seven remaining defects. The plan was one small code fix per finding, each with a regression test built from the review's reproduction, in `tests/test_second_review.py`. None of the fixes needs an LLM call.
 
 | | Finding | Change |
 |---|---|---|

@@ -7,8 +7,8 @@
 - Windows, Python 3.14.0; PostgreSQL 17.11 in the existing healthy Docker container.
 - RTX 2070 SUPER, 8 GiB VRAM; real cached BGE-M3 and reranker weights on CUDA.
 - 4,631 database chunks; all 4,631 have embeddings. No database reindex was performed.
-- Retrieval measurements started at commit `9f9d35ea458e87c90f4e6ca62b83aec8ff810ae2`.
-- Other work changed and committed source files during the review; HEAD later became `b53f43aa1ded12d0e8c5bbbc981b7b23dc4498b6`, with a further routing change in the working tree. Those edits were preserved. Results describe the modules loaded for each process, not a certification of every subsequently edited file.
+- Retrieval measurements started at commit `f5edcaf59e89af724df622fc8503e9d2a714ab3c`.
+- Other work changed and committed source files during the review; HEAD later became `d68249cc9121b46376e38a73ccdaf5af3cc0662c`, with a further routing change in the working tree. Those edits were preserved. Results describe the modules loaded for each process, not a certification of every subsequently edited file.
 - Fresh generation used the configured subscription provider and models. Cached answers were not reused for the five-question sample. Estimated budget was 110k generation tokens plus 8k judge tokens; actual totals were **49,159 generation + 8,039 judging = 57,198 tokens**.
 
 The [manifest](review/runtime/manifest.json), [runner](review/runtime_checks.py), and raw JSON artifacts record the measurements and judgments. No keys were added or copied into review artifacts. The local-model processes used cached weights with Hugging Face offline mode enabled.

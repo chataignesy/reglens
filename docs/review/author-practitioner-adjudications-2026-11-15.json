@@ -3,7 +3,7 @@
   "review_type": "project-author practitioner review with Claude assistance; stage 1 not blind",
   "independent_validation": false,
   "scope": "Two exact original baseline answer artifacts; not later paired-run answers",
-  "source_review_commit": "d3d42f68b9df40ffa830217f00b55587f0123616",
+  "source_review_commit": "246e8e98bd96744b613593ce90b091e925e9b273",
   "review_document_sha256": "a83ba42c5a47480ea9feeacf2e3e2f7a1c9a3db7a829b224f4ac93780d1ae0fd",
   "baseline_report_sha256": "39a71cb7cfa56f5425722bc7a2ee5008babc6053f3ca351a18a33fc1c785fe8c",
   "historical_scores_and_references_changed": false,

@@ -2,7 +2,7 @@
 
 **Result: all seven findings from the second review pass their original failure-case checks. No remaining blocking defect was found in the changed paths exercised here.** This closes those specific reproductions; it is not a new overall answer-accuracy benchmark.
 
-Reviewed the uncommitted changes on top of `8a1a7bfd369fd0eaa8cbb84514a95095b5be76ed`. Application source was not edited by this review. Additional edits appeared during verification (including the import-order correction and a converter-version test); the final suite and lint checks were repeated. Initial and final diff hashes are recorded in [manifest.json](review/third-check/manifest.json).
+Reviewed the uncommitted changes on top of `86315c1beab378e3b33b9cd0f870b00d35c99442`. Application source was not edited by this review. Additional edits appeared during verification (including the import-order correction and a converter-version test); the final suite and lint checks were repeated. Initial and final diff hashes are recorded in [manifest.json](review/third-check/manifest.json).
 
 ## Findings rechecked
 

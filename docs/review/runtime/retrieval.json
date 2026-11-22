@@ -1,5 +1,5 @@
 {
-  "commit": "9f9d35ea458e87c90f4e6ca62b83aec8ff810ae2",
+  "commit": "f5edcaf59e89af724df622fc8503e9d2a714ab3c",
   "python": "3.14.0",
   "gpu": "NVIDIA GeForce RTX 2070 SUPER",
   "chunks_embeddings": [

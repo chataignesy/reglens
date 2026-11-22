@@ -161,8 +161,8 @@ It was fixed before generation and deliberately includes known regressions. Both
 the same frozen question/reference snapshot, and the historical planned routes are replayed.
 The local embedding/reranker identities match the historical run; no corpus ingestion was done.
 
-Codex uses `gpt-6.1-sol`, the bounded RegLens JSON tool loop and product code at `f5101a5`.
-The saved Claude answers use the earlier `claude-sonnet-5-5` system at `3517a13` and its native
+Codex uses `gpt-6.1-sol`, the bounded RegLens JSON tool loop and product code at `fa4f7b2`.
+The saved Claude answers use the earlier `claude-sonnet-5-5` system at `365ecee` and its native
 MCP workflow. Both are graded with `gpt-6.1-sol`, prompt version `75d32dd9`. Code and workflow
 differences prevent attributing score or token differences solely to the underlying models.
 This is a development regression cohort, not a new holdout or a full 118-question rerun.

@@ -1,6 +1,6 @@
 # Second review: design, code, and runtime
 
-Reviewed commit **8a1a7bfd369fd0eaa8cbb84514a95095b5be76ed**, 8 November 2026. The worktree was clean at the start and application source remained unchanged throughout this pass. Added only review code and artifacts.
+Reviewed commit **86315c1beab378e3b33b9cd0f870b00d35c99442**, 8 November 2026. The worktree was clean at the start and application source remained unchanged throughout this pass. Added only review code and artifacts.
 
 ## Conclusion
 
